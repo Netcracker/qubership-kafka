@@ -1,0 +1,10 @@
+version: '3'
+services:
+  operator-sdk:
+    build:
+      dockerfile: Dockerfile
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../../kafka-service-operator:/kafka-service-operator
+    working_dir: /kafka-service-operator

@@ -1,0 +1,23 @@
+{{- if and (eq (include "kafka-service.enableDisasterRecovery" .) "true") .Values.global.disasterRecovery.serviceExport.enabled }}
+{{- if not .Values.global.disasterRecovery.region }}
+{{ fail "Cloud Region should be specified in parameter 'global.disasterRecovery.region' when deployed with enabled ServiceExport." }}
+{{- end }}
+{{- $kafka_name := include "kafka.name" . }}
+{{- $kafka_namespace := .Release.Namespace }}
+{{- $kafka_region := .Values.global.disasterRecovery.region }}
+kind: ServiceExport
+apiVersion: net.gke.io/v1
+metadata:
+  name: {{ $kafka_name }}-{{ $kafka_region }}
+  namespace: {{ $kafka_namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+{{- range $_, $broker_id := untilStep 1 (add1 (include "kafka.replicas" . | int) | int) 1 }}
+---
+kind: ServiceExport
+apiVersion: net.gke.io/v1
+metadata:
+  name: {{ printf "%s-%s-%d" $kafka_name $kafka_region $broker_id }}
+  namespace: {{ $kafka_namespace }}
+{{- end }}
+{{- end }}

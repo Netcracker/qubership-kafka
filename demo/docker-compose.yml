@@ -1,0 +1,43 @@
+version: '2'
+services:
+  zookeeper:
+    image: zookeeper:3.9.2
+    ports:
+      - 2181:2181
+  kafka:
+    image: kafka:3.8.0
+    ports:
+      - 9092:9092
+    links:
+      - zookeeper
+    environment:
+      - BROKER_ID=1
+      - REPLICATION_FACTOR=1
+      - ZOOKEEPER_CONNECT=zookeeper:2181
+      - DISABLE_SECURITY=true
+      - ADMIN_USERNAME=
+      - ADMIN_PASSWORD=
+      - CLIENT_USERNAME=
+      - CLIENT_PASSWORD=
+  kafka-integration-tests:
+    build:
+      context: ../
+      dockerfile: ./integration-tests/docker/Dockerfile
+    ports:
+      - 8090:8080
+    links:
+      - kafka
+    volumes:
+      - ./../integration-tests/robot/tests:/opt/robot/tests
+      - ./output:/opt/robot/output
+    environment:
+      - ZOOKEEPER_OS_PROJECT=
+      - ZOOKEEPER_HOST=zookeeper
+      - ZOOKEEPER_PORT=2181
+      - KAFKA_OS_PROJECT=
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
+      - KAFKA_USER=
+      - KAFKA_PASSWORD=
+      - OS_URL=
+    command: ["run-ttyd"]

@@ -1,0 +1,50 @@
+domain: qubership.org
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: kafka-service-operator
+repo: git.qubership.org/PROD.Platform.Streaming/kafka-service/kafka-service-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: qubership.org
+  kind: KafkaService
+  path: git.qubership.org/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7
+  version: v7
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: qubership.org
+  kind: KmmConfig
+  path: git.qubership.org/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: qubership.org
+  kind: AkhqConfig
+  path: git.qubership.org/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: qubership.org
+  kind: Kafka
+  path: git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: qubership.org
+  kind: KafkaUser
+  path: git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1
+  version: v1
+version: "3"

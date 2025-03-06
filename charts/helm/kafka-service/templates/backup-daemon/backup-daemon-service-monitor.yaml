@@ -1,0 +1,37 @@
+{{- if and .Values.backupDaemon.install (eq (include "monitoring.install" .) "true") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    {{- include "kafka-services.coreLabels" . | nindent 4 }}
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-backup-daemon-service-monitor
+  name: {{ template "kafka.name" . }}-backup-daemon-service-monitor
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpoints:
+    - interval: 30s
+      path: /health/prometheus
+      {{- if and .Values.global.tls.enabled .Values.backupDaemon.tls.enabled }}
+      scheme: https
+      tlsConfig:
+        ca:
+          secret:
+            key: ca.crt
+            name: {{ template "backupDaemon.tlsSecretName" . }}
+        serverName: {{ template "kafka.name" . }}-backup-daemon
+      {{- else }}
+      scheme: http
+      {{- end }}
+      relabelings:
+        - action: replace
+          replacement: 'full'
+          targetLabel: mode
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      name: {{ template "kafka.name" . }}-backup-daemon
+{{- end }}

@@ -1,0 +1,17 @@
+{{- if and .Values.kafka.install (not .Values.global.externalKafka.enabled) }}
+{{- if (not .Values.operator.serviceAccount) }}
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "kafka.name" . }}-operator
+  labels:
+    {{- include "kafka.defaultLabels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "kafka.name" . }}-operator
+roleRef:
+  kind: Role
+  name: {{ template "kafka.name" . }}-operator
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}

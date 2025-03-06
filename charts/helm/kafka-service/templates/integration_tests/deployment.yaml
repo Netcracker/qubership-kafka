@@ -1,0 +1,232 @@
+{{- if .Values.integrationTests.install }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Values.integrationTests.service.name }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    name: {{ .Values.integrationTests.service.name }}
+    app.kubernetes.io/name: {{ .Values.integrationTests.service.name }}
+    app.kubernetes.io/instance: {{ cat .Values.integrationTests.service.name .Values.DELIMITER .Release.Namespace | nospace | trunc 63 }}
+    app.kubernetes.io/technology: python
+spec:
+  selector:
+    matchLabels:
+      name: {{ .Values.integrationTests.service.name }}
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+      {{- with .Values.global.customLabels }}
+        {{- toYaml . | nindent 8 -}}
+      {{- end }}
+      {{- with .Values.integrationTests.customLabels }}
+        {{- toYaml . | nindent 8 -}}
+      {{- end }}
+        name: {{ .Values.integrationTests.service.name }}
+        app.kubernetes.io/name: {{ .Values.integrationTests.service.name }}
+    spec:
+      serviceAccountName: {{ .Values.integrationTests.service.name }}
+      {{- if .Values.integrationTests.affinity }}
+      affinity:
+        {{ .Values.integrationTests.affinity | toJson }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.integrationTests.service.name }}
+          image: {{ template "kafka-integration-tests.image" . }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: RANDOM_RUN_TRIGGER
+              value: "{{ randAlphaNum 10 }}"
+            - name: TAGS
+              value: {{ .Values.integrationTests.tags }}
+            - name: OS_URL
+              value: {{ .Values.integrationTests.url }}
+            - name: OS_PROJECT
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KAFKA_IS_MANAGED_BY_OPERATOR
+              value: {{ .Values.integrationTests.kafkaIsManagedByOperator | quote }}
+            - name: DR_SIDE
+              value: {{ .Values.integrationTests.drActiveSide }}
+            - name: KAFKA_OS_PROJECT
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if .Values.deployDescriptor }}
+            - name: MONITORED_IMAGES
+              value: {{ include "kafka.monitoredImages" . }}
+            {{- end }}
+            {{- if not .Values.kafka.kraft.enabled }}
+            - name: ZOOKEEPER_HOST
+              value: {{ .Values.integrationTests.zookeeperHost }}
+            - name: ZOOKEEPER_PORT
+              value: {{ .Values.integrationTests.zookeeperPort | quote }}
+            - name: ZOOKEEPER_OS_PROJECT
+              value: {{ .Values.integrationTests.zookeeperOsProject }}
+            {{- else }}
+            - name: KRAFT_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if .Values.global.externalKafka.enabled }}
+            - name: EXTERNAL_KAFKA
+            {{- end }}
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              {{- if .Values.global.externalKafka.enabled }}
+              value: {{ include "kafka-service.bootstrapServers" . }}
+              {{- end }}
+            - name: KAFKA_HOST
+              value: {{ .Values.integrationTests.kafkaHost }}
+            - name: KAFKA_PORT
+              value: {{ .Values.integrationTests.kafkaPort | quote }}
+            - name: KAFKA_ENABLE_SSL
+              value: {{ include "kafka-service.enableTls" . | quote }}
+            - name: KAFKA_PV_NAMES
+              value: {{ .Values.integrationTests.kafkaPvNames }}
+            - name: KAFKA_VOLUME_SIZE
+              value: {{ .Values.integrationTests.kafkaVolumeSize | quote }}
+            - name: KAFKA_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-services-secret
+                  key: client-username
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-services-secret
+                  key: client-password
+            {{- if .Values.backupDaemon.install }}
+            - name: BACKUP_DAEMON_HOST
+              value: {{ template "kafka.name" . }}-backup-daemon
+            - name: BACKUP_DAEMON_PROTOCOL
+              value: {{ template "backupDaemon.Protocol" . }}
+            - name: BACKUP_DAEMON_PORT
+              value: {{ include "backupDaemon.port" . | quote }}
+            - name: BACKUP_DAEMON_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-backup-daemon-secret
+                  key: username
+            - name: BACKUP_DAEMON_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-backup-daemon-secret
+                  key: password
+            {{- end }}
+            {{- if .Values.kafka.consulDiscovery }}
+            - name: CONSUL_HOST
+              value: {{ .Values.integrationTests.consulHost }}
+            - name: CONSUL_PORT
+              value: {{ .Values.integrationTests.consulPort | quote }}
+            - name: CONSUL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: consul-token
+            {{- end }}
+            {{- if and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install }}
+            - name: PROMETHEUS_URL
+              value: {{ .Values.integrationTests.prometheusUrl }}
+            - name: PROMETHEUS_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: prometheus-user
+            - name: PROMETHEUS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: prometheus-password
+            {{- end }}
+            {{- if .Values.integrationTests.identityProviderUrl }}
+            - name: IDENTITY_PROVIDER_URL
+              value: {{ .Values.integrationTests.identityProviderUrl | quote }}
+            - name: IDENTITY_PROVIDER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: idp-registration-token
+            - name: IDENTITY_PROVIDER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: idp-username
+            - name: IDENTITY_PROVIDER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: idp-password
+            {{- end }}
+            {{- if and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install }}
+            - name: ZABBIX_URL
+              value: {{ .Values.integrationTests.zabbixUrl }}
+            - name: ZABBIX_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: zabbix-user
+            - name: ZABBIX_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  key: zabbix-password
+            - name: CLOUD_DB
+              value: {{ .Values.global.smDbName }}
+            {{- end }}
+          resources:
+            requests:
+              memory: {{ default "256Mi" .Values.integrationTests.resources.requests.memory }}
+              cpu: {{ default "200m" .Values.integrationTests.resources.requests.cpu }}
+            limits:
+              memory: {{ default "256Mi" .Values.integrationTests.resources.limits.memory }}
+              cpu: {{ default "400m" .Values.integrationTests.resources.limits.cpu }}
+          volumeMounts:
+            - name: output
+              mountPath: /opt/robot/output
+          {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
+            - name: ssl-certs
+              mountPath: /tls
+          {{- end }}
+          {{- if and .Values.global.tls.enabled .Values.backupDaemon.install .Values.backupDaemon.tls.enabled (include "backupDaemon.tlsSecretName" .) }}
+            - name: backup-ssl-certs
+              mountPath: /backupTLS
+          {{- end }}
+          terminationMessagePath: /dev/termination-log
+          imagePullPolicy: Always
+          securityContext:
+            {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'cat /opt/robot/output/result.txt | grep -q "RESULT: TESTS PASSED"'
+            initialDelaySeconds: 20
+            timeoutSeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 5
+      volumes:
+        - name: output
+          emptyDir: {}
+      {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
+        - name: ssl-certs
+          secret:
+            secretName: {{ template "kafka-service.tlsSecretName" . }}
+      {{- end }}
+      {{- if and .Values.global.tls.enabled .Values.backupDaemon.install .Values.backupDaemon.tls.enabled (include "backupDaemon.tlsSecretName" .) }}
+        - name: backup-ssl-certs
+          secret:
+            secretName: {{ template "backupDaemon.tlsSecretName" . }}
+      {{- end }}
+      securityContext:
+        {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+        {{- with .Values.integrationTests.securityContext }}
+        {{- toYaml . | nindent 8 -}}
+        {{- end }}      
+{{- end }}

@@ -1,0 +1,78 @@
+{{- if and .Values.kafka.install (not .Values.global.externalKafka.enabled) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kafka.name" . }}-operator
+  labels:
+    name: {{ template "kafka.name" . }}-operator
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-operator
+    app.kubernetes.io/instance: {{ cat (printf "%s-operator" .Values.global.name) .Values.DELIMITER .Release.Namespace | nospace | trunc 63 }}
+    app.kubernetes.io/technology: go
+    {{- include "kafka.defaultLabels" . | nindent 4 }}
+spec:
+  replicas: {{ default 1 .Values.operator.replicas }}
+  selector:
+    matchLabels:
+      name: {{ template "kafka.name" . }}-operator
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+      {{- with .Values.global.customLabels }}
+        {{- toYaml . | nindent 8 -}}
+      {{- end }}
+      {{- with .Values.operator.customLabels }}
+        {{- toYaml . | nindent 8 -}}
+      {{- end }}
+        name: {{ template "kafka.name" . }}-operator
+        app.kubernetes.io/name: {{ template "kafka.name" . }}-operator
+    spec:
+      serviceAccountName: {{ template "kafka.serviceAccount" . }}
+      containers:
+        - name: {{ template "kafka.name" . }}-operator
+          securityContext:
+            {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
+          image: {{ template "operator.image" . }}
+          command:
+            - /manager
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_NAME
+              value: {{ template "kafka.name" . }}-operator
+            - name: OPERATOR_MODE
+              value: "kafka"
+          resources:
+            requests:
+              memory: {{ default "128Mi" .Values.operator.resources.requests.memory }}
+              cpu: {{ default "25m" .Values.operator.resources.requests.cpu }}
+            limits:
+              memory: {{ default "128Mi" .Values.operator.resources.limits.memory }}
+              cpu: {{ default "100m" .Values.operator.resources.limits.cpu }}
+      {{- if .Values.operator.affinity }}
+      affinity:
+        {{ .Values.operator.affinity | toJson }}
+      {{- end }}
+      {{- if .Values.operator.tolerations }}
+      tolerations:
+        {{ .Values.operator.tolerations | toJson }}
+      {{- end }}
+      {{- if .Values.operator.priorityClassName }}
+      priorityClassName: {{ .Values.operator.priorityClassName }}
+      {{- end }}
+      securityContext:
+        {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+        {{- with .Values.operator.securityContext }}
+        {{- toYaml . | nindent 8 -}}
+        {{- end }}
+{{- end }}

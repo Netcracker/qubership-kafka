@@ -1,0 +1,22 @@
+{{- if and .Values.operator.kafkaUserConfigurator.enabled (ne .Values.operator.kafkaUserConfigurator.watchNamespace .Release.Namespace) (not .Values.global.restrictedEnvironment) }}
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "kafka.name" . }}-service-operator-kafka-users-{{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    {{- with .Values.global.customLabels }}
+      {{- toYaml . | nindent 4 -}}
+    {{- end }}
+    {{- with .Values.operator.customLabels }}
+      {{- toYaml . | nindent 4 -}}
+    {{- end }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "kafka.name" . }}-service-operator
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ template "kafka.name" . }}-service-operator-kafka-users-{{ .Release.Namespace }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

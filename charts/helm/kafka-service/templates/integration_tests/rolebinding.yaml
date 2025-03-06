@@ -1,0 +1,32 @@
+{{- if .Values.integrationTests.install }}
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ .Values.integrationTests.service.name }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.integrationTests.service.name }}
+roleRef:
+  kind: Role
+  name: {{ .Values.integrationTests.service.name }}
+  apiGroup: rbac.authorization.k8s.io
+  {{- if and (ne .Release.Namespace .Values.integrationTests.zookeeperOsProject) (not .Values.kafka.kraft.enabled) }}
+    {{- $name := printf "%v-for-%v" .Values.integrationTests.service.name .Release.Namespace }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Values.integrationTests.zookeeperOsProject }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.integrationTests.service.name }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ $name }}
+  apiGroup: rbac.authorization.k8s.io
+  {{- end }}
+{{- end }}

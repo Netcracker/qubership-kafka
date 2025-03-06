@@ -1,0 +1,6 @@
+apiVersion: netcracker.com/v2
+kind: KafkaService
+metadata:
+  name: kafkaservice-sample
+spec:
+  # TODO(user): Add fields here

@@ -1,0 +1,6 @@
+apiVersion: netcracker.com/v1
+kind: AkhqConfig
+metadata:
+  name: akhqconfig-sample
+spec:
+  # TODO(user): Add fields here

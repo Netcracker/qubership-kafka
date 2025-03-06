@@ -1,0 +1,24 @@
+{{- if .Values.backupDaemon.install }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kafka.name" . }}-backup-daemon
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    component: kafka-backup-daemon
+    name: {{ template "kafka.name" . }}-backup-daemon
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-backup-daemon
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: {{ template "backupDaemon.port" . }}
+      targetPort: {{ template "backupDaemon.port" . }}
+  selector:
+    component: kafka-backup-daemon
+    name: {{ template "kafka.name" . }}-backup-daemon
+    release: {{ .Release.Name }}
+{{- end }}

@@ -1,0 +1,112 @@
+{{- if and .Values.monitoring.lagExporter.enabled (eq (include "monitoring.install" .) "true") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kafka.name" . }}-lag-exporter-configmap
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-lag-exporter-configmap
+data:
+  application.conf: |
+    kafka-lag-exporter {
+      port = {{ .Values.monitoring.lagExporter.service.port }}
+      poll-interval = {{ .Values.monitoring.lagExporter.pollIntervalSeconds }} seconds
+      lookup-table-size = {{ .Values.monitoring.lagExporter.lookupTableSize }}
+      client-group-id = "{{ .Values.monitoring.lagExporter.clientGroupId }}"
+      kafka-client-timeout = {{ .Values.monitoring.lagExporter.kafkaClientTimeoutSeconds }} seconds
+      kafka-retries = {{ .Values.monitoring.lagExporter.kafkaRetries }}
+      clusters = [
+        {
+          name = "{{ .Values.monitoring.lagExporter.cluster.name }}"
+          {{- if .Values.monitoring.lagExporter.cluster.bootstrapBrokers }}
+          bootstrap-brokers = "{{ .Values.monitoring.lagExporter.cluster.bootstrapBrokers }}"
+          {{- else }}
+          bootstrap-brokers = {{ include "kafka-service.brokersList" . | quote }}
+          {{- end }}
+          {{- if .Values.monitoring.lagExporter.cluster.groupWhitelist }}
+          group-whitelist = [
+            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.groupWhitelist) 1}}
+            {{- range $i, $whitelist := .Values.monitoring.lagExporter.cluster.groupWhitelist }}
+            {{ quote $whitelist }}{{- if ne $i $lastIndex -}}, {{ end }}
+            {{- end }}
+          ]
+          {{- end }}
+          {{- if .Values.monitoring.lagExporter.cluster.groupBlacklist }}
+          group-blacklist = [
+            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.groupBlacklist) 1}}
+            {{- range $i, $blacklist := .Values.monitoring.lagExporter.cluster.groupBlacklist }}
+            {{ quote $blacklist }}{{- if ne $i $lastIndex -}}, {{ end }}
+            {{- end }}
+          ]
+          {{- end }}
+          {{- if .Values.monitoring.lagExporter.cluster.topicWhitelist }}
+          topic-whitelist = [
+            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.topicWhitelist) 1}}
+            {{- range $i, $whitelist := .Values.monitoring.lagExporter.cluster.topicWhitelist }}
+            {{ quote $whitelist }}{{- if ne $i $lastIndex -}}, {{ end }}
+            {{- end }}
+          ]
+          {{- end }}
+          {{- if .Values.monitoring.lagExporter.cluster.topicBlacklist }}
+          topic-blacklist = [
+            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.topicBlacklist) 1}}
+            {{- range $i, $blacklist := .Values.monitoring.lagExporter.cluster.topicBlacklist }}
+            {{ quote $blacklist }}{{- if ne $i $lastIndex -}}, {{ end }}
+            {{- end }}
+          ]
+          {{- end }}
+          consumer-properties = {
+          {{- if and .Values.monitoring.lagExporter.cluster.consumerProperties }}
+            {{- range $key, $val := .Values.monitoring.lagExporter.cluster.consumerProperties }}
+            {{ $key }} = {{ quote $val }}
+            {{- end }}
+          {{- end }}
+            ${CONFIGURATION}
+          }
+          admin-client-properties = {
+          {{- if and .Values.monitoring.lagExporter.cluster.adminClientProperties }}
+            {{- range $key, $val := .Values.monitoring.lagExporter.cluster.adminClientProperties }}
+            {{ $key }} = {{ quote $val }}
+            {{- end }}
+          {{- end }}
+            ${CONFIGURATION}
+          }
+          {{- if eq (include "lagExporter.clusterLabelsDefined" .) "true" }}
+          labels = {
+            {{- range $key, $val := .Values.monitoring.lagExporter.cluster.labels }}
+            {{ $key }} = {{ quote $val }}
+            {{- end }}
+          }
+          {{- end }}
+        }
+      ]
+      metric-whitelist = [
+        {{- $lastIndex := sub (len .Values.monitoring.lagExporter.metricWhitelist) 1}}
+        {{- range $i, $whitelist := .Values.monitoring.lagExporter.metricWhitelist }}
+        {{ quote $whitelist }}{{- if ne $i $lastIndex -}}, {{ end }}
+        {{- end }}
+      ]
+    }
+
+    akka {
+      loggers = ["akka.event.slf4j.Slf4jLogger"]
+      loglevel = "{{ .Values.monitoring.lagExporter.akkaLogLevel }}"
+      logging-filter = "akka.event.slf4j.Slf4jLoggingFilter"
+    }
+  logback.xml: |
+    <configuration>
+        <variable name="ROOT_LOG_LEVEL" value="{{ .Values.monitoring.lagExporter.rootLogLevel }}" />
+        <variable name="KAFKA_LAG_EXPORTER_LOG_LEVEL" value="{{ .Values.monitoring.lagExporter.kafkaLagExporterLogLevel }}" />
+        <variable name="KAFKA_LAG_EXPORTER_KAFKA_LOG_LEVEL" value="{{ .Values.monitoring.lagExporter.kafkaLogLevel }}" />
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg %ex%n</pattern>
+            </encoder>
+        </appender>
+        <logger name="org.apache.kafka" level="${KAFKA_LAG_EXPORTER_KAFKA_LOG_LEVEL}"/>
+        <logger name="com.lightbend.kafkalagexporter" level="${KAFKA_LAG_EXPORTER_LOG_LEVEL}"/>
+        <root level="${ROOT_LOG_LEVEL}">
+            <appender-ref ref="STDOUT" />
+        </root>
+    </configuration>
+{{- end }}

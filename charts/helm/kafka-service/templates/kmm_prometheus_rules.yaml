@@ -1,0 +1,31 @@
+{{- if (and (eq (include "monitoring.install" .) "true") .Values.mirrorMakerMonitoring.install (ne (include "mirrorMakerMonitoring.type" .) "influxdb") .Values.global.installDashboard (ne (.Values.mirrorMakerMonitoring.installDashboard | toString) "false")) }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    {{- include "kafka-services.coreLabels" . | nindent 4 }}
+    app.kubernetes.io/component: monitoring
+    prometheus: Kafka-Mirror-Maker-rules
+    role: alert-rules
+  name: prometheus-kafka-mirror-maker-rules
+spec:
+  groups:
+    - name: general.rules
+      rules:
+        - alert: Kafka_Mirror_Maker_Is_Degraded_Alarm
+          annotations:
+            description: 'Kafka Mirror Maker is Degraded.'
+            summary: Some of Kafka Mirror Maker pods are down
+          expr: kmm_health_status_code{project_name="{{ .Release.Namespace }}"} == 1
+          for: 3m
+          labels:
+            severity: high
+        - alert: Kafka_Mirror_Maker_Is_Down_Alarm
+          annotations:
+            description: 'Kafka Mirror Maker is Down.'
+            summary: All of Kafka Mirror Maker pods are down
+          expr: kmm_health_status_code{project_name="{{ .Release.Namespace }}"} == 2
+          for: 3m
+          labels:
+            severity: high
+  {{- end }}

@@ -1,0 +1,137 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - netcracker.com
+  resources:
+  - akhqconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - akhqconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - akhqconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkas/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkas/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkaservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkaservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkaservices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkausers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkausers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkausers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kmmconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kmmconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kmmconfigs/status
+  verbs:
+  - get
+  - patch
+  - update

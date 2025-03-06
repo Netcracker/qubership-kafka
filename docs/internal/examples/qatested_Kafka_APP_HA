@@ -1,0 +1,290 @@
+CUSTOM_RESOURCE_NAME: kafka
+global:
+  name: kafka
+  waitForPodsReady: true
+  monitoringType: prometheus
+  installDashboard: true
+  secrets:
+    kafka:
+      disableSecurity: false
+      adminUsername: admin
+      adminPassword: admin
+      clientUsername: client
+      clientPassword: client
+      zookeeperClientUsername: zclient
+      zookeeperClientPassword: zclient
+    monitoring:
+      prometheusUsername: prometheus
+      prometheusPassword: prometheus
+    akhq:
+      defaultUsername: admin
+      defaultPassword: admin
+    mirrorMaker:
+      jolokiaUsername: client
+      jolokiaPassword: client
+    backupDaemon:
+      username: admin
+      password: admin
+      s3:
+        keyId: keyid
+        keySecret: keysecret
+    integrationTests:
+      consul:
+        token: token
+  tls:
+    enabled: false
+    allowNonencryptedAccess: true
+    generateCerts:
+      enabled: true
+      certProvider: cert-manager
+      durationDays: 365
+      clusterIssuerName: issuer
+operator:
+  replicas: 1
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: component
+                operator: In
+                values:
+                  - kafka-service-operator
+          topologyKey: kubernetes.io/hostname
+kafka:
+  securityContext:
+    runAsUser: 1000
+    fsGroup: 1000
+  install: true
+  customLabels:
+    A_test_kafka: kafka_success1
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - zookeeper
+            topologyKey: kubernetes.io/hostname
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: component
+                operator: In
+                values:
+                  - kafka
+          topologyKey: kubernetes.io/hostname
+  disableSecurity: false
+  enableAuthorization: true
+  heapSize: 256
+  replicas: 3
+  resources:
+    requests:
+      cpu: 51m
+      memory: 350Mi
+    limits:
+      cpu: 500m
+      memory: 800Mi
+  tolerations:
+    - key: key1
+      operator: Equal
+      value: value1
+      effect: NoExecute
+      tolerationSeconds: 3600
+  storage:
+    size: 1Gi
+    className:
+      - csi-cinder-sc-delete
+  terminationGracePeriod: 180
+  rollbackTimeout: 3600
+  zookeeperConnect: zookeeper.zookeeper-service:2181
+  zookeeperEnableSsl: false
+  zookeeperSslSecretName: kafka-zookeeper-tls-secret
+  idpWhitelist: ""
+  environmentVariables:
+    - CONF_KAFKA_PROPERTY_NAME=propertyValue
+    - KEY=VALUE
+  rollingUpdate: false
+  consulAclEnabled: true
+  consulDiscovery: true
+  registeredServiceName: kafka
+  kafkaDiscoveryTags:
+    - tag1
+    - tag2
+    - tag3
+  kafkaDiscoveryMeta:
+    key1: value1
+    key2: value2
+  tls:
+    enabled: true
+  kraft:
+    enabled: false
+mirrorMaker:
+  install: false
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - kafka
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+  heapSize: 256
+  replicas: 1
+  clusters:
+    - name: first
+      bootstrapServers: kafka.kafka-service:9092
+    - name: second
+      bootstrapServers: kafka.kafka-operator:9092
+  replicationFactor: 3
+  refreshTopicsIntervalSeconds: 5
+  refreshGroupsIntervalSeconds: 5
+  jolokiaPort: 9087
+  jolokiaUsername: client
+  jolokiaPassword: client
+  environmentVariables:
+    - CONF_propertyName=propertyValue
+    - clusterAlias_CONF_propertyName=propertyValue
+    - sourceClusterAlias_targetClusterAlias_CONF_propertyName=propertyValue
+mirrorMakerMonitoring:
+  install: false
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - kafka
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+  kmmExecPluginTimeout: 20s
+  kmmCollectionInterval: 5s
+  jolokiaUsername: client
+  jolokiaPassword: client
+  securityContext:
+    runAsUser: 1000
+backupDaemon:
+  install: true
+  s3:
+    enabled: true
+    url: http://test-minio-gateway-nas.qa-kubernetes.openshift.sdntest
+    bucket: kafka-qa
+  storage: 1Gi
+  storageClass: csi-cinder-sc-delete
+  backupSchedule: "*/5 * * * *"
+  evictionPolicy: 10/15min,1h/delete
+  tls:
+    enabled: false
+  securityContext:
+    runAsUser: 1000
+    fsGroup: 1000
+monitoring:
+  install: true
+  customLabels:
+    A_test_kafka: kafka_success
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - kafka
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+  tolerations:
+    - key: key2
+      operator: Equal
+      value: value2
+      effect: NoExecute
+      tolerationSeconds: 3600
+  kafkaZookeeperChRoot: zookeeper.zookeeper-service:2181
+  jolokiaPort: 9087
+  kafkaMeasurementPrefixName: kafka_
+  kafkaTotalBrokerCount: 3
+  securityContext:
+    runAsUser: 1000
+  monitoringCoreosGroup: false
+  thresholds:
+    gcCountAlert: 12
+    lagAlert: 1100
+  lagExporter:
+    enabled: true
+akhq:
+  install: true
+  customLabels:
+    A_test_kafka: kafka_success
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - kafka
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+  tolerations:
+    - key: key3
+      operator: Equal
+      value: value3
+      effect: NoExecute
+      tolerationSeconds: 3600
+  kafkaPollTimeout: 10000
+  enableAccessLog: false
+  ingress:
+    host: akhq-kafka-service.qa-kubernetes.openshift.sdntest
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+vaultSecretManagement:
+  enabled: false
+  url: http://vault-service.vault-operator:8200
+  method: kubernetes
+  role: kafka-role
+  path: secret
+  writePolicies: true
+  passwordGenerationMechanism: operator
+  refreshCredentials: false
+integrationTests:
+  install: true
+  service:
+    name: kafka-integration-tests-runner
+  waitForResult: true
+  timeout: 3000
+  tags: kafka_crud
+  url: https://dashboard.qa-kubernetes.openshift.sdntest:6443
+  kafkaIsManagedByOperator: "true"
+  zookeeperOsProject: zookeeper-service
+  zookeeperHost: zookeeper
+  zookeeperPort: 2181
+  kafkaHost: kafka
+  kafkaPort: 9092
+  prometheusUrl: http://prometheus.qa-kubernetes.openshift.sdntest
+  consulHost: consul-server.consul-service
+  consulPort: 8500
+  resources:
+    requests:
+      memory: 258Mi
+      cpu: 200m
+    limits:
+      memory: 259Mi
+      cpu: 402m
+ESCAPE_SEQUENCE: "true"
+DISABLE_CRD: "true"

@@ -1,0 +1,33 @@
+{{- if (and (eq (include "monitoring.install" .) "true") (ne (include "monitoring.type" .) "influxdb") .Values.monitoring.serviceMonitorEnabled) }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kafka.name" . }}-service-monitor
+  labels:
+    {{- include "kafka-services.coreLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-service-monitor
+    app.kubernetes.io/component: monitoring
+spec:
+  endpoints:
+    - interval: {{ .Values.monitoring.serviceMonitor.clusterStateScrapeInterval }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.clusterStateScrapeTimeout }}
+      port: prometheus-cli
+      scheme: http
+      {{- if and .Values.global.secrets.monitoring.prometheusUsername .Values.global.secrets.monitoring.prometheusPassword }}
+      basicAuth:
+        username:
+          name: {{ template "kafka.name" . }}-monitoring-secret
+          key: prometheus-username
+        password:
+          name: {{ template "kafka.name" . }}-monitoring-secret
+          key: prometheus-password
+      {{- end }}
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      component: kafka-monitoring
+      name: {{ template "kafka.name" . }}-monitoring
+{{- end }}

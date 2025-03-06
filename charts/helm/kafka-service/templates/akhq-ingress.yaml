@@ -1,0 +1,42 @@
+# Ingress for AKHQ UI
+{{- if (and .Values.akhq.install (eq (include "akhq.ingressEnabled" .) "true")) }}
+kind: Ingress
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+apiVersion: networking.k8s.io/v1
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" }}
+apiVersion: networking.k8s.io/v1beta1
+{{- else }}
+apiVersion: extensions/v1beta1
+{{- end }}
+metadata:
+  name: akhq-ingress
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+  annotations:
+    {{- if and .Values.akhq.ingress.className (not (.Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress")) }}
+    kubernetes.io/ingress.class: {{ .Values.akhq.ingress.className }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    route.openshift.io/termination: edge  
+spec:
+  {{- if and .Values.akhq.ingress.className (.Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress") }}
+  ingressClassName: {{ .Values.akhq.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ include "akhq.ingressHost" . }}
+      http:
+        paths:
+          - path: /
+            {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+            pathType: Prefix
+            backend:
+              service:
+                name: akhq
+                port:
+                  number: 8080
+            {{- else }}
+            backend:
+              serviceName: akhq
+              servicePort: 8080
+            {{- end }}
+{{- end }}

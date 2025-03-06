@@ -1,0 +1,213 @@
+{{- if .Values.backupDaemon.install }}
+{{ $persistentVolume := eq (include "backupDaemon.persistentVolumeDefined" .) "true" }}
+{{ $storageClass := eq (include "backupDaemon.storageClassDefined" .) "true" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kafka.name" . }}-backup-daemon
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    component: kafka-backup-daemon
+    name: {{ template "kafka.name" . }}-backup-daemon
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-backup-daemon
+    app.kubernetes.io/instance: {{ cat (printf "%s-backup-daemon" (include "kafka.name" .)) .Values.DELIMITER .Release.Namespace | nospace | trunc 63 }}
+    app.kubernetes.io/technology: python
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ template "backupDaemon.replicas" . }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      component: kafka-backup-daemon
+      name: {{ template "kafka.name" . }}-backup-daemon
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+      {{- with .Values.global.customLabels }}
+        {{- toYaml . | nindent 8 -}}
+      {{- end }}
+      {{- with .Values.backupDaemon.customLabels }}
+        {{- toYaml . | nindent 8 -}}
+      {{- end }}
+        component: kafka-backup-daemon
+        name: {{ template "kafka.name" . }}-backup-daemon
+        app.kubernetes.io/name: {{ template "kafka.name" . }}-backup-daemon
+        release: {{ .Release.Name }}
+      annotations:
+        description: "Database backup daemon for Kafka"
+      {{- if and .Values.global.velero.preHookBackupEnabled .Values.global.externalKafka.enabled }}
+        {{- if .Values.backupDaemon.s3.enabled }}
+        pre.hook.backup.velero.io/command: '["bdcli", "backup", "--wait"]'
+        {{- else }}
+        pre.hook.backup.velero.io/command: '["bdcli", "backup", "--wait", "--out", "/opt/kafka/backup-storage/latest-velero-backup"]'
+        {{- end }}
+      {{- end }}
+      {{- if and .Values.global.velero.postHookRestoreEnabled .Values.global.externalKafka.enabled }}
+        {{- if not .Values.backupDaemon.s3.enabled }}
+        post.hook.restore.velero.io/command: '["bdcli", "restore", "--wait", "--in", "/opt/kafka/backup-storage/latest-velero-backup"]'
+        {{- end }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ template "kafka.name" . }}-backup-daemon
+      {{- if .Values.backupDaemon.affinity }}
+      affinity:
+        {{ tpl (.Values.backupDaemon.affinity | toYaml) . | nindent 8 | trim }}
+      {{- end }}
+      {{- if .Values.backupDaemon.tolerations }}
+      tolerations:
+        {{ .Values.backupDaemon.tolerations | toYaml | indent 8 | trim }}
+      {{- end }}
+      securityContext:
+        {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+        {{- with .Values.backupDaemon.securityContext }}
+        {{- toYaml . | nindent 8 -}}
+        {{- end }}
+        {{- if and (ne (.Values.INFRA_KAFKA_FS_GROUP | toString) "<nil>") .Values.global.cloudIntegrationEnabled }}
+        fsGroup: {{ .Values.INFRA_KAFKA_FS_GROUP }}
+        {{- end }}
+      {{- if .Values.backupDaemon.priorityClassName }}
+      priorityClassName: {{ .Values.backupDaemon.priorityClassName | quote }}
+      {{- end }}
+      volumes:
+        {{ if and .Values.global.tls.enabled .Values.backupDaemon.tls.enabled }}
+        - name: backup-daemon-ssl-certs
+          secret:
+            secretName: {{ template "backupDaemon.tlsSecretName" . }}
+        {{ end }}
+        {{ if and (include "backupDaemon.s3.tlsSecretName" .) .Values.backupDaemon.s3.sslVerify .Values.backupDaemon.s3.enabled }}
+        - name: s3-ssl-certs
+          secret:
+            secretName: {{ template "backupDaemon.s3.tlsSecretName" . }}
+        {{ end }}
+        - name: backup-storage
+          {{- if or $persistentVolume $storageClass  }}
+          persistentVolumeClaim:
+            claimName: data-{{ template "kafka.name" . }}-backup-daemon
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
+        - name: ssl-certs
+          secret:
+            secretName: {{ template "kafka-service.tlsSecretName" . }}
+      {{- end }}
+      containers:
+        - name: kafka-backup-daemon
+          image: {{ template "backupDaemon.image" . }}
+          securityContext:
+            {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}            
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: {{ default "25m" .Values.backupDaemon.resources.requests.cpu }}
+              memory: {{ default "64Mi" .Values.backupDaemon.resources.requests.memory }}
+            limits:
+              cpu: {{ default "200m" .Values.backupDaemon.resources.limits.cpu }}
+              memory: {{ default "256Mi" .Values.backupDaemon.resources.limits.memory }}
+          volumeMounts:
+          - name: backup-storage
+            mountPath: /opt/kafka/backup-storage
+        {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
+          - name: ssl-certs
+            mountPath: /tls
+        {{- end }}
+        {{- if and .Values.global.tls.enabled .Values.backupDaemon.tls.enabled }}
+          - name: backup-daemon-ssl-certs
+            mountPath: /backupTLS
+        {{- end }}
+        {{- if and (include "backupDaemon.s3.tlsSecretName" .) .Values.backupDaemon.s3.sslVerify .Values.backupDaemon.s3.enabled }}
+          - name: s3-ssl-certs
+            mountPath: /s3Certs
+        {{- end }}
+          env:
+            {{- if and .Values.global.tls.enabled .Values.backupDaemon.tls.enabled }}
+            - name: TLS_ENABLED
+              value: "true"
+            - name: CERTS_PATH
+              value: "/backupTLS"
+            {{- end }}
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: {{ include "kafka-service.bootstrapServers" . | default "" | quote }}
+            - name: KAFKA_SASL_MECHANISM
+              value: {{ include "kafka-service.saslMechanism" . }}
+            - name: KAFKA_ENABLE_SSL
+              value: {{ include "kafka-service.enableTls" . | quote }}
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-services-secret
+                  key: client-username
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-services-secret
+                  key: client-password
+            - name: BACKUP_DAEMON_API_CREDENTIALS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-backup-daemon-secret
+                  key: username
+            - name: BACKUP_DAEMON_API_CREDENTIALS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-backup-daemon-secret
+                  key: password
+            {{- if .Values.backupDaemon.s3.enabled }}
+            - name: S3_ENABLED
+              value: "true"
+            - name: S3_URL
+              value: {{ .Values.backupDaemon.s3.url | quote }}
+            - name: S3_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
+                  key: s3-key-id
+            - name: S3_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
+                  key: s3-key-secret
+            - name: S3_BUCKET
+              value: {{ .Values.backupDaemon.s3.bucket | quote }}
+            {{- if and (include "backupDaemon.s3.tlsSecretName" .) .Values.backupDaemon.s3.sslVerify .Values.backupDaemon.s3.enabled }}
+            - name: S3_CERTS_PATH
+              value: /s3Certs
+            {{- end }}
+            - name: S3_SSL_VERIFY
+              value: {{ .Values.backupDaemon.s3.sslVerify | quote }}
+            {{- end }}
+            - name: BACKUP_SCHEDULE
+              value: {{ .Values.backupDaemon.backupSchedule | default "0 0 * * *" | quote }}
+            - name: EVICTION_POLICY
+              value: {{ .Values.backupDaemon.evictionPolicy | default "0/1d,7d/delete" | quote }}
+            - name: BROADCAST_ADDRESS
+              value: {{- if .Values.global.ipv6 }} "::" {{- else }} "0.0.0.0" {{- end }}
+            {{- if and (eq (include "kafka-service.enableDisasterRecovery" .) "true") .Values.global.disasterRecovery.region }}
+            - name: REGION
+              value: {{ .Values.global.disasterRecovery.region }}
+            {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ template "backupDaemon.port" . }}
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: {{ template "backupDaemon.port" . }}
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 5
+      {{- if .Values.backupDaemon.nodeSelector }}
+      nodeSelector:
+        {{ .Values.backupDaemon.nodeSelector | toYaml | indent 8 | trim }}
+      {{- end }}
+{{- end }}

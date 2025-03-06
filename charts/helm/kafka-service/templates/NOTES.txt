@@ -1,0 +1,5 @@
+The Kafka Service Operator has been installed. Check it status by running:
+* OpenShift:
+  oc --namespace {{ $.Release.Namespace }} get pods -l "name={{ .Values.global.name }}-service-operator"
+* Kubernetes:
+  kubectl --namespace {{ $.Release.Namespace }} get pods -l "name={{ .Values.global.name }}-service-operator"

@@ -1,0 +1,61 @@
+{{- if .Values.integrationTests.install }}
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ .Values.integrationTests.service.name }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - deployments/scale
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/exec
+      - services
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+{{- if and (ne .Release.Namespace .Values.integrationTests.zookeeperOsProject) (not .Values.kafka.kraft.enabled) }}
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ printf "%v-for-%v" .Values.integrationTests.service.name .Release.Namespace }}
+  namespace: {{ .Values.integrationTests.zookeeperOsProject }}
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - deployments/scale
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+{{- end }}
+{{- end }}

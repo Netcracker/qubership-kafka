@@ -1,0 +1,22 @@
+{{- if (and (eq (include "monitoring.install" .) "true") (ne .Values.global.monitoringType "influxdb") .Values.global.installDashboard) }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    {{- include "kafka-services.coreLabels" . | nindent 4 }}
+    app.kubernetes.io/component: monitoring
+    prometheus: kafka-tls-static-metrics-rules
+    role: record-rules
+  name: {{ template "kafka.name" . }}-tls-static-metrics-rules
+spec:
+  groups:
+    - name: {{ .Release.Namespace }}-{{ .Release.Name }}
+      rules:
+        {{- include "global.tlsStaticMetric" (dict "namespace" .Release.Namespace "application" .Chart.Name "service" (include "kafka.name" .) "enableTls" (include "kafka-service.enableTls" .) "secret" (include "kafka-service.tlsSecretName" .) "certProvider" (include "services.certProvider" .) "certificate" (printf "%s-tls-certificate" (include "kafka.name" .))) | nindent 8 }}
+        {{- if .Values.backupDaemon.install }}
+        {{- include "global.tlsStaticMetric" (dict "namespace" .Release.Namespace "application" .Chart.Name "service" (printf "%s-backup-daemon" (include "kafka.name" .)) "enableTls" (include "backupDaemon.enableTls" .) "secret" (include "backupDaemon.tlsSecretName" .) "certProvider" (include "services.certProvider" .) "certificate" (printf "%s-backup-daemon-tls-certificate" (include "kafka.name" .)))  | nindent 8 }}
+        {{- end }}
+        {{- if eq (include "kafka-service.enableDisasterRecovery" .) "true" }}
+        {{- include "global.tlsStaticMetric" (dict "namespace" .Release.Namespace "application" .Chart.Name "service" (printf "%s-disaster-recovery-daemon" (include "kafka.name" .)) "enableTls" (include "disasterRecovery.enableTls" .) "secret" (include "disasterRecovery.tlsSecretName" .) "certProvider" (include "services.certProvider" .) "certificate" (printf "%s-drd-tls-certificate" (include "kafka.name" .)))  | nindent 8 }}
+        {{- end }}
+{{- end }}

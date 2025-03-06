@@ -1,0 +1,32 @@
+{{- if and (eq (include "kafka-service.enableDisasterRecovery" .) "true") .Values.global.disasterRecovery.siteManagerEnabled }}
+apiVersion: qubership.org/v3
+kind: SiteManager
+metadata:
+  name: kafka-{{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    app: {{ template "kafka.name" . }}
+    release: {{ .Release.Name }}
+spec:
+  sitemanager:
+    module: "stateful"
+    {{- with .Values.global.disasterRecovery.afterServices }}
+    after:
+      {{- range . }}
+      - {{ . }}
+      {{- end }}
+    {{- else }}
+    after: []
+    {{- end }}
+    before: []
+    {{- if eq (include "disasterRecovery.topicsBackup" .) "true" }}
+    sequence: ["standby", "active"]
+    {{- else }}
+    sequence: ["active", "standby"]
+    {{- end }}
+    timeout: 360
+    parameters:
+      serviceEndpoint: "{{ template "disasterRecovery.protocol" . }}://kafka-site-manager.{{ .Release.Namespace }}.svc.cluster.local:{{ template "disasterRecovery.port" . }}/sitemanager"
+      healthzEndpoint: "{{ template "disasterRecovery.protocol" . }}://kafka-site-manager.{{ .Release.Namespace }}.svc.cluster.local:{{ template "disasterRecovery.port" . }}/healthz"
+{{- end }}

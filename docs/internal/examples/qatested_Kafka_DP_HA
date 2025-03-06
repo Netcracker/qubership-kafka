@@ -1,0 +1,272 @@
+global:
+  name: kafka
+  waitForPodsReady: true
+  podReadinessTimeout: 300
+  monitoringType: prometheus
+  installDashboard: true
+  smDbHost: "http://10.10.10.10:8086"
+  smDbName: "cloud_helm"
+  secrets:
+    kafka:
+      disableSecurity: false
+      adminUsername: 'admin'
+      adminPassword: 'admin'
+      clientUsername: 'client'
+      clientPassword: 'client'
+      zookeeperClientUsername: 'zclient'
+      zookeeperClientPassword: 'zclient'
+    monitoring:
+      prometheusUsername: 'prometheus'
+      prometheusPassword: 'prometheus'
+      smDbPassword: 'admin'
+      smDbUsername: 'admin'
+    akhq:
+      defaultUsername: 'admin'
+      defaultPassword: 'admin'
+    mirrorMaker:
+      jolokiaUsername: client
+      jolokiaPassword: client
+    integrationTests:
+      zabbix:
+        username: "Admin"
+        password: "zabbix"
+operator:
+  replicas: 1
+  affinity: {
+    "podAntiAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": [
+        {
+          "labelSelector": {
+            "matchExpressions": [
+              {
+                "key": "component",
+                "operator": "In",
+                "values": [
+                    "kafka-service-operator"
+                ]
+              }
+            ]
+          },
+          "topologyKey": "kubernetes.io/hostname"
+        }
+      ]
+    }
+  }
+  tolerations:
+    - key: "key"
+      operator: "Equal"
+      value: "value"
+      effect: "NoExecute"
+      tolerationSeconds: 3600
+kafka:
+  install: true
+  affinity: {
+    "podAffinity": {
+      "preferredDuringSchedulingIgnoredDuringExecution": [
+      {
+        "weight": 100,
+        "podAffinityTerm": {
+          "labelSelector": {
+            "matchExpressions": [
+            {
+              "key": "component",
+              "operator": "In",
+              "values": [
+                "zookeeper"
+              ]
+            }
+            ]
+          },
+          "topologyKey": "kubernetes.io/hostname"
+        }
+      }
+      ]
+    },
+    "podAntiAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": [
+      {
+        "labelSelector": {
+          "matchExpressions": [
+          {
+            "key": "component",
+            "operator": "In",
+            "values": [
+              "kafka"
+            ]
+          }
+          ]
+        },
+        "topologyKey": "kubernetes.io/hostname"
+      }
+      ]
+    }
+  }
+  disableSecurity: false
+  heapSize: 256
+  replicas: 3
+  resources:
+    requests:
+      cpu: 50m
+      memory: 301Mi
+    limits:
+      cpu: 400m
+      memory: 800Mi
+  securityContext: {
+    "runAsUser": 1000
+  }
+  tolerations:
+    - key: "key1"
+      operator: "Equal"
+      value: "value1"
+      effect: "NoExecute"
+      tolerationSeconds: 3600
+  storage:
+    size: 1Gi
+    className:
+      - manual
+    volumes:
+      - pv-kafka-1
+      - pv-kafka-2
+      - pv-kafka-3
+    nodes:
+      - worker1
+      - worker2
+      - worker3
+  terminationGracePeriod: 180
+  rollbackTimeout: 3600
+  zookeeperConnect: zookeeper.zookeeper-service:2181
+  externalHostNames:
+    - 10.10.10.10
+    - 10.10.10.10
+    - 10.10.10.10
+  externalPorts:
+    - 31001
+    - 31002
+    - 31003
+  idpWhitelist: ''
+  environmentVariables:
+    - CONF_KAFKA_PROPERTY_NAME=propertyValue
+    - KEY=VALUE
+  consulAclEnabled: true
+  consulDiscovery: true
+  registeredServiceName: kafka
+  kafkaDiscoveryTags:
+    - tag1
+    - tag2
+    - tag3
+  kafkaDiscoveryMeta: {
+    "key1": "value1",
+    "key2": "value2"
+   }
+monitoring:
+  install: true
+  affinity: {
+    "podAffinity": {
+      "preferredDuringSchedulingIgnoredDuringExecution": [
+      {
+        "podAffinityTerm": {
+          "labelSelector": {
+            "matchExpressions": [
+            {
+              "key": "component",
+              "operator": "In",
+              "values": [
+                "kafka"
+              ]
+            }
+            ]
+          },
+          "topologyKey": "kubernetes.io/hostname"
+        },
+        "weight": 100
+      }
+      ]
+    }
+  }
+  tolerations:
+    - key: "key2"
+      operator: "Equal"
+      value: "value2"
+      effect: "NoExecute"
+      tolerationSeconds: 3600
+  kafkaZookeeperChRoot: zookeeper.zookeeper-service:2181
+  jolokiaPort: 9087
+  kafkaMeasurementPrefixName: kafka_
+  kafkaTotalBrokerCount: 3
+  securityContext: {
+    "runAsUser": 1000
+  }
+  monitoringCoreosGroup: false
+akhq:
+  install: true  
+  affinity: {
+    "podAffinity": {
+      "preferredDuringSchedulingIgnoredDuringExecution": [
+      {
+        "podAffinityTerm": {
+          "labelSelector": {
+            "matchExpressions": [
+            {
+              "key": "component",
+              "operator": "In",
+              "values": [
+                "kafka"
+              ]
+            }
+            ]
+          },
+          "topologyKey": "kubernetes.io/hostname"
+        },
+        "weight": 100
+      }
+      ]
+    }
+  }
+  tolerations:
+    - key: "key3"
+      operator: "Equal"
+      value: "value3"
+      effect: "NoExecute"
+      tolerationSeconds: 3600
+  kafkaPollTimeout: 10000
+  enableAccessLog: false
+  securityContext: {
+    "fsGroup": 1000,
+    "runAsUser": 1000
+  }
+mirrorMaker:
+  install: false
+mirrorMakerMonitoring:
+  install: false
+backupDaemon:
+  install: true
+  storage: 1Gi
+  storageClass: cinder-sc
+  backupSchedule: "0 0 * * *"
+  evictionPolicy: "0/1d,7d/delete"  
+vaultSecretManagement:
+  enabled: false
+integrationTests:
+  install: true
+  service:
+    name: kafka-integration-tests-runner
+  waitForResult: false
+  timeout: 3000
+  tags: "kafka_crud"
+  url: "https://dashboard.qa-kubernetes.openshift.sdntest:6443"
+  kafkaIsManagedByOperator: "true"
+  zookeeperOsProject: "zookeeper-service"
+  zookeeperHost: "zookeeper"
+  zookeeperPort: 2181
+  kafkaHost: "kafka"
+  kafkaPort: 9092
+  zabbixUrl: "https://10.101.182.86"
+  kafkaPvNames: "pv-kafka-1,pv-kafka-2,pv-kafka-3"
+  kafkaVolumeSize: "1"
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 200m
+    limits:
+      memory: 256Mi
+      cpu: 400m

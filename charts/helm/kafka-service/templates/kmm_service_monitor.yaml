@@ -1,0 +1,24 @@
+{{- if (and (eq (include "monitoring.install" .) "true") .Values.mirrorMakerMonitoring.install (ne (include "mirrorMakerMonitoring.type" .) "influxdb")) }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kafka.name" . }}-mirror-maker-service-monitor
+  labels:
+    {{- include "kafka-services.coreLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-mirror-maker-service-monitor
+    app.kubernetes.io/component: monitoring
+spec:
+  endpoints:
+    - interval: {{ .Values.monitoring.serviceMonitor.kmmScrapeInterval }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.kmmScrapeTimeout }}
+      port: prometheus-cli
+      scheme: http
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      component: mirror-maker-monitoring
+      name: {{ template "kafka.name" . }}-mirror-maker-monitoring
+  {{- end }}

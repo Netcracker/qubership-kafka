@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: akhq-protobuf-configuration
+  labels:
+    name: akhq
+    component: akhq
+data:
+  config: |-
+    deserialization:
+      protobuf:
+        descriptors-folder: "/app/config"
+        topics-mapping:
+          - topic-regex: "set appropriate regex"
+            descriptor-file: "streaming.desc"
+            key-message-type: "Row"
+            value-message-type: "Envelope"

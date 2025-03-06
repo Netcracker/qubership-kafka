@@ -1,0 +1,260 @@
+# Default values for charts.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  name: kafka
+  cloudIntegrationEnabled: true
+
+  waitForPodsReady: true
+  podReadinessTimeout: 600
+  monitoringType: "prometheus"
+
+  tls:
+    enabled: false
+    cipherSuites: []
+    allowNonencryptedAccess: true
+    generateCerts:
+      enabled: true
+      certProvider: cert-manager
+      durationDays: 365
+      clusterIssuerName: ""
+
+  customLabels: {}
+  securityContext: {}
+
+  secrets:
+    kafka:
+      disableSecurity: false
+      adminUsername: ""
+      adminPassword: ""
+      clientUsername: ""
+      clientPassword: ""
+      zookeeperClientUsername: ""
+      zookeeperClientPassword: ""
+  # For backward compatibility
+  externalKafka:
+    enabled: false
+operator:
+  dockerImage: ghcr.io/netcracker/qubership-kafka:kafka-operator-main
+  replicas: 1
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 25m
+    limits:
+      memory: 128Mi
+      cpu: 100m
+#  affinity: {
+#    "podAntiAffinity": {
+#      "requiredDuringSchedulingIgnoredDuringExecution": [
+#        {
+#          "labelSelector": {
+#            "matchExpressions": [
+#              {
+#                "key": "component",
+#                "operator": "In",
+#                "values": [
+#                    "kafka-service-operator"
+#                ]
+#              }
+#            ]
+#          },
+#          "topologyKey": "kubernetes.io/hostname"
+#        }
+#      ]
+#    }
+#  }
+#  tolerations:
+#    - key: "key"
+#      operator: "Equal"
+#      value: "value"
+#      effect: "NoExecute"
+#      tolerationSeconds: 3600
+  ## Name of the priority class to be used by Kafka operator pods, priority class needs to be created beforehand
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  ##
+  priorityClassName: ""
+  customLabels: {}
+  securityContext: {}
+
+kafka:
+  # For backward compatibility
+  install: true
+#  affinity: {
+#    "podAffinity": {
+#      "preferredDuringSchedulingIgnoredDuringExecution": [
+#      {
+#        "weight": 100,
+#        "podAffinityTerm": {
+#          "labelSelector": {
+#            "matchExpressions": [
+#            {
+#              "key": "component",
+#              "operator": "In",
+#              "values": [
+#                "zookeeper"
+#              ]
+#            }
+#            ]
+#          },
+#          "topologyKey": "kubernetes.io/hostname"
+#        }
+#      }
+#      ]
+#    },
+#    "podAntiAffinity": {
+#      "requiredDuringSchedulingIgnoredDuringExecution": [
+#      {
+#        "labelSelector": {
+#          "matchExpressions": [
+#          {
+#            "key": "component",
+#            "operator": "In",
+#            "values": [
+#              "kafka"
+#            ]
+#          }
+#          ]
+#        },
+#        "topologyKey": "kubernetes.io/hostname"
+#      }
+#      ]
+#    }
+#  }
+#  tolerations:
+#    - key: "key1"
+#      operator: "Equal"
+#      value: "value1"
+#      effect: "NoExecute"
+#      tolerationSeconds: 3600
+  ## Name of the priority class to be used by Kafka pods, priority class needs to be created beforehand
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  ##
+  priorityClassName: ""
+  disruptionBudget:
+    enabled: false
+    maxUnavailable: 0
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:main
+  consulDiscovery: false
+  consulAclEnabled: false
+#  consulAuthMethod: "consul-k8s-auth-method"
+#  kafkaDiscoveryMeta: {
+#    "key1": "value1",
+#    "key2": "value2"
+#  }
+#  kafkaDiscoveryTags:
+#    - tag1
+#    - tag2
+  heapSize: 256
+  replicas: 3
+  scaling:
+    brokerDeploymentScaleInEnabled: true
+    reassignPartitions: false
+    allBrokersStartTimeoutSeconds: 600
+    topicReassignmentTimeoutSeconds: 300
+  resources:
+    requests:
+      cpu: 50m
+      memory: 600Mi
+    limits:
+      cpu: 400m
+      memory: 800Mi
+  securityContext: {}
+  storage:
+    size: 1Gi
+#    volumes:
+#      - zk-pv-1
+#      - zk-pv-2
+#      - zk-pv-3
+#    labels:
+#      - key1=value1
+#      - key2=value2
+#      - key3=value3
+#    className:
+#      - hostpath
+#    nodes:
+#      - node-1
+#      - node-2
+#      - node-3
+#  getRacksFromNodeLabels: false
+#  nodeLabelNameForRack: "zone"
+#  racks:
+#    - rack-1
+#    - rack-2
+#    - rack-3
+  terminationGracePeriod: 1800
+  rollbackTimeout: 3600
+  healthCheckTimeout: 30
+  zookeeperConnect: zookeeper:2181
+  zookeeperEnableSsl: false
+  zookeeperSslSecretName: ""
+  zookeeperSetACL: false
+  createExternalServices: false
+  externalTrafficPolicy: Cluster
+#  externalHostNames:
+#    - 10.10.10.10
+#    - 10.10.10.10
+#    - 10.10.10.10
+  externalHostNames: []
+#  externalPorts:
+#    - 31001
+#    - 31002
+#    - 31003
+  externalPorts: []
+  idpWhitelist: ""
+  tokenRolesPath: "resource_access.account.roles"
+  enableAuditLogs: false
+  enableAuthorization: true
+#  oauth:
+#    clockSkew: 10
+#    jwkSourceType: "jwks"
+#    jwksConnectionTimeout: 1000
+#    jwksReadTimeout: 1000
+#    jwksSizeLimit: 51200
+  oauth: {}
+  tls:
+    enabled: true
+    certificates:
+      crt: ""
+      key: ""
+      ca: ""
+    secretName: ""
+    cipherSuites: []
+    enableTwoWaySsl: false
+    subjectAlternativeName:
+      additionalDnsNames: []
+      additionalIpAddresses: []
+  environmentVariables:
+    - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+  rollingUpdate: false
+  customLabels: {}
+  debugContainer: false
+  ccMetricReporterEnabled: false
+  kraft:
+    enabled: false
+    migration: false
+    migrationTimeout: 600
+  migrationController:
+    heapSize: 256
+    resources:
+      requests:
+        cpu: 50m
+        memory: 600Mi
+      limits:
+        cpu: 400m
+        memory: 800Mi
+    securityContext: {}
+    storage:
+      size: 1Gi
+  autoRestartOnSecretChange: true
+
+# Cloud Release Integration
+# The name of the Service exposed for the database.
+SERVICE_NAME: "kafka"
+# Microservice belonging to a group
+PART_OF: "kafka"
+# Delimiter for labels
+DELIMITER: "-"
+# Artifact descriptor version which is installed.
+ARTIFACT_DESCRIPTOR_VERSION: ""  # TO_BE_REPLACED

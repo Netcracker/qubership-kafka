@@ -1,0 +1,13 @@
+build:
+  networkRules: nc.product.dtrust
+  env:
+    type: microservice
+    version: generic
+publication:
+  docker:
+    - latest
+    - timestamp
+deploy:
+  openshift:
+    service: "kafka-services-crd-init"
+    templatePatching: disabled

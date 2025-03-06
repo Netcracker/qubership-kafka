@@ -1,0 +1,565 @@
+<?xml version="1.0" ?>
+<!--
+ Copyright 2024-2025 NetCracker Technology Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<zabbix_export>
+    <version>4.2</version>
+    <date>2017-01-01T01:01:01Z</date>
+    <groups>
+        <group>
+            <name>D. Paas Apps Projects</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Kafka</template>
+            <name>Kafka</name>
+            <description/>
+            <groups>
+                <group>
+                    <name>D. Paas Apps Projects</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Kafka</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Kafka Memory Usage</name>
+                    <type>0</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT 100 * {$MEMORY_USAGE} FROM \\&quot;java_Memory_HeapMemoryUsage\\&quot; WHERE project_name = '{$KAFKA_PROJECT_NAME}' AND time &gt; now() - 2m AND broker =~ /^{$DR_SIDE}/ GROUP BY broker&quot;]</key>
+                    <delay>60</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>0</value_type>
+                    <allowed_hosts/>
+                    <units>%</units>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>Kafka</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>3s</timeout>
+                    <url/>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>1</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>1</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+                <item>
+                    <name>Kafka Offline Partition Count</name>
+                    <type>0</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT last(status) FROM \\&quot;kafka_cluster\\&quot; WHERE project_name = '{$KAFKA_PROJECT_NAME}' AND time &gt; now() - {$KAFKA_INTERVAL} AND host =~ /^{$DR_SIDE}/&quot;]</key>
+                    <delay>60</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>Kafka</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>3s</timeout>
+                    <url/>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>1</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>1</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+                <item>
+                    <name>Kafka Cluster Size</name>
+                    <type>0</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT last(size) FROM \\&quot;kafka_cluster\\&quot; WHERE project_name = '{$KAFKA_PROJECT_NAME}' AND time &gt; now() - {$KAFKA_INTERVAL} AND host =~ /^{$DR_SIDE}/&quot;]</key>
+                    <delay>60</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>Kafka</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>3s</timeout>
+                    <url/>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>1</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>1</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+                <item>
+                    <name>Kafka Disk Usage</name>
+                    <type>0</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT max(used_percent) FROM t_disk WHERE path =~ /^(.*){$KAFKA_PV_NAMES}$/ AND path =~ /.*{$DR_SIDE}.*/ AND time &gt; now() - 2m&quot;]</key>
+                    <delay>60</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>0</value_type>
+                    <allowed_hosts/>
+                    <units>%</units>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>Kafka</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>3s</timeout>
+                    <url/>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>1</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>1</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+                <item>
+                    <name>Kafka CPU limit</name>
+                    <type>0</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT max(value) FROM \\&quot;cpu/limit\\&quot; WHERE namespace_name = '{$KAFKA_PROJECT_NAME}' AND type = 'pod' AND pod_name =~ /kafka-\\d(.*)/ AND pod_name =~ /^{$DR_SIDE}/ AND time &gt;= now() - 2m&quot;]</key>
+                    <delay>60</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>Kafka</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>3s</timeout>
+                    <url/>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>1</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>1</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+                <item>
+                    <name>Kafka CPU usage</name>
+                    <type>0</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT max(value) FROM \\&quot;cpu/usage_rate\\&quot; WHERE namespace_name = '{$KAFKA_PROJECT_NAME}' AND type = 'pod' AND pod_name =~ /kafka-\\d(.*)/ AND pod_name =~ /^{$DR_SIDE}/ AND time &gt;= now() - 2m&quot;]</key>
+                    <delay>60</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>Kafka</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>3s</timeout>
+                    <url/>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>1</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>1</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+            </items>
+            <discovery_rules/>
+            <httptests/>
+            <macros>
+                <macro>
+                    <macro>{$DR_SIDE}</macro>
+                    <value/>
+                </macro>
+                <macro>
+                    <macro>{$KAFKA_INTERVAL}</macro>
+                    <value>10m</value>
+                </macro>
+                <macro>
+                    <macro>{$MEMORY_USAGE}</macro>
+                    <value>mean(used) / mean(max)</value>
+                </macro>
+                <macro>
+                    <macro>{$KAFKA_PROJECT_NAME}</macro>
+                    <value/>
+                </macro>
+                <macro>
+                    <macro>{$KAFKA_PV_NAMES}</macro>
+                    <value/>
+                </macro>
+            </macros>
+            <templates/>
+            <screens/>
+            <tags/>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <expression>{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT max(value) FROM \\&quot;cpu/usage_rate\\&quot; WHERE namespace_name = '{$KAFKA_PROJECT_NAME}' AND type = 'pod' AND pod_name =~ /kafka-\\d(.*)/ AND pod_name =~ /^{$DR_SIDE}/ AND time &gt;= now() - 2m&quot;].last()}/{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT max(value) FROM \\&quot;cpu/limit\\&quot; WHERE namespace_name = '{$KAFKA_PROJECT_NAME}' AND type = 'pod' AND pod_name =~ /kafka-\\d(.*)/ AND pod_name =~ /^{$DR_SIDE}/ AND time &gt;= now() - 2m&quot;].last()}&gt;0.95</expression>
+            <recovery_mode>0</recovery_mode>
+            <recovery_expression/>
+            <name>Kafka CPU usage is above 95% on {HOST.NAME}</name>
+            <correlation_mode>0</correlation_mode>
+            <correlation_tag/>
+            <url/>
+            <status>0</status>
+            <priority>4</priority>
+            <description/>
+            <type>0</type>
+            <manual_close>0</manual_close>
+            <dependencies>
+                <dependency>
+                    <name>InfluxDB is unavailable</name>
+                    <expression>{Monitoring Server:web.test.fail[Open Influx UI].last()}&gt;0</expression>
+                    <recovery_expression/>
+                </dependency>
+            </dependencies>
+            <tags/>
+        </trigger>
+        <trigger>
+            <expression>{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT max(used_percent) FROM t_disk WHERE path =~ /^(.*){$KAFKA_PV_NAMES}$/ AND path =~ /.*{$DR_SIDE}.*/ AND time &gt; now() - 2m&quot;].count(#3,90,gt)}&gt;0</expression>
+            <recovery_mode>0</recovery_mode>
+            <recovery_expression/>
+            <name>Kafka disk usage is above 90% on {HOST.NAME}</name>
+            <correlation_mode>0</correlation_mode>
+            <correlation_tag/>
+            <url/>
+            <status>0</status>
+            <priority>3</priority>
+            <description/>
+            <type>0</type>
+            <manual_close>0</manual_close>
+            <dependencies>
+                <dependency>
+                    <name>InfluxDB is unavailable</name>
+                    <expression>{Monitoring Server:web.test.fail[Open Influx UI].last()}&gt;0</expression>
+                    <recovery_expression/>
+                </dependency>
+            </dependencies>
+            <tags/>
+        </trigger>
+        <trigger>
+            <expression>{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT max(used_percent) FROM t_disk WHERE path =~ /^(.*){$KAFKA_PV_NAMES}$/ AND path =~ /.*{$DR_SIDE}.*/ AND time &gt; now() - 2m&quot;].count(#3,98,gt)}&gt;0</expression>
+            <recovery_mode>0</recovery_mode>
+            <recovery_expression/>
+            <name>Kafka disk usage is above 98% on {HOST.NAME}</name>
+            <correlation_mode>0</correlation_mode>
+            <correlation_tag/>
+            <url/>
+            <status>0</status>
+            <priority>5</priority>
+            <description/>
+            <type>0</type>
+            <manual_close>0</manual_close>
+            <dependencies>
+                <dependency>
+                    <name>InfluxDB is unavailable</name>
+                    <expression>{Monitoring Server:web.test.fail[Open Influx UI].last()}&gt;0</expression>
+                    <recovery_expression/>
+                </dependency>
+            </dependencies>
+            <tags/>
+        </trigger>
+        <trigger>
+            <expression>{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT last(status) FROM \\&quot;kafka_cluster\\&quot; WHERE project_name = '{$KAFKA_PROJECT_NAME}' AND time &gt; now() - {$KAFKA_INTERVAL} AND host =~ /^{$DR_SIDE}/&quot;].last()} = 6</expression>
+            <recovery_mode>0</recovery_mode>
+            <recovery_expression/>
+            <name>Kafka is Degraded on {HOST.NAME}</name>
+            <correlation_mode>0</correlation_mode>
+            <correlation_tag/>
+            <url/>
+            <status>0</status>
+            <priority>4</priority>
+            <description/>
+            <type>0</type>
+            <manual_close>0</manual_close>
+            <dependencies>
+                <dependency>
+                    <name>Kafka is Down on {HOST.NAME}</name>
+                    <expression>{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT last(size) FROM \\&quot;kafka_cluster\\&quot; WHERE project_name = '{$KAFKA_PROJECT_NAME}' AND time &gt; now() - {$KAFKA_INTERVAL} AND host =~ /^{$DR_SIDE}/&quot;].last()} = 0</expression>
+                    <recovery_expression/>
+                </dependency>
+                <dependency>
+                    <name>InfluxDB is unavailable</name>
+                    <expression>{Monitoring Server:web.test.fail[Open Influx UI].last()}&gt;0</expression>
+                    <recovery_expression/>
+                </dependency>
+            </dependencies>
+            <tags/>
+        </trigger>
+        <trigger>
+            <expression>{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT last(size) FROM \\&quot;kafka_cluster\\&quot; WHERE project_name = '{$KAFKA_PROJECT_NAME}' AND time &gt; now() - {$KAFKA_INTERVAL} AND host =~ /^{$DR_SIDE}/&quot;].last()} = 0</expression>
+            <recovery_mode>0</recovery_mode>
+            <recovery_expression/>
+            <name>Kafka is Down on {HOST.NAME}</name>
+            <correlation_mode>0</correlation_mode>
+            <correlation_tag/>
+            <url/>
+            <status>0</status>
+            <priority>5</priority>
+            <description/>
+            <type>0</type>
+            <manual_close>0</manual_close>
+            <dependencies>
+                <dependency>
+                    <name>InfluxDB is unavailable</name>
+                    <expression>{Monitoring Server:web.test.fail[Open Influx UI].last()}&gt;0</expression>
+                    <recovery_expression/>
+                </dependency>
+            </dependencies>
+            <tags/>
+        </trigger>
+        <trigger>
+            <expression>{Kafka:influxdb.bridge[{$CLOUD_DB},&quot;select&quot;,&quot;SELECT 100 * {$MEMORY_USAGE} FROM \\&quot;java_Memory_HeapMemoryUsage\\&quot; WHERE project_name = '{$KAFKA_PROJECT_NAME}' AND time &gt; now() - 2m AND broker =~ /^{$DR_SIDE}/ GROUP BY broker&quot;].count(#3,95,gt)}&gt;0</expression>
+            <recovery_mode>0</recovery_mode>
+            <recovery_expression/>
+            <name>Kafka memory usage is above 95% on {HOST.NAME}</name>
+            <correlation_mode>0</correlation_mode>
+            <correlation_tag/>
+            <url/>
+            <status>0</status>
+            <priority>4</priority>
+            <description/>
+            <type>0</type>
+            <manual_close>0</manual_close>
+            <dependencies>
+                <dependency>
+                    <name>InfluxDB is unavailable</name>
+                    <expression>{Monitoring Server:web.test.fail[Open Influx UI].last()}&gt;0</expression>
+                    <recovery_expression/>
+                </dependency>
+            </dependencies>
+            <tags/>
+        </trigger>
+    </triggers>
+</zabbix_export>

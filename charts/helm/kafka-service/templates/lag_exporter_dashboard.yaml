@@ -1,0 +1,13 @@
+{{- if and (and .Values.global.installDashboard .Values.monitoring.lagExporter.enabled) (eq (include "monitoring.install" .) "true") }}
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata:
+  name: {{ template "kafka.name" . }}-lag-exporter-grafana-dashboard
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    app: grafana
+spec:
+  name: lag-exporter-dashboard.json
+  json: >
+{{ .Files.Get "monitoring/lag-exporter-dashboard.json" | indent 4 }}
+{{- end}}

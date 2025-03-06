@@ -1,0 +1,119 @@
+{{- if .Values.cruiseControl.install }}
+{{- if not (and .Values.global.secrets.cruiseControl.adminPassword .Values.global.secrets.cruiseControl.adminUsername) }}
+  {{- fail "Admin credentials for Cruise Control UI must be specified" }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kafka.name" . }}-cruise-control
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-cruise-control
+    name: {{ template "kafka.name" . }}-cruise-control
+    app.kubernetes.io/instance: {{ cat (printf "%s-cruise-control" (include "kafka.name" .)) .Values.DELIMITER .Release.Namespace | nospace | trunc 63 }}
+    app.kubernetes.io/technology: java-others
+    app: {{ template "kafka.name" . }}-cruise-control
+    component: kafka-cruise-control
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ template "kafka.name" . }}-cruise-control
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ template "kafka.name" . }}-cruise-control
+        name: {{ template "kafka.name" . }}-cruise-control
+        component: kafka-cruise-control
+    spec:
+      securityContext:
+        {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+        {{- with .Values.cruiseControl.securityContext }}
+        {{- toYaml . | nindent 8 -}}
+        {{- end }}
+      containers:
+        - name: kafka-cruise-control
+          image: {{ template "cruise-control.image" . }}
+          imagePullPolicy: 'Always'
+          ports:
+            - containerPort: 9090
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: {{ template "kafka-service.bootstrapServers" . }}
+            - name: EXTERNAL_KAFKA_ENABLED
+              value: "{{ .Values.global.externalKafka.enabled }}"
+            - name: CLUSTER_NAME
+              value: {{ template "kafka.name" . }}
+            - name: KAFKA_HEAP_OPTS
+              value: "{{ .Values.cruiseControl.heapOpts }}"
+            - name: KAFKA_ENABLE_SSL
+              value: {{ include "kafka-service.enableTls" . | quote }}
+            - name: UI_ENABLED
+              value: "{{ .Values.cruiseControl.ui.enabled }}"
+            - name: BROKER_DISK_SPACE
+              value: "{{ template "cruise-control.brokerDiskSpace" . }}"
+            - name: BROKER_CPU
+              value: "{{ .Values.cruiseControl.capacity.cpu }}"
+            - name: BROKER_NW_IN
+              value: "{{ .Values.cruiseControl.capacity.nwIn }}"
+            - name: BROKER_NW_OUT
+              value: "{{ .Values.cruiseControl.capacity.nwOut }}"
+            - name: KAFKA_AUTH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-secret
+                  key: client-username
+            - name: KAFKA_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-secret
+                  key: client-password
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-cruise-control-secret
+                  key: admin-username
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-cruise-control-secret
+                  key: admin-password
+            - name: VIEWER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-cruise-control-secret
+                  key: viewer-username
+            - name: VIEWER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-cruise-control-secret
+                  key: viewer-password
+          securityContext:
+            {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
+          resources:
+            requests:
+              cpu: {{ default "200m" .Values.cruiseControl.resources.requests.cpu }}
+              memory: {{ default "512Mi" .Values.cruiseControl.resources.requests.memory }}
+            limits:
+              cpu: {{ default "400m" .Values.cruiseControl.resources.limits.cpu }}
+              memory: {{ default "1024Mi" .Values.cruiseControl.resources.limits.memory }}
+          volumeMounts:
+            - name: {{ template "kafka.name" . }}-cruise-control-configmap
+              mountPath: /cruise-control/additionalConfig
+          {{- if eq (include "kafka-service.enableTls" . ) "true" }}
+            - name: {{ include "kafka-service.tlsSecretName" . }}
+              mountPath: "/cruise-control/tls"
+          {{- end }}
+      volumes:
+        - name: {{ template "kafka.name" . }}-cruise-control-configmap
+          configMap:
+            name: {{ template "kafka.name" . }}-cruise-control-configmap
+            items:
+              - key: "cruisecontrolAdditionalProperties.conf"
+                path: cruisecontrolAdditionalProperties.conf
+        {{- if eq (include "kafka-service.enableTls" . ) "true"}}
+        - name: {{ include "kafka-service.tlsSecretName" . }}
+          secret:
+            secretName: {{ include "kafka-service.tlsSecretName" . }}
+        {{- end }}
+{{- end }}

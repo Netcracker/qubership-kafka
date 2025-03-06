@@ -1,0 +1,17 @@
+{{- if .Values.integrationTests.install }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.integrationTests.service.name }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    name: {{ .Values.integrationTests.service.name }}
+    app.kubernetes.io/name: {{ .Values.integrationTests.service.name }}
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+  selector:
+    name: {{ .Values.integrationTests.service.name }}
+{{- end }}

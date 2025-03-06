@@ -1,0 +1,19 @@
+{{- if (eq (include "kafka-service.enableDisasterRecovery" .) "true") }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    name: {{ template "kafka.name" . }}-service-operator
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-service-operator
+  name: kafka-site-manager
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: dr
+    port: {{ template "disasterRecovery.port" . }}
+    protocol: TCP
+    targetPort: {{ template "disasterRecovery.port" . }}
+  selector:
+    name: {{ template "kafka.name" . }}-service-operator
+{{- end }}

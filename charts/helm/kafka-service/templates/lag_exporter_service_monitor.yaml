@@ -1,0 +1,26 @@
+{{- if and (and .Values.monitoring.lagExporter.enabled (eq (include "monitoring.install" .) "true")) .Values.monitoring.serviceMonitorEnabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kafka.name" . }}-lag-exporter-service-monitor
+  labels:
+    {{- include "kafka-services.coreLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-lag-exporter-service-monitor
+    app.kubernetes.io/component: monitoring
+spec:
+  jobLabel: k8s-app
+  selector:
+    matchLabels:
+      name: {{ template "kafka.name" . }}-monitoring
+      component: kafka-monitoring
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  endpoints:
+  - port: http
+    interval: {{ .Values.monitoring.serviceMonitor.lagExporterScrapeInterval }}
+    scrapeTimeout: {{ .Values.monitoring.serviceMonitor.lagExporterScrapeTimeout }}
+    path: "/"
+{{- end }}
+
+

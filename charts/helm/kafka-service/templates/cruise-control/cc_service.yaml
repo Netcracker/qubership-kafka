@@ -1,0 +1,17 @@
+{{- if .Values.cruiseControl.install }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kafka.name" . }}-cruise-control
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    name: {{ template "kafka.name" . }}-cruise-control
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-cruise-control
+spec:
+  selector:
+    name: {{ template "kafka.name" . }}-cruise-control
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+{{- end }}

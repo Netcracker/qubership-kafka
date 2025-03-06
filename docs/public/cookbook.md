@@ -1,0 +1,65 @@
+Apache Kafka is the most popular open-source stream-processing software for collecting, processing, storing, and analyzing data at scale. 
+It is mostly popular for its excellent performance, low latency, fault tolerance, and high throughput. It is capable of handling thousands
+of messages per second. 
+With over 1,000 Kafka use cases and counting, some common benefits are building data pipelines, leveraging real-time data streams, enabling
+operational metrics, and data integration across countless sources.
+
+For more information refer to the following:
+
+* [Kafka Overview](overview.md)
+* Architecture Overview
+* Best Practices
+* Features
+* Clients
+* Kafka Integrations
+
+# Business Value
+
+Kafka event streaming is the technological foundation for the 'always-on' world where businesses are increasingly software-defined and
+automated, and where the user of software is another software.
+
+Technically speaking, event streaming is:
+
+* the practice of capturing data in real-time from event sources like databases, sensors, mobile devices, cloud services, and software
+  applications in the form of streams of events; 
+* storing these event streams durably for later retrieval;
+* manipulating, processing, and reacting to the event streams in real-time as well as retrospectively; 
+* routing the event streams to different destination technologies as needed. 
+
+Event streaming ensures a continuous flow and interpretation of data so that the right information is at the right place, at the right time.
+
+Kafka event streaming applies to a wide variety of use cases across a plethora of industries and organizations.
+The following are some examples:
+
+* To process payments and financial transactions in real-time, such as in stock exchanges, banks, and insurances.
+* To track and monitor cars, trucks, fleets, and shipments in real-time, such as in logistics and the automotive industry.
+* To continuously capture and analyze sensor data from IoT devices or other equipment, such as in factories and wind parks.
+* To collect and immediately react to customer interactions and orders, such as in retail, the hotel and travel industry, and mobile
+  applications.
+* To monitor patients in hospital care and predict changes in condition to ensure timely treatment in emergencies.
+* To connect, store, and make available data produced by different divisions of a company.
+* To serve as the foundation for data platforms, event-driven architectures, and microservices.
+
+# Links
+
+The important links are described in the table below.
+
+| Name                    | URL                                                                                                                                                                                                                      |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Docker GIT repository   | [https://git.netcracker.com/PROD.Platform.Streaming/docker-kafka](https://git.netcracker.com/PROD.Platform.Streaming/docker-kafka)                                                                                       |
+| Deploy GIT repository   | [https://git.netcracker.com/PROD.Platform.Streaming/kafka-service](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service)                                                                                     |
+| Documentation           | [https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs)                                               |
+| Operator Documentation  | [https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs/public/installation.md](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs/public/installation.md) |
+| Official Documentation  | [https://kafka.apache.org/documentation/](https://kafka.apache.org/documentation/)                                                                                                                                       |
+
+# Reference Implementations
+
+The Kafka implementations are provided in the table below.
+
+| Product Name            | BASS Reference                                                                                             |
+|-------------------------|------------------------------------------------------------------------------------------------------------|
+| ESO                     | [E2E Service Orchestration](https://bass.netcracker.com/display/ESO/E2E+Service+Orchestration)             |
+| NDO                     | [Network Domain Orchestrator NDO](https://bass.netcracker.com/display/AVP/Network+Domain+Orchestrator+NDO) |
+| DMP                     | [SaaS Cloud Catalog Home](https://bass.netcracker.com/display/SAAS/SaaS+Cloud+Catalog+Home)                |
+| Digital Sales (DS, SFA) | [Cloud DS Stream](https://bass.netcracker.com/display/CloudCRM/Cloud+DS+Stream)                            |
+| Cloud JPG (CPQ, CIM)    | [Cloud CRM Home](https://bass.netcracker.com/display/CloudCRM/Cloud+CRM+Home)                              |

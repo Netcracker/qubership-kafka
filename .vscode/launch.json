@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Kafka Operator",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "console": "integratedTerminal",
+      "program": "${workspaceFolder}\\kafka-service-operator\\main.go",
+      "env": {
+          "HOME": "${userHome}",
+          "OPERATOR_MODE": "kafka",
+          "OPERATOR_NAME": "kafka-operator",
+          "OPERATOR_NAMESPACE": "kafka-service",
+          "WATCH_NAMESPACE": "kafka-service"
+      }
+    },
+    {
+      "name": "Launch Kafka-Services Operator",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "console": "integratedTerminal",
+      "program": "${workspaceFolder}\\kafka-service-operator\\main.go",
+      "env": {
+          "HOME": "${userHome}",
+          "CLUSTER_NAME": "kafka",
+          "KMM_CONFIG_RECONCILE_PERIOD_SECONDS": "100",
+          "KMM_ENABLED": "false",
+          "OPERATOR_MODE": "kafkaservice",
+          "OPERATOR_NAME": "kafka-service-operator",
+          "OPERATOR_NAMESPACE": "kafka-service",
+          "WATCH_NAMESPACE": "kafka-service"
+      }
+    }
+  ]
+}

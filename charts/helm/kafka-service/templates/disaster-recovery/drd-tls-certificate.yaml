@@ -1,0 +1,33 @@
+{{- $install := and (eq (include "disasterRecovery.enableTls" .) "true") .Values.global.tls.generateCerts.enabled (eq (include "kafka-service.enableDisasterRecovery" .) "true") }}
+{{- if and $install (eq (include "services.certProvider" .) "cert-manager") }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "kafka.name" . }}-drd-tls-certificate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+spec:
+  secretName: {{ template "disasterRecovery.tlsSecretName" . }}
+  duration: {{ default 365 .Values.global.tls.generateCerts.durationDays | mul 24 }}h
+  commonName: kafka-drd-ca
+  isCA: false
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  dnsNames:
+{{ include "disasterRecovery.certDnsNames" . | indent 4 }}
+  ipAddresses:
+{{ include "disasterRecovery.certIpAddresses" . | indent 4 }}
+  issuerRef:
+  {{- if .Values.global.tls.generateCerts.clusterIssuerName }}
+    name: {{ .Values.global.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+  {{- else }}
+    name: {{ template "kafka.name" . }}-services-tls-issuer
+    kind: Issuer
+  {{- end }}
+    group: cert-manager.io
+{{- end }}

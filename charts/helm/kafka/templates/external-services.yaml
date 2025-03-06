@@ -1,0 +1,38 @@
+{{- if and .Values.kafka.install (not .Values.global.externalKafka.enabled) }}
+{{- if and .Values.kafka.createExternalServices .Values.kafka.externalPorts }}
+{{- $kafka_name := include "kafka.name" . }}
+{{- $externalTrafficPolicy := .Values.kafka.externalTrafficPolicy }}
+{{- $kafka_namespace := .Release.Namespace }}
+{{- range $i, $external_port := .Values.kafka.externalPorts }}
+{{- $broker_id := add $i 1 }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: 'true'
+  labels:
+    clusterName: {{ $kafka_name }}-{{ $broker_id }}
+    component: kafka
+    app.kubernetes.io/name: {{ $kafka_name }}
+    name: {{ $kafka_name }}
+    {{- include "kafka.defaultLabels" $ | nindent 4 }}
+  name: external-{{ $kafka_name }}-{{ $broker_id }}
+  namespace: {{ $kafka_namespace }}
+spec:
+  publishNotReadyAddresses: true
+  externalTrafficPolicy: {{ $externalTrafficPolicy | default "Cluster" }}
+  ports:
+    - name: external-kafka-client
+      protocol: TCP
+      port: 9094
+      targetPort: 9094
+      nodePort: {{ $external_port }}
+  selector:
+    clusterName: {{ $kafka_name }}
+    component: kafka
+    name: {{ $kafka_name }}-{{ $broker_id }}
+  type: NodePort
+{{- end }}
+{{- end }}
+{{- end }}

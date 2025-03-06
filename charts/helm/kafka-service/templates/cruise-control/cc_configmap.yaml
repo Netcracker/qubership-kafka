@@ -1,0 +1,19 @@
+{{- if .Values.cruiseControl.install }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kafka.name" . }}-cruise-control-configmap
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-cruise-control-configmap
+data:
+  cruisecontrolAdditionalProperties.conf: |
+    {{- $root := . -}}
+    {{- range $key, $val := .Values.cruiseControl.config }}
+      {{ printf "%s=%s" $key (tpl ( . | toString) $root) }}
+    {{- end }}
+    {{- if .Values.global.externalKafka.enabled }}
+      metric.sampler.class=com.linkedin.kafka.cruisecontrol.monitor.sampling.prometheus
+      prometheus.server.endpoint={{ .Values.cruiseControl.prometheusServerEndpoint }}
+    {{- end }}
+{{- end }}

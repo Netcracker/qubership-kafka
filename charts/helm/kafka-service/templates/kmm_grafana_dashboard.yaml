@@ -1,0 +1,13 @@
+{{- if (and (eq (include "monitoring.install" .) "true") .Values.mirrorMakerMonitoring.install (ne (include "mirrorMakerMonitoring.type" .) "influxdb") .Values.global.installDashboard (ne (.Values.mirrorMakerMonitoring.installDashboard | toString) "false")) }}
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata:
+  name: {{ template "kafka.name" . }}-mirror-maker-grafana-dashboard
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    app: grafana
+spec:
+  name: kafka-mirror-maker-dashboard.json
+  json: >
+{{ .Files.Get "monitoring/kmmm-dashboard.json" | indent 4 }}
+{{- end }}

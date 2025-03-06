@@ -1,0 +1,24 @@
+# permissions for end users to edit kafkausers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kafkauser-editor-role
+rules:
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkausers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - kafkausers/status
+  verbs:
+  - get

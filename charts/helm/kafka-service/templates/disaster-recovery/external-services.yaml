@@ -1,0 +1,51 @@
+{{- if and (eq (include "kafka-service.enableDisasterRecovery" .) "true") .Values.global.disasterRecovery.serviceExport.enabled }}
+{{- $kafka_name := include "kafka.name" . }}
+{{- $kafka_namespace := .Release.Namespace }}
+{{- $kafka_region := .Values.global.disasterRecovery.region }}
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    name: {{ template "kafka.name" . }}-service-operator
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-service-operator
+    clusterName: {{ $kafka_name }}
+    component: kafka
+  name: {{ $kafka_name }}-{{ $kafka_region }}
+  namespace: {{ $kafka_namespace }}
+spec:
+  ports:
+    - name: external-kafka-client
+      protocol: TCP
+      port: 9094
+      targetPort: 9094
+  selector:
+    clusterName: {{ $kafka_name }}
+    component: kafka
+  type: ClusterIP
+{{- range $_, $broker_id := untilStep 1 (add1 (include "kafka.replicas" . | int) | int) 1 }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: 'true'
+  labels:
+    clusterName: {{ $kafka_name }}-{{ $broker_id }}
+    component: kafka
+  name: {{ $kafka_name }}-{{ $kafka_region }}-{{ $broker_id }}
+  namespace: {{ $kafka_namespace }}
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: external-kafka-client
+      protocol: TCP
+      port: 9094
+      targetPort: 9094
+  selector:
+    clusterName: {{ $kafka_name }}
+    component: kafka
+    name: {{ $kafka_name }}-{{ $broker_id }}
+  type: ClusterIP
+{{- end }}
+  {{- end }}

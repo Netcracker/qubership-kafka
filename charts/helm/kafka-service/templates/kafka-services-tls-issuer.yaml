@@ -1,0 +1,12 @@
+{{- $install := and .Values.global.tls.enabled (or .Values.global.disasterRecovery.tls.enabled .Values.backupDaemon.tls.enabled .Values.kafka.tls.enabled) .Values.global.tls.generateCerts.enabled }}
+{{- if and $install (eq (include "services.certProvider" .) "cert-manager") (not (.Values.global.tls.generateCerts.clusterIssuerName)) }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ template "kafka.name" . }}-services-tls-issuer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+{{- end }}

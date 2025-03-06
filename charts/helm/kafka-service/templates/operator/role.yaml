@@ -1,0 +1,61 @@
+{{- if (not .Values.operator.serviceAccount) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "kafka.name" . }}-service-operator
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs:
+      - get
+      - create
+      - list
+      - update
+      - watch
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+      - services
+      - persistentvolumeclaims
+      - secrets
+      - serviceaccounts
+    verbs:
+      - get
+      - create
+      - list
+      - update
+      - watch
+      - patch
+      - delete
+  {{- if .Values.monitoring.monitoringCoreosGroup }}
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+    verbs:
+      - create
+  {{- end }}
+  - apiGroups:
+      - qubership.org
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+{{- end }}

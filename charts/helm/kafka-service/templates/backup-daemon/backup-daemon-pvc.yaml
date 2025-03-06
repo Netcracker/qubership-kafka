@@ -1,0 +1,30 @@
+{{ $persistentVolume := eq (include "backupDaemon.persistentVolumeDefined" .) "true" }}
+{{ $storageClass := eq (include "backupDaemon.storageClassDefined" .) "true" }}
+{{- if and .Values.backupDaemon.install (or $persistentVolume $storageClass) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: data-{{ template "kafka.name" . }}-backup-daemon
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ default "1Gi" .Values.backupDaemon.storage }}
+  {{- if $persistentVolume }}
+  {{- with .Values.backupDaemon.persistentVolume }}
+  volumeName: {{ . }}
+  {{- end }}
+  {{- end }}
+
+  {{- if $storageClass }}
+  {{- with include "backupDaemon.storageClassName" . }}
+  storageClassName: {{ . }}
+  {{- end }}
+  {{- end }}
+---
+{{- end }}

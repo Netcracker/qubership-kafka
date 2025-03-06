@@ -1,0 +1,33 @@
+{{- $install := and .Values.global.tls.enabled .Values.backupDaemon.tls.enabled .Values.global.tls.generateCerts.enabled .Values.backupDaemon.install }}
+{{- if and $install (eq (include "services.certProvider" .) "cert-manager") }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "kafka.name" . }}-backup-daemon-tls-certificate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+spec:
+  secretName: {{ template "backupDaemon.tlsSecretName" . }}
+  duration: {{ default 365 .Values.global.tls.generateCerts.durationDays | mul 24 }}h
+  commonName: kafka-backup-daemon-ca
+  isCA: false
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  dnsNames:
+{{ include "backupDaemon.certDnsNames" . | indent 4 }}
+  ipAddresses:
+{{ include "backupDaemon.certIpAddresses" . | indent 4 }}
+  issuerRef:
+  {{- if .Values.global.tls.generateCerts.clusterIssuerName }}
+    name: {{ .Values.global.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+  {{- else }}
+    name: {{ template "kafka.name" . }}-services-tls-issuer
+    kind: Issuer
+  {{- end }}
+    group: cert-manager.io
+{{- end }}

@@ -1,0 +1,11 @@
+operator.resources.requests.cpu: 100m
+operator.resources.requests.memory: 128Mi
+operator.resources.limits.cpu: 200m
+operator.resources.limits.memory: 256Mi
+kafka.replicas: 3
+kafka.heapSize: 2048
+kafka.resources.requests.cpu: 1000m
+kafka.resources.requests.memory: 8Gi
+kafka.resources.limits.cpu: 2000m
+kafka.resources.limits.memory: 8Gi
+kafka.environmentVariables: [CONF_KAFKA_NUM_IO_THREADS=16, CONF_KAFKA_NUM_NETWORK_THREADS=6, CONF_KAFKA_NUM_REPLICA_FETCHERS=4, CONF_KAFKA_REPLICA_SOCKET_RECEIVE_BUFFER_BYTES=131072, CONF_KAFKA_SOCKET_RECEIVE_BUFFER_BYTES=204800, CONF_KAFKA_SOCKET_SEND_BUFFER_BYTES=204800, CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false]

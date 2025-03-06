@@ -1,0 +1,6 @@
+apiVersion: netcracker.com/v1
+kind: KmmConfig
+metadata:
+  name: kmmconfig-sample
+spec:
+  # TODO(user): Add fields here

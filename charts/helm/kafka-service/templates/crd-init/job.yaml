@@ -1,0 +1,55 @@
+{{ if and (or .Values.operator.kafkaUserConfigurator.enabled .Values.operator.akhqConfigurator.enabled .Values.operator.kmmConfiguratorEnabled) (ne (.Values.DISABLE_CRD | toString) "true")  }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "kafka.name" . }}-crd-init
+  labels:
+    name: {{ template "kafka.name" . }}-tls-init
+    app.kubernetes.io/name: {{ template "kafka.name" . }}-crd-init
+    app.kubernetes.io/instance: {{ cat (printf "%s-crd-init"  (include "kafka.name" .)) .Values.DELIMITER .Release.Namespace | nospace | trunc 63 }}
+    app.kubernetes.io/technology: python
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "1"
+    "argocd.argoproj.io/hook": PreSync
+    "argocd.argoproj.io/sync-wave": "1"
+    "argocd.argoproj.io/hook-delete-policy": HookSucceeded
+spec:
+  {{- if or (gt .Capabilities.KubeVersion.Major "1") (ge .Capabilities.KubeVersion.Minor "12") }}
+  ttlSecondsAfterFinished: {{ .Values.crdInit.lifetimeAfterCompletion | default 120 }}
+  {{- end }}
+  template:
+    metadata:
+      name: {{ template "kafka.name" . }}-crd-init
+      labels:
+        {{- include "kafka-services.defaultLabels" . | nindent 8 }}
+        name: {{ template "kafka.name" . }}-crd-init
+        app.kubernetes.io/name: {{ template "kafka.name" . }}-crd-init
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ template "kafka.name" . }}-crd-init
+      securityContext:
+        {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+      containers:
+        - name: crd-init
+          image: {{ include "crd-init.image" . }}
+          imagePullPolicy: "Always"
+          env:
+            - name: IGNORE_CRD_FAILURE
+              value: {{ .Values.IGNORE_CRD_FAILURE | toString | default "true"  | quote }}
+            - name: CRD_UPGRADE_WAITING_TIME
+              value: {{ .Values.CRD_UPGRADE_WAITING_TIME | default "30"  | quote }}
+            - name: SLEEP_AFTER_COMPLETION
+              value: {{ .Values.crdInit.sleepAfterCompletion | toString | default "1" | quote}}
+            - name: CRDS_TO_CREATE
+              value: "{{ template "crd-init.crdsToCreate" . }}"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "25m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          securityContext:
+            {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
+{{- end }}

@@ -1,0 +1,349 @@
+{{- $minVersion := "2.0.0" }}
+{{- $maxVersion := "3.x.x" }}
+{{- if and .Values.global.externalKafka.enabled (or (not .Values.global.externalKafka.bootstrapServers) .Values.kafka.install) }}
+  {{- fail "If external Kafka is used the following fields should be filled: `global.externalKafka.bootstrapServers` and installing Kafka should be disabled." }}
+{{- end }}
+{{- if or (and (not .Values.global.disasterRecovery.mirrorMakerReplication.enabled) (eq (include "kafka-service.enableDisasterRecovery" .) "true") (.Values.mirrorMaker.install)) (and (.Values.global.disasterRecovery.mirrorMakerReplication.enabled) (eq (include "kafka-service.enableDisasterRecovery" .) "true") (not .Values.mirrorMaker.install)) }}
+  {{- fail "Kafka Mirror Maker can not be installed in Disaster Recovery mode without enabled replication: `global.disasterRecovery.mirrorMakerReplication.enabled`." }}
+{{- end }}
+{{- if and (.Values.global.disasterRecovery.topicsBackup.enabled) (eq (include "kafka-service.enableDisasterRecovery" .) "true") (not .Values.backupDaemon.install)}}
+  {{- fail "To enable TopicsBackup in Disaster Recovery mode need to install Kafka Backup Daemon." }}
+{{- end }}
+{{- if and .Values.deployDescriptor .Values.kafkaOperator (ne (.Values.DEPLOY_W_HELM | toString) "true") }}
+  {{- fail "Kafka Service requires `DEPLOY_W_HELM` parameter to be set to `true` for App Deployer" }}
+{{- end }}
+apiVersion: qubership.org/v7
+kind: KafkaService
+metadata:
+  name: {{ template "kafka.name" . }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/processed-by-operator: {{ template "kafka.name" . }}-service-operator
+  annotations:
+    qubership.org/reconcile-trigger: "{{ randAlphaNum 10 }}"
+spec:
+  global:
+    waitForPodsReady: {{ .Values.global.waitForPodsReady }}
+    podReadinessTimeout: {{ .Values.global.podReadinessTimeout | default 600 }}
+    kraft:
+      enabled: {{ .Values.kafka.kraft.enabled }}
+  {{- with .Values.global.customLabels }}
+    customLabels:
+      {{- toYaml . | nindent 6 -}}
+  {{- end }}
+    defaultLabels:
+      {{- include "kafka-services.defaultLabels" . | nindent 6 }}
+      app.kubernetes.io/managed-by: operator
+      app.kubernetes.io/managed-by-operator: {{ template "kafka.name" . }}-service-operator
+    kafkaSaslMechanism: {{ template "kafka-service.saslMechanism" . }}
+    kafkaSsl:
+      enabled: {{ template "kafka-service.enableTls" . }}
+      secretName: "{{ template "kafka-service.tlsSecretName" . }}"
+  {{- if (eq (include "kafka-service.enableDisasterRecovery" .) "true") }}
+  disasterRecovery:
+    {{- if .Values.global.disasterRecovery.mode }}
+    mode: {{ .Values.global.disasterRecovery.mode }}
+    {{- end }}
+    {{- if .Values.global.disasterRecovery.region }}
+    region: {{ .Values.global.disasterRecovery.region }}
+    {{- end }}
+    mirrorMakerReplication:
+      enabled: {{ .Values.global.disasterRecovery.mirrorMakerReplication.enabled }}
+    topicsBackup:
+      enabled: {{ include "disasterRecovery.topicsBackup" . }}
+    noWait: true
+  {{- end }}
+  {{- if (eq (include "monitoring.install" .) "true") }}
+  monitoring:
+    dockerImage: {{ template "monitoring.image" . }}
+    {{- if .Values.monitoring.affinity }}
+    affinity:
+      {{ .Values.monitoring.affinity | toJson }}
+    {{- end }}
+    {{- if .Values.monitoring.tolerations }}
+    tolerations:
+      {{ .Values.monitoring.tolerations | toJson }}
+    {{- end }}
+    {{- if .Values.monitoring.priorityClassName }}
+    priorityClassName: {{ .Values.monitoring.priorityClassName }}
+    {{- end }}
+    {{- if .Values.global.externalKafka.enabled }}
+    bootstrapServers: {{ template "kafka-service.bootstrapServers" . }}
+    {{- end }}
+    minVersion: {{$minVersion}}
+    maxVersion: {{$maxVersion}}
+    {{- if (eq (include "monitoring.type" .) "influxdb") }}
+    smDbHost: {{ coalesce .Values.global.smDbHost .Values.monitoring.smDbHost }}
+    smDbName: {{ coalesce .Values.global.smDbName .Values.monitoring.smDbName }}
+    {{- end }}
+    dataCollectionInterval: {{ .Values.monitoring.dataCollectionInterval | default "10s" }}
+    kafkaExecPluginTimeout: {{ .Values.monitoring.kafkaExecPluginTimeout | default "10s" }}
+    kafkaTotalBrokerCount: {{ default 3 .Values.monitoring.kafkaTotalBrokerCount }}
+    secretName: {{ template "kafka.name" . }}-monitoring-secret
+    securityContext:
+      {{- include "kafka-service.globalPodSecurityContext" . | nindent 6 }}
+      {{- with .Values.monitoring.securityContext }}
+      {{- toYaml . | nindent 6 -}}
+      {{- end }}
+    resources:
+      requests:
+        memory: {{ default "128Mi" .Values.monitoring.resources.requests.memory }}
+        cpu: {{ default "50m" .Values.monitoring.resources.requests.cpu }}
+      limits:
+        memory: {{ default "256Mi" .Values.monitoring.resources.limits.memory }}
+        cpu: {{ default "200m" .Values.monitoring.resources.limits.cpu }}
+    {{- if (and (ne (include "monitoring.type" .) "prometheus") (ne (include "monitoring.type" .) "influxdb")) }}
+    monitoringType: prometheus
+    {{- else }}
+    monitoringType: {{ template "monitoring.type" . }}
+    {{- end }}
+    {{- if .Values.monitoring.lagExporter.enabled  }}
+    lagExporter:
+      metricsPort: {{ .Values.monitoring.lagExporter.service.port }}
+      dockerImage: {{ template "lagExporter.image" . }}
+    {{- end }}
+    {{- with .Values.monitoring.customLabels }}
+    customLabels:
+      {{- toYaml . | nindent 6 -}}
+    {{- end }}
+  {{- end }}
+
+  {{- if .Values.akhq.install }}
+  akhq:
+    dockerImage: {{ template "akhq.image" . }}
+    {{- if .Values.akhq.affinity }}
+    affinity:
+      {{ .Values.akhq.affinity | toJson }}
+    {{- end }}
+    {{- if .Values.akhq.tolerations }}
+    tolerations:
+      {{ .Values.akhq.tolerations | toJson }}
+    {{- end }}
+    {{- if .Values.akhq.priorityClassName }}
+    priorityClassName: {{ .Values.akhq.priorityClassName }}
+    {{- end }}
+    bootstrapServers: {{ template "kafka-service.bootstrapServers" . }}
+    kafkaPollTimeout: {{ .Values.akhq.kafkaPollTimeout }}
+    enableAccessLog: {{ .Values.akhq.enableAccessLog }}
+    securityContext:
+      {{- include "kafka-service.globalPodSecurityContext" . | nindent 6 }}
+      {{- with .Values.akhq.securityContext }}
+      {{- toYaml . | nindent 6 -}}
+      {{- end }}
+    ldap:
+      enabled: {{ .Values.akhq.ldap.enabled }}
+      {{- if .Values.akhq.ldap.enabled }}
+      enableSsl: {{ .Values.akhq.ldap.enableSsl }}
+      {{- if .Values.akhq.ldap.enableSsl }}
+      trustedCerts:
+        {{- range $key, $cert := .Values.akhq.ldap.trustedCerts }}
+        {{ $key }}: {{ $cert | quote }}
+        {{- end }}
+      {{- end }}
+      server:
+        context:
+          server: {{ .Values.akhq.ldap.server.context.server | default "" }}
+          managerDn: {{ .Values.akhq.ldap.server.context.managerDn | default "" }}
+          managerPassword: {{ .Values.akhq.ldap.server.context.managerPassword | default "" }}
+        search:
+          base: {{ .Values.akhq.ldap.server.search.base | default "" }}
+          filter: {{ .Values.akhq.ldap.server.search.filter | default "" }}
+        groups:
+          enabled: {{ .Values.akhq.ldap.server.groups.enabled }}
+      usersconfig:
+        users:
+        {{- range .Values.akhq.ldap.usersconfig.users }}
+          - username: {{ .username }}
+            groups:
+            {{- if .groups }}
+              {{- range .groups }}
+                - {{ . }}
+              {{- end }}
+            {{- else }}
+              []
+            {{- end }}
+        {{- end }}
+        groups:
+        {{- range .Values.akhq.ldap.usersconfig.groups }}
+          - name: {{ .name }}
+            groups:
+            {{- if .groups }}
+              {{- range .groups }}
+                - {{ . }}
+              {{- end }}
+            {{- else }}
+              []
+            {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- if .Values.akhq.environmentVariables }}
+    environmentVariables:
+    {{- range .Values.akhq.environmentVariables }}
+      - {{ . }}
+    {{- end }}
+    {{- end }}
+    heapSize: {{ template "akhq.heapSize" . }}
+    resources:
+      requests:
+        memory: {{ default "400Mi" .Values.akhq.resources.requests.memory }}
+        cpu: {{ default "50m" .Values.akhq.resources.requests.cpu }}
+      limits:
+        memory: {{ default "500Mi" .Values.akhq.resources.limits.memory }}
+        cpu: {{ default "300m" .Values.akhq.resources.limits.cpu }}
+    {{- with .Values.akhq.customLabels }}
+    customLabels:
+      {{- toYaml . | nindent 6 -}}
+    {{- end }}
+    {{- if .Values.akhq.schemaRegistryUrl }}
+    schemaRegistryUrl: {{ .Values.akhq.schemaRegistryUrl }}
+    {{- end }}
+    schemaRegistryType: {{ .Values.akhq.schemaRegistryType }}
+  {{- end }}
+
+  {{- if .Values.mirrorMaker.install }}
+  mirrorMaker:
+    dockerImage: {{ template "mirrorMaker.image" . }}
+    {{- if .Values.mirrorMaker.affinity }}
+    affinity:
+      {{ .Values.mirrorMaker.affinity | toJson }}
+    {{- end }}
+    {{- if .Values.mirrorMaker.tolerations }}
+    tolerations:
+      {{ .Values.mirrorMaker.tolerations | toJson }}
+    {{- end }}
+    {{- if .Values.mirrorMaker.priorityClassName }}
+    priorityClassName: {{ .Values.mirrorMaker.priorityClassName }}
+    {{- end }}
+    heapSize: {{ default 256 .Values.mirrorMaker.heapSize }}
+    resources:
+      requests:
+        memory: {{ default "512Mi" .Values.mirrorMaker.resources.requests.memory }}
+        cpu: {{ default "50m" .Values.mirrorMaker.resources.requests.cpu }}
+      limits:
+        memory: {{ default "512Mi" .Values.mirrorMaker.resources.limits.memory }}
+        cpu: {{ default "400m" .Values.mirrorMaker.resources.limits.cpu }}
+    replicas: {{ default 1 .Values.mirrorMaker.replicas }}
+    {{- if eq (include "mirrorMaker.tasksMaxDefined" .) "true" }}
+    tasksMax: {{ .Values.mirrorMaker.tasksMax  }}
+    {{- end }}
+    {{- if .Values.mirrorMaker.repeatedReplication }}
+    repeatedReplication: {{ .Values.mirrorMaker.repeatedReplication }}
+    {{- end }}
+    {{- if ne (.Values.mirrorMaker.internalRestEnabled | toString) "<nil>" }}
+    internalRestEnabled: {{.Values.mirrorMaker.internalRestEnabled }}
+    {{- end }}
+    {{- if .Values.mirrorMaker.regionName }}
+    regionName: {{.Values.mirrorMaker.regionName}}
+    {{- end }}
+    clusters:
+    {{- range .Values.mirrorMaker.clusters }}
+      - name: {{ .name }}
+        bootstrapServers: {{ .bootstrapServers }}
+      {{- if .nodeLabel }}
+        nodeLabel: {{ .nodeLabel }}
+      {{- end }}
+      {{- if .enableSsl }}
+        enableSsl: {{ .enableSsl }}
+      {{- end }}
+      {{- if .sslSecretName }}
+        sslSecretName: {{ .sslSecretName }}
+      {{- end }}
+      {{- if .saslMechanism }}
+        saslMechanism: {{ .saslMechanism }}
+      {{- end }}
+    {{- end }}
+    replicationFlowEnabled: {{ .Values.mirrorMaker.replicationFlowEnabled }}
+    replicationPrefixEnabled: {{ .Values.mirrorMaker.replicationPrefixEnabled }}
+    {{- if .Values.mirrorMaker.topicsToReplicate }}
+    topicsToReplicate: "{{ .Values.mirrorMaker.topicsToReplicate }}"
+    {{- end }}
+    replicationFactor: {{ default 3 .Values.mirrorMaker.replicationFactor }}
+    configuratorEnabled: {{ .Values.operator.kmmConfiguratorEnabled }}
+    {{- if .Values.mirrorMaker.refreshTopicsIntervalSeconds }}
+    refreshTopicsIntervalSeconds: {{ .Values.mirrorMaker.refreshTopicsIntervalSeconds }}
+    {{- end }}
+    {{- if .Values.mirrorMaker.refreshGroupsIntervalSeconds }}
+    refreshGroupsIntervalSeconds: {{ .Values.mirrorMaker.refreshGroupsIntervalSeconds }}
+    {{- end }}
+    configurationName: {{ template "kafka.name" . }}-mirror-maker-configuration
+    secretName: {{ template "kafka.name" . }}-mirror-maker-secret
+    {{- if .Values.mirrorMaker.environmentVariables }}
+    environmentVariables:
+    {{- range .Values.mirrorMaker.environmentVariables }}
+      - {{ . }}
+    {{- end }}
+    {{- end }}
+    {{- with .Values.mirrorMaker.customLabels }}
+    customLabels:
+      {{- toYaml . | nindent 6 -}}
+    {{- end }}
+    securityContext:
+    {{- include "kafka-service.globalPodSecurityContext" . | nindent 6 }}
+    {{- with .Values.mirrorMaker.securityContext }}
+    {{- toYaml . | nindent 6 -}}
+    {{- end }}
+    {{- with .Values.mirrorMaker.transformation }}
+    transformation:
+      {{- toYaml . | nindent 6 -}}
+    {{- end }}
+  {{- end }}
+
+  {{- if .Values.mirrorMakerMonitoring.install }}
+  mirrorMakerMonitoring:
+      dockerImage: {{ template "mirrorMakerMonitoring.image" . }}
+      {{- if .Values.mirrorMakerMonitoring.affinity }}
+      affinity:
+        {{ .Values.mirrorMakerMonitoring.affinity | toJson }}
+      {{- end }}
+      {{- if .Values.mirrorMakerMonitoring.tolerations }}
+      tolerations:
+        {{ .Values.mirrorMakerMonitoring.tolerations | toJson }}
+      {{- end }}
+      {{- if .Values.mirrorMakerMonitoring.priorityClassName }}
+      priorityClassName: {{ .Values.mirrorMakerMonitoring.priorityClassName }}
+      {{- end }}
+      {{- if (and (ne (include "mirrorMakerMonitoring.type" .) "prometheus") (ne (include "mirrorMakerMonitoring.type" .) "influxdb")) }}
+      monitoringType: prometheus
+      {{- else }}
+      monitoringType: {{ template "mirrorMakerMonitoring.type" . }}
+      {{- end }}
+      {{- if (eq (include "mirrorMakerMonitoring.type" .) "influxdb") }}
+      smDbHost: {{ coalesce .Values.global.smDbHost .Values.mirrorMakerMonitoring.smDbHost }}
+      smDbName: {{ coalesce .Values.global.smDbName .Values.mirrorMakerMonitoring.smDbName }}
+      {{- end }}
+      kmmExecPluginTimeout: {{ default "20s" .Values.mirrorMakerMonitoring.kmmExecPluginTimeout }}
+      kmmCollectionInterval: {{ default "5s" .Values.mirrorMakerMonitoring.kmmCollectionInterval }}
+      secretName: {{ template "kafka.name" . }}-mirror-maker-monitoring-secret
+      securityContext:
+      {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+      {{- with .Values.mirrorMakerMonitoring.securityContext }}
+      {{- toYaml . | nindent 8 -}}
+      {{- end }}
+      resources:
+        requests:
+          memory: {{ default "128Mi" .Values.mirrorMakerMonitoring.resources.requests.memory }}
+          cpu: {{ default "50m" .Values.mirrorMakerMonitoring.resources.requests.cpu }}
+        limits:
+          memory: {{ default "256Mi" .Values.mirrorMakerMonitoring.resources.limits.memory }}
+          cpu: {{ default "200m" .Values.mirrorMakerMonitoring.resources.limits.cpu }}
+      {{- with .Values.mirrorMakerMonitoring.customLabels }}
+      customLabels:
+        {{- toYaml . | nindent 8 -}}
+      {{- end }}
+  {{- end }}
+
+  {{- if .Values.backupDaemon.install }}
+  backupDaemon:
+    name: {{ template "kafka.name" . }}-backup-daemon
+  {{- end }}
+
+  {{- if .Values.integrationTests.install }}
+  integrationTests:
+    serviceName: {{ .Values.integrationTests.service.name | default "kafka-integration-tests-runner" }}
+    waitForResult: {{ .Values.integrationTests.waitForResult }}
+    timeout: {{ .Values.integrationTests.timeout | default 1200 }}
+    {{- if .Values.integrationTests.waitForResult }}
+    randomRunTrigger: "{{ randAlphaNum 10 }}"
+    {{- end }}
+  {{- end }}
