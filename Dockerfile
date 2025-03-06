@@ -1,9 +1,6 @@
 # Build the manager binary
 FROM golang:1.22.5-alpine3.20 as builder
 
-ENV GOPROXY=https://artifactorycn.netcracker.com/pd.sandbox-staging.go.group \
-    GOSUMDB=off
-
 WORKDIR /workspace
 # Copy the Go Modules manifests
 COPY go.mod go.mod
