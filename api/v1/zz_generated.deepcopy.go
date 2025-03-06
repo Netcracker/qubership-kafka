@@ -20,7 +20,7 @@
 package v1
 
 import (
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/kmm"
+	"github.com/Netcracker/qubership-kafka/api/kmm"
 	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )

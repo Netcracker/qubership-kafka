@@ -15,8 +15,8 @@
 package kafkaservice
 
 import (
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers"
-	_ "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers"
+	"github.com/Netcracker/qubership-kafka/controllers"
+	_ "github.com/Netcracker/qubership-kafka/controllers"
 	_ "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 

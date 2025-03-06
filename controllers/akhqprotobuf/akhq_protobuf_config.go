@@ -18,7 +18,7 @@ import (
 	"context"
 	"reflect"
 
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

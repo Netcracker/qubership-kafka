@@ -23,8 +23,8 @@ import (
 	"strings"
 	"time"
 
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
 	"github.com/IBM/sarama"
+	"github.com/Netcracker/qubership-kafka/util"
 )
 
 type KafkaClient struct {

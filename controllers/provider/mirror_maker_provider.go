@@ -16,9 +16,9 @@ package provider
 
 import (
 	"fmt"
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/kmmconfig"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
+	"github.com/Netcracker/qubership-kafka/controllers/kmmconfig"
+	"github.com/Netcracker/qubership-kafka/util"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

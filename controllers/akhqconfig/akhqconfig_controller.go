@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"strings"
 
-	akhqconfigv1 "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1"
-	akhqproto "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/akhqprotobuf"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	akhqconfigv1 "github.com/Netcracker/qubership-kafka/api/v1"
+	akhqproto "github.com/Netcracker/qubership-kafka/controllers/akhqprotobuf"
+	"github.com/Netcracker/qubership-kafka/util"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"

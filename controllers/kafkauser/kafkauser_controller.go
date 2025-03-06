@@ -17,10 +17,10 @@ package kafkauser
 import (
 	"context"
 	"fmt"
-	kafka "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
 	"github.com/IBM/sarama"
+	kafka "github.com/Netcracker/qubership-kafka/api/v1"
+	"github.com/Netcracker/qubership-kafka/controllers"
+	"github.com/Netcracker/qubership-kafka/util"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

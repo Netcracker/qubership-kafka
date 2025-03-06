@@ -15,7 +15,7 @@
 package kafkaservice
 
 import (
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"time"

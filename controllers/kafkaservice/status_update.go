@@ -16,7 +16,7 @@ package kafkaservice
 
 import (
 	"context"
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"

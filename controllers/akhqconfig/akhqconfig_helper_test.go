@@ -16,8 +16,8 @@ package akhqconfig
 
 import (
 	"fmt"
-	akhqconfigv1 "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	akhqconfigv1 "github.com/Netcracker/qubership-kafka/api/v1"
+	"github.com/Netcracker/qubership-kafka/util"
 	"testing"
 )
 

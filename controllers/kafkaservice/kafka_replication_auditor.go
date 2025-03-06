@@ -16,10 +16,10 @@ package kafkaservice
 
 import (
 	"fmt"
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/handlers"
 	"github.com/IBM/sarama"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
+	"github.com/Netcracker/qubership-kafka/controllers"
+	"github.com/Netcracker/qubership-kafka/controllers/handlers"
 	"os"
 	"regexp"
 	"strings"

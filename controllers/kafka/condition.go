@@ -15,7 +15,7 @@
 package kafka
 
 import (
-	kafka "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1"
+	kafka "github.com/Netcracker/qubership-kafka/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )

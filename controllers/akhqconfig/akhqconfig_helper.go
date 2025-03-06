@@ -23,8 +23,8 @@ import (
 	"os"
 	"strings"
 
-	akhqconfigv1 "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	akhqconfigv1 "github.com/Netcracker/qubership-kafka/api/v1"
+	"github.com/Netcracker/qubership-kafka/util"
 	"github.com/go-logr/logr"
 	"github.com/go-yaml/yaml"
 	corev1 "k8s.io/api/core/v1"

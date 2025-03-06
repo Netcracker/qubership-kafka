@@ -17,7 +17,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	"github.com/Netcracker/qubership-kafka/util"
 	"testing"
 )
 

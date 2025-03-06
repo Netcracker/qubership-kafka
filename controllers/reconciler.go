@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	"github.com/Netcracker/qubership-kafka/util"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

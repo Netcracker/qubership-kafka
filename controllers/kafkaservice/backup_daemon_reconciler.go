@@ -21,7 +21,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
 	"github.com/go-logr/logr"
 	"io"
 	appsv1 "k8s.io/api/apps/v1"

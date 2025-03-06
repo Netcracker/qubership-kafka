@@ -15,7 +15,7 @@
 package v7
 
 import (
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/kmm"
+	"github.com/Netcracker/qubership-kafka/api/kmm"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

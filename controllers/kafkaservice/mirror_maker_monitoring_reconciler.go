@@ -15,12 +15,12 @@
 package kafkaservice
 
 import (
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
 
 	"time"
 
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/provider"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	"github.com/Netcracker/qubership-kafka/controllers/provider"
+	"github.com/Netcracker/qubership-kafka/util"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"

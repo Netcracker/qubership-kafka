@@ -16,7 +16,7 @@ package provider
 
 import (
 	"fmt"
-	kafkaservice "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
+	kafkaservice "github.com/Netcracker/qubership-kafka/api/v7"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"strconv"

@@ -17,22 +17,22 @@ package main
 import (
 	"flag"
 	"fmt"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/kafkauser"
+	"github.com/Netcracker/qubership-kafka/controllers/kafkauser"
 	"os"
 	"strconv"
 	"strings"
 
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers"
+	"github.com/Netcracker/qubership-kafka/controllers"
 
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/akhqconfig"
+	"github.com/Netcracker/qubership-kafka/controllers/akhqconfig"
 
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/kafka"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/kafkaservice"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/controllers/kmmconfig"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	"github.com/Netcracker/qubership-kafka/controllers/kafka"
+	"github.com/Netcracker/qubership-kafka/controllers/kafkaservice"
+	"github.com/Netcracker/qubership-kafka/controllers/kmmconfig"
+	"github.com/Netcracker/qubership-kafka/util"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -45,8 +45,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	netcrackercomv1 "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1"
-	netcrackercomv7 "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v7"
+	netcrackercomv1 "github.com/Netcracker/qubership-kafka/api/v1"
+	netcrackercomv7 "github.com/Netcracker/qubership-kafka/api/v7"
 	//+kubebuilder:scaffold:imports
 )
 

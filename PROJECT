@@ -37,7 +37,7 @@ resources:
   controller: true
   domain: qubership.org
   kind: Kafka
-  path: git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1
+  path: github.com/Netcracker/qubership-kafka/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -45,6 +45,6 @@ resources:
   controller: true
   domain: qubership.org
   kind: KafkaUser
-  path: git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1
+  path: github.com/Netcracker/qubership-kafka/api/v1
   version: v1
 version: "3"

@@ -17,7 +17,7 @@ package kmmconfig
 import (
 	"context"
 	"fmt"
-	"git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/util"
+	"github.com/Netcracker/qubership-kafka/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -31,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	kmmconfig "git.netcracker.com/PROD.Platform.Streaming/kafka-service/kafka-service-operator/api/v1"
+	kmmconfig "github.com/Netcracker/qubership-kafka/api/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
