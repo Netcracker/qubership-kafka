@@ -14,8 +14,8 @@ RUN go mod download
 
 # Copy the go source
 COPY main.go main.go
-COPY kafka-service-operator/api api/
-COPY kafka-service-operator/controllers controllers/
+COPY api api/
+COPY controllers controllers/
 COPY util util/
 
 # Tests
