@@ -35,7 +35,7 @@ EndOfStreamException: Unable to read additional data from server sessionid 0x300
 
 ### How to solve
 
-To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://git.netcracker.com/PROD.Platform.Streaming/zookeeper-service/-/blob/master/docs/public/troubleshooting.md).
+To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/troubleshooting.md).
 
 ### Recommendations
 
@@ -334,7 +334,7 @@ kafka.zookeeper.ZooKeeperClientTimeoutException: Timed out waiting for connectio
 ```
 
 Since Kafka cannot connect to ZooKeeper, you need to make sure your ZooKeeper cluster is fully operated.
-To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://git.netcracker.com/PROD.Platform.Streaming/zookeeper-service/-/blob/master/docs/public/troubleshooting.md).
+To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/troubleshooting.md).
 
 ### Alerts
 
@@ -393,7 +393,7 @@ KeeperErrorCode = ConnectionLoss for
 
 ### How to solve
 
-To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://git.netcracker.com/PROD.Platform.Streaming/zookeeper-service/-/blob/master/docs/public/troubleshooting.md).
+To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/troubleshooting.md).
 
 ### Recommendations
 
@@ -1395,7 +1395,7 @@ Topic `test-topic` is marked for deletion
 
 Problem still persist on Zookeeper side, you should follow next steps to resolve this issue:
 
-1. Configure the Zookeeper admin client, refer to [ZooKeeper Secure Client](https://git.netcracker.com/PROD.Platform.Streaming/zookeeper-service/-/blob/master/docs/public/security.md#zookeeper-clients-security-properties)
+1. Configure the Zookeeper admin client, refer to [ZooKeeper Secure Client](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/security.md#zookeeper-clients-security-properties)
 
 2. Check that topic, which you are unable to create, is in to-delete topics node:
 
@@ -1537,7 +1537,7 @@ If Helm deployment or manual application of CRD failed with the following error,
 it depicts that the Kubernetes version is 1.11 (or less) and it is not compatible with the new format of CRD:
 
 ```text
-The CustomResourceDefinition "kmmconfigs.netcracker.com" is invalid: spec.validation.openAPIV3Schema: Invalid value:....
+The CustomResourceDefinition "kmmconfigs.qubership.org" is invalid: spec.validation.openAPIV3Schema: Invalid value:....
 : must only have "properties", "required" or "description" at the root if the status subresource is enabled
 ```
 
@@ -1553,7 +1553,7 @@ Not applicable
 
 ### How to solve
 
-To fix the issue, you need to find the following section in the CRD (`config/crd/old/netcracker.com_kmmconfigs.yaml`):
+To fix the issue, you need to find the following section in the CRD (`config/crd/old/qubership.org_kmmconfigs.yaml`):
 
 ```yaml
 # Comment it if you deploy to Kubernetes 1.11 (e.g OpenShift 3.11)

@@ -1,4 +1,4 @@
-apiVersion: netcracker.com/v7
+apiVersion: qubership.org/v3alpha1
 kind: KafkaService
 metadata:
   name: kafkaservice-sample

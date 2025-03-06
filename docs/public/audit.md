@@ -25,7 +25,7 @@ The audit log format for events are described further:
 ### Unauthorized event
 
 ```text
-[2024-08-14T16:27:11,308][WARN][category=com.netcracker.kafka.security.authorization.ExtendedAuthorizer] Principal = [User:test] is Denied Operation = [DESCRIBE] from host = [0:0:0:0:0:0:0:1] on resource = [ResourcePattern(resourceType=TOPIC, name=some_topic, patternType=LITERAL)]```
+[2024-08-14T16:27:11,308][WARN][category=com.qubership.kafka.security.authorization.ExtendedAuthorizer] Principal = [User:test] is Denied Operation = [DESCRIBE] from host = [0:0:0:0:0:0:0:1] on resource = [ResourcePattern(resourceType=TOPIC, name=some_topic, patternType=LITERAL)]```
 ```
 
 ### Change Password / CRUD Users
@@ -37,5 +37,5 @@ The audit log format for events are described further:
 ### Modify Grants
 
 ```text
-[2024-08-14T16:36:31,699][INFO][category=com.netcracker.kafka.security.authorization.ExtendedAclAuthorizer] Processing Acl change notification for ResourcePattern(resourceType=GROUP, name=*, patternType=LITERAL), versionedAcls : Set(User:client has ALLOW permission for operations: ALL from hosts: *), zkVersion : 0
+[2024-08-14T16:36:31,699][INFO][category=com.qubership.kafka.security.authorization.ExtendedAclAuthorizer] Processing Acl change notification for ResourcePattern(resourceType=GROUP, name=*, patternType=LITERAL), versionedAcls : Set(User:client has ALLOW permission for operations: ALL from hosts: *), zkVersion : 0
 ```

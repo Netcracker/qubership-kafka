@@ -4,7 +4,6 @@
 
 global:
   name: kafka
-  cloudIntegrationEnabled: true
 
   waitForPodsReady: true
   podReadinessTimeout: 600

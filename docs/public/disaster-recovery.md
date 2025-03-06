@@ -468,8 +468,6 @@ backupDaemon:
 
 # Google Kubernetes Engine Features
 
-GKE provides its own mechanism of communications between clusters - MultiCluster-Services (MCS), more detailed in [GKE-DR](https://git.netcracker.com/PROD.Platform.HA/kubetools/-/blob/master/documentation/public/GKE-DR.md).
-
 To deploy Kafka with enabled MCS support you need to follow the points:
 
 * Kafka Service should be deployed to namespaces with the same names for both clusters. MCS works only if namespace is presented for both
@@ -639,7 +637,7 @@ You can perform the switchover using the `SiteManager` functionality or Kafka di
 
 <!-- #GFCFilterMarkerStart# -->
 For more information about `SiteManager`, refer to 
-[Site Manager](https://git.netcracker.com/PROD.Platform.HA/github.sync/DRNavigator/-/blob/main/README.md) article.
+[Site Manager](https://github.com/Netcracker/DRNavigator/tree/main/README.md) article.
 <!-- #GFCFilterMarkerEnd# -->
 
 If you want to perform a switchover manually, you need to switch `standby` Kafka cluster to `active` mode and then switch `active`

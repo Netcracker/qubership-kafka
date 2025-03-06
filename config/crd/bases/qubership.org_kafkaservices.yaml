@@ -8,7 +8,7 @@ metadata:
   creationTimestamp: null
   name: kafkaservices.qubership.org
 spec:
-  group: netcracker.com
+  group: qubership.org
   names:
     kind: KafkaService
     listKind: KafkaServiceList

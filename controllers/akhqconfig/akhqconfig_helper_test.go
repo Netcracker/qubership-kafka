@@ -79,7 +79,7 @@ func Test_deserializationConfigFullUpdate_addToEmpty(t *testing.T) {
 	crConfigs := map[string]akhqconfigv1.Config{
 		"topic1": akhqconfigv1.Config{
 			TopicRegex:           "topic1",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhsAkjdsa==",
 		},
 	}
@@ -90,7 +90,7 @@ func Test_deserializationConfigFullUpdate_addToEmpty(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffix),
 		},
 	}
@@ -113,14 +113,14 @@ func Test_deserializationConfigFullUpdate_addToEnd(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
@@ -128,12 +128,12 @@ func Test_deserializationConfigFullUpdate_addToEnd(t *testing.T) {
 	crConfigs := map[string]akhqconfigv1.Config{
 		"topic3": {
 			TopicRegex:           "topic3",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhsdfjrAkjdsa==",
 		},
 		"topic4": {
 			TopicRegex:           "topic4",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhfjrAkjdsa==",
 		},
 	}
@@ -145,28 +145,28 @@ func Test_deserializationConfigFullUpdate_addToEnd(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic3",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic3),
 		},
 		{
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -191,14 +191,14 @@ func Test_deserializationConfigFullUpdate_updateWithDeleting(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
@@ -206,12 +206,12 @@ func Test_deserializationConfigFullUpdate_updateWithDeleting(t *testing.T) {
 	crConfigs := map[string]akhqconfigv1.Config{
 		"topic3": {
 			TopicRegex:           "topic3",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhsdfjrAkjdsa==",
 		},
 		"topic4": {
 			TopicRegex:           "topic4",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhfjrAkjdsa==",
 		},
 	}
@@ -223,14 +223,14 @@ func Test_deserializationConfigFullUpdate_updateWithDeleting(t *testing.T) {
 			TopicRegex:       "topic3",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic3),
 		},
 		{
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -257,14 +257,14 @@ func Test_deserializationConfigFullUpdate_updateExistedOnly(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
@@ -272,12 +272,12 @@ func Test_deserializationConfigFullUpdate_updateExistedOnly(t *testing.T) {
 	crConfigs := map[string]akhqconfigv1.Config{
 		"topic1": {
 			TopicRegex:           "topic1",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhsdfjrAkjdsa==",
 		},
 		"topic2": {
 			TopicRegex:           "topic2",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhfjrAkjdsa==",
 		},
 	}
@@ -289,14 +289,14 @@ func Test_deserializationConfigFullUpdate_updateExistedOnly(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
@@ -321,21 +321,21 @@ func Test_deserializationConfigFullUpdate_updateAndInsert(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -343,17 +343,17 @@ func Test_deserializationConfigFullUpdate_updateAndInsert(t *testing.T) {
 	crConfigs := map[string]akhqconfigv1.Config{
 		"topic1": {
 			TopicRegex:           "topic1",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhsdfjrAkjdsa==",
 		},
 		"topic2": {
 			TopicRegex:           "topic2",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "cjhfjrAkjdsa==",
 		},
 		"topic3": {
 			TopicRegex:           "topic3",
-			MessageType:          "com.netcracker.Employee",
+			MessageType:          "org.qubership.Employee",
 			DescriptorFileBase64: "fgtjhgswDsfjrAkjdsa==",
 		},
 	}
@@ -365,28 +365,28 @@ func Test_deserializationConfigFullUpdate_updateAndInsert(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic3",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic3),
 		},
 		{
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -412,21 +412,21 @@ func Test_deleteDeserializationConfig_crOnly(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -438,7 +438,7 @@ func Test_deleteDeserializationConfig_crOnly(t *testing.T) {
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -463,21 +463,21 @@ func Test_deleteDeserializationConfig_crAndGarbage(t *testing.T) {
 			TopicRegex:       "topic1",
 			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:           "topic2",
 			Name:                 "akhq-kafka-service",
 			KeyMessageType:       "",
-			ValueMessageType:     "com.netcracker.Employee",
+			ValueMessageType:     "org.qubership.Employee",
 			DescriptorFileBase64: "jdshfGGGjjhxxs==",
 		},
 		{
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -489,7 +489,7 @@ func Test_deleteDeserializationConfig_crAndGarbage(t *testing.T) {
 			TopicRegex:       "topic4",
 			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
-			ValueMessageType: "com.netcracker.Employee",
+			ValueMessageType: "org.qubership.Employee",
 			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
@@ -516,7 +516,7 @@ func Test_validate(t *testing.T) {
 		{Configs: []akhqconfigv1.Config{
 			{
 				TopicRegex:           "topic1",
-				MessageType:          "com.netcracker.Message",
+				MessageType:          "org.qubership.Message",
 				DescriptorFileBase64: "CuMCCghteS5wcm90bxIIdHV0b3JpYWwi/AEKBlBlcnNvbhISCgRuYW1lGAEgASgJUgRuYW1lEg4KAmlkGAIgASgFUgJpZBIUCgVlbWFpbBgDIAEoCVIFZW1haWwSNAoGcGhvbmVzGAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyUgZwaG9uZXMaVQoLUGhvbmVOdW1iZXISFgoGbnVtYmVyGAEgASgJUgZudW1iZXISLgoEdHlwZRgCIAEoDjIaLnR1dG9yaWFsLlBlcnNvbi5QaG9uZVR5cGVSBHR5cGUiKwoJUGhvbmVUeXBlEgoKBk1PQklMRRAAEggKBEhPTUUQARIICgRXT1JLEAIiNwoLQWRkcmVzc0Jvb2sSKAoGcGVvcGxlGAEgAygLMhAudHV0b3JpYWwuUGVyc29uUgZwZW9wbGVCDVoLLi9yZXNvdXJjZXNiBnByb3RvMw==",
 			},
 		},
@@ -527,7 +527,7 @@ func Test_validate(t *testing.T) {
 		{Configs: []akhqconfigv1.Config{
 			{
 				TopicRegex:           "topic1",
-				MessageType:          "com.netcracker.Message",
+				MessageType:          "org.qubership.Message",
 				DescriptorFileBase64: "jfhdghgrger",
 			},
 		},
@@ -538,12 +538,12 @@ func Test_validate(t *testing.T) {
 		{Configs: []akhqconfigv1.Config{
 			{
 				TopicRegex:           "topic1",
-				MessageType:          "com.netcracker.Message",
+				MessageType:          "org.qubership.Message",
 				DescriptorFileBase64: "CuMCCghteS5wcm90bxIIdHV0b3JpYWwi/AEKBlBlcnNvbhISCgRuYW1lGAEgASgJUgRuYW1lEg4KAmlkGAIgASgFUgJpZBIUCgVlbWFpbBgDIAEoCVIFZW1haWwSNAoGcGhvbmVzGAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyUgZwaG9uZXMaVQoLUGhvbmVOdW1iZXISFgoGbnVtYmVyGAEgASgJUgZudW1iZXISLgoEdHlwZRgCIAEoDjIaLnR1dG9yaWFsLlBlcnNvbi5QaG9uZVR5cGVSBHR5cGUiKwoJUGhvbmVUeXBlEgoKBk1PQklMRRAAEggKBEhPTUUQARIICgRXT1JLEAIiNwoLQWRkcmVzc0Jvb2sSKAoGcGVvcGxlGAEgAygLMhAudHV0b3JpYWwuUGVyc29uUgZwZW9wbGVCDVoLLi9yZXNvdXJjZXNiBnByb3RvMw==",
 			},
 			{
 				TopicRegex:           "topic1",
-				MessageType:          "com.netcracker.Employee",
+				MessageType:          "org.qubership.Employee",
 				DescriptorFileBase64: "CuMCCghteS5wcm90bxIIdHV0b3JpYWwi/AEKBlBlcnNvbhISCgRuYW1lGAEgASgJUgRuYW1lEg4KAmlkGAIgASgFUgJpZBIUCgVlbWFpbBgDIAEoCVIFZW1haWwSNAoGcGhvbmVzGAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyUgZwaG9uZXMaVQoLUGhvbmVOdW1iZXISFgoGbnVtYmVyGAEgASgJUgZudW1iZXISLgoEdHlwZRgCIAEoDjIaLnR1dG9yaWFsLlBlcnNvbi5QaG9uZVR5cGVSBHR5cGUiKwoJUGhvbmVUeXBlEgoKBk1PQklMRRAAEggKBEhPTUUQARIICgRXT1JLEAIiNwoLQWRkcmVzc0Jvb2sSKAoGcGVvcGxlGAEgAygLMhAudHV0b3JpYWwuUGVyc29uUgZwZW9wbGVCDVoLLi9yZXNvdXJjZXNiBnByb3RvMw==",
 			},
 		},

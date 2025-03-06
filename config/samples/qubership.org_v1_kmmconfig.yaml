@@ -1,4 +1,4 @@
-apiVersion: netcracker.com/v1
+apiVersion: qubership.org/v1
 kind: KmmConfig
 metadata:
   name: kmmconfig-sample

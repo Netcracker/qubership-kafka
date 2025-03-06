@@ -1,4 +1,4 @@
-apiVersion: netcracker.com/v1
+apiVersion: qubership.org/v1
 kind: KafkaUser
 metadata:
   name: kafkauser-sample

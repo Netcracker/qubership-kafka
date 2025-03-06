@@ -416,7 +416,7 @@ An overview of Kafka Mirror Maker Monitoring dashboard is shown below.
 
 This table provides full list of Prometheus metrics being collected by Kafka Monitoring.
 
-| Metric name                                        | Description                                                                                                     | Prometheus name |  Amazon MSK   |  Aiven Kafka  | Netcracker Kafka Service |
+| Metric name                                        | Description                                                                                                     | Prometheus name |  Amazon MSK   |  Aiven Kafka  | Qubership Kafka Service |
 |----------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|:---------------:|:-------------:|:-------------:|:------------------------:|
 | kafka_cluster_status                               | Status of the Kafka cluster. Internal metric of monitoring agent, including labels for topics, partitions, etc. |                 | Not Supported |   Supported   |        Supported         |
 | kafka_cluster_Partition_Value                      | Information about partition state                                                                               |                 |   Supported   |   Supported   |        Supported         |

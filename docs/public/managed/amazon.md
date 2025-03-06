@@ -10,7 +10,6 @@ Apache Kafka (MSK) bootstrap servers.
 ## Global
 
 * External Kafka bootstrap servers are available from Kubernetes cluster where you are going to deploy side services.
-* There is DP Helm Deploy, App Deployer or local Helm configured to deploy to necessary Kubernetes cluster.
 * Monitoring services and prometheus-operator should be pre-installed.
 
 ## Preparations for Monitoring

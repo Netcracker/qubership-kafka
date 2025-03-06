@@ -5,7 +5,7 @@ metadata:
   name: kmmconfig-viewer-role
 rules:
 - apiGroups:
-  - netcracker.com
+  - qubership.org
   resources:
   - kmmconfigs
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - netcracker.com
+  - qubership.org
   resources:
   - kmmconfigs/status
   verbs:

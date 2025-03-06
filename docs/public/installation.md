@@ -44,13 +44,10 @@ the [Deployment Permissions](#deployment-permissions) section before the install
 
 **Note**: If you deploy Kafka Service to Kubernetes version less than 1.19, you have to manually install CRDs from:
 
-* `config/crd/old/netcracker.com_kafkaservices.yaml`
-* `config/crd/old/netcracker.com_kmmconfigs.yaml`
+* `config/crd/old/qubership.com_kafkaservices.yaml`
+* `config/crd/old/qubership.com_kmmconfigs.yaml`
 
-and disable automatic CRD creation by Helm in the following way:
-
-* Specify `--skip-crds` in `ADDITIONAL_OPTIONS` parameter of DP Deployer Job.
-* Specify `DISABLE_CRD=true;` in `CUSTOM_PARAMS` parameter of Groovy Deployer Job.
+and disable automatic CRD creation by Helm.
 
 #### KafkaUsers CRD
 
@@ -71,7 +68,7 @@ To avoid using `cluster-wide` rights during the deployment, the following condit
     ```yaml
     rules:
       - apiGroups:
-          - netcracker.com
+          - qubership.com
         resources:
           - "*"
         verbs:
@@ -280,7 +277,7 @@ If it is not possible to provide them to the deployment user, you have to apply 
     ```yaml
     rules:
     - apiGroups:
-        - netcracker.com
+        - qubership.com
       resources:
         - kmmconfigs
         - kmmconfigs/status
@@ -305,7 +302,7 @@ If it is not possible to provide them to the deployment user, you have to apply 
     ```yaml
     rules:
     - apiGroups:
-        - netcracker.com
+        - qubership.com
       resources:
         - akhqconfigs
         - akhqconfigs/status
@@ -331,7 +328,7 @@ If it is not possible to provide them to the deployment user, you have to apply 
     ```yaml
     rules:
     - apiGroups:
-        - netcracker.com
+        - qubership.com
       resources:
         - kafkausers
         - kafkausers/status
@@ -389,7 +386,7 @@ need to create that resources before running deploy job.
   rules:
   #kafkaUserConfigurator permissions
     - apiGroups:
-        - netcracker.com
+        - qubership.com
       resources:
         - kafkausers
         - kafkausers/status
@@ -479,9 +476,9 @@ need to create that resources before running deploy job.
       resources:
         - customresourcedefinitions
       resourceNames: 
-        - "kafkausers.netcracker.com"
-        - "akhqconfigs.netcracker.com"
-        - "kmmconfigs.netcracker.com"
+        - "kafkausers.qubership.com"
+        - "akhqconfigs.qubership.com"
+        - "kmmconfigs.qubership.com"
   ```
 
 * Cluster Role Binding:
@@ -980,29 +977,29 @@ refer to [Performance Guide](/docs/public/performance.md).
 
 ## Global
 
-| Parameter                                  | Type    | Mandatory | Default value | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-|--------------------------------------------|---------|-----------|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| global.name                                | string  | no        | kafka         | The custom resource name that is used to form service names for for Kafka, Kafka monitoring, Kafka Mirror Maker and Kafka Mirror Maker monitoring. <br/>**Important**: If you modify this parameter, you always need to add the `CUSTOM_RESOURCE_NAME` parameter with the same value when deploying using `App Deployer` or `Groovy Deployer`.                                                                                                                                                                                                                                                                                                                                                                              |
-| global.waitForPodsReady                    | boolean | no        | true          | Whether the operator should wait for the pods to be ready in order to publish the status to the Custom Resource.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| global.podReadinessTimeout                 | integer | no        | 600           | The timeout in seconds for how long the operator should wait for the pods to be ready for each service.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| global.ipv6                                | boolean | no        | false         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Parameter                                  | Type    | Mandatory | Default value | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+|--------------------------------------------|---------|-----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| global.name                                | string  | no        | kafka         | The custom resource name that is used to form service names for for Kafka, Kafka monitoring, Kafka Mirror Maker and Kafka Mirror Maker monitoring.                                                                                                                                                                                                                                                                                                                                                                           |
+| global.waitForPodsReady                    | boolean | no        | true          | Whether the operator should wait for the pods to be ready in order to publish the status to the Custom Resource.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| global.podReadinessTimeout                 | integer | no        | 600           | The timeout in seconds for how long the operator should wait for the pods to be ready for each service.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| global.ipv6                                | boolean | no        | false         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | global.monitoringType                      | string  | no        | prometheus    | The monitoring type of output plugin that is used for Kafka and Kafka Mirror Maker monitoring. The possible values are `influxdb` and `prometheus`. If the value of this parameter is `influxdb`, you need to check and specify the parameters necessary for InfluxDB plugin such as `global.smDbHost`, `global.smDbName`, `global.secrets.monitoring.smDbUsername`, and `global.secrets.monitoring.smDbPassword`. If the value of this parameter is prometheus, you need to check and specify the parameters necessary for Prometheus plugin such as `global.secrets.monitoring.prometheusUsername` and `global.secrets.monitoring.prometheusPassword`. All monitoring components in the Kafka service use this parameter. |
-| global.customLabels                        | object  | no        | {}            | The custom labels for all pods that are related to the Kafka Service. These labels can be overridden by the component `customLabel` parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| global.installDashboard                    | boolean | no        | true          | Specifies whether Kafka and Kafka Mirror Maker Grafana dashboards are to be applied or not. All monitoring components in the Kafka service use this parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| global.velero.preHookBackupEnabled         | boolean | no        | true          | Whether Velero backup pre-hook with Kafka Backup Daemon command is to be enabled. If parameter is set to `true`, Kafka Backup Daemon initiates backup of topics configurations and writes to the storage before Velero backup procedure. Applicable only for External Kafka. If local storage on Backup Daemon is used it also saves file with `backup-id` to the disk. For more information about Velero backup hooks, see [Backup Hooks](https://velero.io/docs/v1.9/backup-hooks/).                                                                                                                                                                                                                                      |
-| global.velero.postHookRestoreEnabled       | boolean | no        | true          | Whether Velero restore post-hook with Kafka Backup Daemon command is to be enabled. If parameter is set to `true`, Kafka Backup Daemon initiates restore of topics configurations from latest `backup-id` is stored on local disk after Velero restore procedure. Applicable only for External Kafka with local storage on Backup Daemon, otherwise restore hook should be added manually. For more information about Velero backup hooks, see [Restore Hooks](https://velero.io/docs/v1.9/restore-hooks/).                                                                                                                                                                                                                 |
-| global.smDbHost                            | string  | no        | ""            | The host of the System Monitoring database. You must specify this parameter only if global.monitoringType parameter value is equal to `influxdb`. For example, `http://search.openshift.sdntest.example.com:8086`.All monitoring components in the Kafka service use this parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| global.smDbName                            | string  | no        | ""            | The name of the database in System Monitoring. You must specify this parameter only if global.monitoringType parameter value is equal to `influxdb`. For example, `cloud_search_openshift_sdntest_example_com`. All monitoring components in the Kafka service use this parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| global.securityContext                     | object  | no        | {}            | The pod security context for all pods which are related to the Kafka Service. The security context can be overridden by the component `securityContext` parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| global.cloudIntegrationEnabled             | boolean | no        | true          | The parameter specifies whether to apply global cloud parameters instead of parameters described in Kafka service (INFRA_ZOOKEEPER_CLIENT_USERNAME, INFRA_ZOOKEEPER_CLIENT_PASSWORD, INFRA_KAFKA_ADMIN_USERNAME, INFRA_KAFKA_ADMIN_PASSWORD, INFRA_KAFKA_CLIENT_USERNAME, INFRA_KAFKA_CLIENT_PASSWORD, INFRA_KAFKA_REPLICAS, MONITORING_ENABLED, STORAGE_RWO_CLASS). If it is set to false or global parameter is absent, corresponding parameter from Kafka service is applied.                                                                                                                                                                                                                                            |
-| global.tls.enabled                         | boolean | no        | false         | Whether to use TLS to connect to all Kafka services.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| global.tls.cipherSuites                    | list    | no        | []            | The list of cipher suites that are used to negotiate the security settings for a network connection using TLS or SSL network protocol. By default, all the available cipher suites are supported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| global.tls.allowNonencryptedAccess         | boolean | no        | true          | Whether to allow non-encrypted access to Kafka or not.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| global.tls.generateCerts.enabled           | boolean | no        | true          | Whether to generate TLS certificates by Helm or not.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| global.tls.generateCerts.certProvider      | string  | no        | cert-manager  | The provider used to generate TLS certificates. The possible values are `helm` and `cert-manager`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| global.tls.generateCerts.durationDays      | integer | no        | 365           | The TLS certificate validity duration in days.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| global.tls.generateCerts.clusterIssuerName | string  | no        | ""            | The name of the `ClusterIssuer` resource. If the parameter is not set or empty, the `Issuer` resource in the current Kubernetes namespace is used. It is used when the `global.tls.generateCerts.certProvider` parameter is set to `cert-manager`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| global.restrictedEnvironment               | boolean | no        | false         | Whether the deployment is being performed in a restricted access environment.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| global.customLabels                        | object  | no        | {}            | The custom labels for all pods that are related to the Kafka Service. These labels can be overridden by the component `customLabel` parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| global.installDashboard                    | boolean | no        | true          | Specifies whether Kafka and Kafka Mirror Maker Grafana dashboards are to be applied or not. All monitoring components in the Kafka service use this parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| global.velero.preHookBackupEnabled         | boolean | no        | true          | Whether Velero backup pre-hook with Kafka Backup Daemon command is to be enabled. If parameter is set to `true`, Kafka Backup Daemon initiates backup of topics configurations and writes to the storage before Velero backup procedure. Applicable only for External Kafka. If local storage on Backup Daemon is used it also saves file with `backup-id` to the disk. For more information about Velero backup hooks, see [Backup Hooks](https://velero.io/docs/v1.9/backup-hooks/).                                                                                                                                                                                                                                     |
+| global.velero.postHookRestoreEnabled       | boolean | no        | true          | Whether Velero restore post-hook with Kafka Backup Daemon command is to be enabled. If parameter is set to `true`, Kafka Backup Daemon initiates restore of topics configurations from latest `backup-id` is stored on local disk after Velero restore procedure. Applicable only for External Kafka with local storage on Backup Daemon, otherwise restore hook should be added manually. For more information about Velero backup hooks, see [Restore Hooks](https://velero.io/docs/v1.9/restore-hooks/).                                                                                                                                                                                                                |
+| global.smDbHost                            | string  | no        | ""            | The host of the System Monitoring database. You must specify this parameter only if global.monitoringType parameter value is equal to `influxdb`. For example, `http://search.openshift.sdntest.example.com:8086`.All monitoring components in the Kafka service use this parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| global.smDbName                            | string  | no        | ""            | The name of the database in System Monitoring. You must specify this parameter only if global.monitoringType parameter value is equal to `influxdb`. For example, `cloud_search_openshift_sdntest_example_com`. All monitoring components in the Kafka service use this parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| global.securityContext                     | object  | no        | {}            | The pod security context for all pods which are related to the Kafka Service. The security context can be overridden by the component `securityContext` parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| global.cloudIntegrationEnabled             | boolean | no        | true          | The parameter specifies whether to apply global cloud parameters instead of parameters described in Kafka service (INFRA_ZOOKEEPER_CLIENT_USERNAME, INFRA_ZOOKEEPER_CLIENT_PASSWORD, INFRA_KAFKA_ADMIN_USERNAME, INFRA_KAFKA_ADMIN_PASSWORD, INFRA_KAFKA_CLIENT_USERNAME, INFRA_KAFKA_CLIENT_PASSWORD, INFRA_KAFKA_REPLICAS, MONITORING_ENABLED, STORAGE_RWO_CLASS). If it is set to false or global parameter is absent, corresponding parameter from Kafka service is applied.                                                                                                                                                                                                                                           |
+| global.tls.enabled                         | boolean | no        | false         | Whether to use TLS to connect to all Kafka services.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| global.tls.cipherSuites                    | list    | no        | []            | The list of cipher suites that are used to negotiate the security settings for a network connection using TLS or SSL network protocol. By default, all the available cipher suites are supported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| global.tls.allowNonencryptedAccess         | boolean | no        | true          | Whether to allow non-encrypted access to Kafka or not.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| global.tls.generateCerts.enabled           | boolean | no        | true          | Whether to generate TLS certificates by Helm or not.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| global.tls.generateCerts.certProvider      | string  | no        | cert-manager  | The provider used to generate TLS certificates. The possible values are `helm` and `cert-manager`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| global.tls.generateCerts.durationDays      | integer | no        | 365           | The TLS certificate validity duration in days.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| global.tls.generateCerts.clusterIssuerName | string  | no        | ""            | The name of the `ClusterIssuer` resource. If the parameter is not set or empty, the `Issuer` resource in the current Kubernetes namespace is used. It is used when the `global.tls.generateCerts.certProvider` parameter is set to `cert-manager`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| global.restrictedEnvironment               | boolean | no        | false         | Whether the deployment is being performed in a restricted access environment.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ### External Kafka
 
@@ -1524,91 +1521,6 @@ You can use the following tags:
 * Check if the application is already installed and find its previous deployments' parameters to make changes.
 * See [Upgrade](#upgrade)
 
-## App Deployer Steps
-
-### Initial Deployment
-
-1. Navigate to `CMDB` of your tenant's cloud and create namespace for the application.
-2. Fill the application deployment parameters in the `yaml` format in `CMDB` for **namespace** for Kafka.
-
-   Example of deployment parameters are provided in the [On-Prem Examples](#on-prem-examples) section.
-
-   **Important**: You must always specify `DEPLOY_W_HELM: true` and `ESCAPE_SEQUENCE: true` to correctly deploy the
-   Helm release.
-3. Install `Kafka` application firstly (excluding case of [External Managed Kafka](#external-kafka) installation).
-   Navigate to the Application Deploy or Groovy Deploy job and specify the following data for build:
-
-   * `PROJECT` is your cloud name and namespace name in format of {cloud}-{namespace}.
-   * `ARTIFACT_DESCRIPTOR_VERSION` is the version of kafka-service.
-      It should be provided in the format, `kafka:x.x.x_delivery_kafka_x.x.x_timestamp`.
-      <!-- #GFCFilterMarkerStart# -->The all versions are available on
-      [Release Page](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/releases)
-      <!-- #GFCFilterMarkerEnd# -->.
-   * `DEPLOY_MODE` is the mode of the deployment procedure. It can be `Rolling Update` or `Clean Install`.
-      The `Clean Install` mode removes everything from the namespace before the deployment, including Persistent Volumes Claims.
-      Never use it for upgrades on production.
-   
-   Click `Build` button to start deployment.
-
-4. Install `Kafka Services` application to deploy supplementary services. Navigate to the Application Deploy or Groovy Deploy job and 
-   specify the following data for build:
-
-   * `PROJECT` is your cloud name and namespace name in format of {cloud}-{namespace}.
-   * `ARTIFACT_DESCRIPTOR_VERSION` is the version of kafka-service.
-     It should be provided in the format, `kafka-services:x.x.x_delivery_kafka-services_timestamp`.
-     <!-- #GFCFilterMarkerStart# -->
-     The all versions are available on [Release Page](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/releases)
-     <!-- #GFCFilterMarkerEnd# -->.
-   * `DEPLOY_MODE` is the mode of the deployment procedure. It must be `Rolling Update` only.
-   
-   Click `Build` button to start deployment.
-
-### Upgrades and Configuration Updates
-
-For major `Apache Kafka` upgrades it is required to upgrade `Kafka` before `Kafka Services`. 
-The order of the configuration updates for `Kafka` or `Kafka Services` is not important, but pay attention,
-every `Kafka Services` version has the range of supported `Kafka` versions. 
-Follow the tags to find such information.
-
-1. Make changes for the application deployment parameters in the `yaml` format in `CMDB`.
-2. Install `Kafka` or `Kafka Service` charts one by one.
-   Navigate to the Application Deploy or Groovy Deploy job and specify the following data for build:
-   * `PROJECT` is your cloud name and namespace name in format of {cloud}-{namespace}.
-   * `ARTIFACT_DESCRIPTOR_VERSION` is the version of kafka-service.
-     It should be provided in the format, `kafka:x.x.x_delivery_kafka_x.x.x_timestamp` or
-     `kafka-services:x.x.x_delivery_kafka-service_timestamp`.
-    <!-- #GFCFilterMarkerStart# -->
-    The all versions are available on [Release Page](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/releases)
-    <!-- #GFCFilterMarkerEnd# -->.
-   * `DEPLOY_MODE` is the mode of the deployment procedure. It must be `Rolling Update` only.
-     
-   Click `Build` button to start upgrade.
-
-Follow [Upgrade](#upgrade) section to find additional information regrading upgrade procedure.
-
-### Ops Portal Preparation
-
-Make sure all YAML values are escaped in accordance with the Ops portal syntax. The parameter `ESCAPE_SYMBOLS: true` must be specified.
-
-**Arrays**
-
-Arrays should be escaped with `'` symbol. For example the following yaml parameter:
-
-```yaml
-tolerations:
-    - key: "key"
-      operator: "Equal"
-      value: "value"
-      effect: "NoExecute"
-      tolerationSeconds: 3600
-```
-
-In Ops Portal should be transformed to:
-
-```yaml
-tolerations='[{"key":"key1", "operator":"Equal", "value":"value1", "effect":"NoExecute", "tolerationSeconds":3600}]';
-```
-
 ## On-Prem Examples
 
 ### HA Scheme
@@ -1948,13 +1860,13 @@ manually as follows:
 * For OpenShift execute the following command:
 
   ```sh
-  oc delete crd kafkaservices.netcracker.com
+  oc delete crd kafkaservices.qubership.com
   ```
 
 * For Kubernetes execute the following command:
 
   ```sh
-  kubectl delete crd kafkaservices.netcracker.com
+  kubectl delete crd kafkaservices.qubership.com
   ```
 
 **Important**: Kafka service versions until **2.6.1-3.10** have a bug with Persistent Volume Claims creation.
@@ -2053,9 +1965,9 @@ Apply the old CRD version without `validation` section:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: kafkaservices.netcracker.com
+  name: kafkaservices.qubership.com
 spec:
-  group: netcracker.com
+  group: qubership.com
   names:
     kind: KafkaService
     listKind: KafkaServiceList
@@ -2092,14 +2004,6 @@ Starting from `1.0.0` version the installation of Kafka and its supplementary se
 
 There are two ways for updating Kafka from joint to separate scheme - `automatic` and `manual`. Both are described below.
 
-### Automatic Way
-
-The required steps can be performed automatically using the parameter `ENABLE_MIGRATION: true`. It is enabled by default.
-It requires full access to namespace and previous Kafka should have been installed with `DEPLOY_W_HELM: true` mode.
-
-**Note:** the automatic way of migration works for `kafka` and `kafka-services` applications. For backward compatible joint application
-`kafka-service` you may need to run it twice or perform manual steps.
-
 ### Manual Way
 
 The following steps can be performed manually:
@@ -2127,8 +2031,7 @@ The following steps can be performed manually:
     helm uninstall kafka-service-${KAFKA_NAMESPACE}
     ```
 
-After removing all these entities you can install `Kafka` and `Kafka Services` service by following the
-[App Deployer Steps](#app-deployer-steps).
+After removing all these entities you can install `Kafka` and `Kafka Services` service.
 
 ## HA to DR Scheme
 
@@ -2139,7 +2042,7 @@ Not applicable
 Kafka does not support rollback with downgrade of a major version.
 In this case, you need to:
 
-1. Deploy the previous version using the `Clean Install` mode of [App Deployer](#app-deployer-steps).
+1. Deploy the previous version.
 2. Restore the data from backup. For more information, refer to the
    [Restore from Backup](https://git.netcracker.com/PROD.Platform.Streaming/kafka-backup-daemon/-/blob/master/documentation/maintenance-guide/development-guide/README.md#recovery)
    guide.
@@ -2407,8 +2310,6 @@ You can also specify additional node affinity rule to start pods on allowed Kube
 
 For this, you can use the following affinity rules:
 
-**DP Helm Deployer Job**
-
 <details>
 <summary>Click to expand YAML</summary>
 
@@ -2455,18 +2356,6 @@ kafka:
 
 </details>
 
-**APP Groovy Deployer Job**
-
-```text
-kafka.affinity='{"podAntiAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":[{"labelSelector":{"matchExpressions":[{"key":"component","operator":"In","values":["kafka"]}]},"topologyKey":"topology.kubernetes.io/zone"}]},"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"role","operator":"In","values":["compute"]}]}]}}}';
-```
-
-Where:
-
-* `topology.kubernetes.io/zone` is the name of label that defines availability zone. This is default name for Kubernetes 1.17+.
-  Earlier `failure-domain.beta.kubernetes.io/zone` was used.
-* `role` and `compute` are the sample name and value of label that defines region to run Kafka pods.
-
 ### Replicas More than Availability Zones
 
 For cases when number of Kafka pods, the value of `kafka.replicas` parameter is greater than number of availability zones you need to
@@ -2474,8 +2363,6 @@ restrict start of pods to one pod per node and specify preferred rule to start o
 You can also specify additional node affinity rule to start pods on allowed Kubernetes nodes.
 
 For this, you can use the following affinity rules:
-
-**DP Helm Deployer Job**
 
 <details>
 <summary>Click to expand YAML</summary>
@@ -2542,19 +2429,6 @@ kafka:
 
 </details>
 
-**APP Groovy Deployer Job**
-
-```text
-kafka.affinity='{"podAntiAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":[{"labelSelector":{"matchExpressions":[{"key":"component","operator":"In","values":["kafka"]}]},"topologyKey":"kubernetes.io/hostname"}],"preferredDuringSchedulingIgnoredDuringExecution":[{"weight":100,"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"component","operator":"In","values":["kafka"]}]},"topologyKey":"topology.kubernetes.io/zone"}}]},"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"role","operator":"In","values":["compute"]}]}]}}}';
-```
-
-Where:
-
-* `kubernetes.io/hostname` is the name of label that defines Kubernetes node. This is a standard name for Kubernetes.
-* `topology.kubernetes.io/zone` is the name of label that defines availability zone. This is a standard name for Kubernetes 1.17+.
-  Earlier `failure-domain.beta.kubernetes.io/zone` was used.
-* `role` and `compute` are the sample name and value of label that defines region to run Kafka pods.
-
 ## Broker Racks
 
 To allow Kafka brokers to be grouped into racks in accordance with availability zone and to activate rack aware replica assignment
@@ -2564,64 +2438,13 @@ For more information about these properties see [Kafka Parameters](#kafka).
 
 For example, the following configurations allows grouping brokers by value of specified node label:
 
-**DP Helm Deployer Job**
-
 ```yaml
 kafka:
   getRacksFromNodeLabels: true
   nodeLabelNameForRack: "topology.kubernetes.io/zone"
 ```
 
-**APP Groovy Deployer Job**
-
-```properties
-kafka.getRacksFromNodeLabels=true;
-kafka.nodeLabelNameForRack=topology.kubernetes.io/zone;
-```
-
-Where:
-
-* `topology.kubernetes.io/zone` is the name of label that defines availability zone. This is a standard name for Kubernetes 1.17+.
-  Earlier `failure-domain.beta.kubernetes.io/zone` was used.
-
 # Frequently Asked Questions
-
-## How to deploy using App Deployer over an installed DP Help Deployer version?
-
-App Deployer does not support migration from DP Helm Deployer.
-
-If you need it, you have to delete the current release with Helm command.
-
-For example:
-
-```bash
-helm list --namespace=<namespace_name>
-
-helm uninstall kafka-service-<namespace_name> --namespace=<namespace_name>
-```
-
-Then update release annotations for secrets and persistent volume claims:
-
-```sh
-kubectl get secret -n <namespace_name> -o json | jq '.items[].metadata|select(.annotations."meta.helm.sh/release-name")|.name' | awk '{print "kubectl annotate --overwrite secret", $1, "meta.helm.sh/release-name=kafka-service -n <namespace_name>"}' | bash -x
-kubectl get pvc -n <namespace_name> -o json | jq '.items[].metadata|select(.annotations."meta.helm.sh/release-name")|.name' | awk '{print "kubectl annotate --overwrite pvc", $1, "meta.helm.sh/release-name=kafka-service -n <namespace_name>"}' | bash -x
-```
-
-Then install using App Deployer.
-
-## How to deploy with DEPLOY_W_HELM true over false?
-
-App Deployer does not support migration from `DEPLOY_W_HELM: false` to `DEPLOY_W_HELM: true`.
-
-If you need it, you have to delete all resources that belong to the current installation.
-
-For example:
-
-```bash
-kubectl delete all,secrets,configmaps,ingresses,serviceaccounts,roles,rolebindings --all --namespace=<namespace_name>
-```
-
-Then install using App Deployer and `DEPLOY_W_HELM: true`.
 
 ## What to do if a Kubernetes version is upgraded before application?
 
@@ -2638,8 +2461,6 @@ kubectl get secret -l "owner=helm"
 kubectl delete secret -l "owner=helm"
 ```
 
-Then install a new version with App Deployer and `DEPLOY_W_HELM: true`.
-
 ## Deploy job failed with status check but application works fine
 
 It can be an issue with timeouts or long start of Kafka pods. You need to get statuses from the Kafka custom
@@ -2648,12 +2469,12 @@ resource and analyze them.
 For example:
 
 ```bash
-kubect get kafkaservices.netcracker.com -o yaml
+kubect get kafkaservices.qubership.com -o yaml
 ```
 
 You can also increase the pod readiness timeout `global.podReadinessTimeout: 600` and try to run the job again.
 
-## Deploy job failed with unknown fields in kafkaservices.netcracker.com
+## Deploy job failed with unknown fields in kafkaservices.qubership.com
 
 It can be an issue with CRD changes. Refer to [CRD Upgrade](#crd-upgrade) for details.
 

@@ -23,15 +23,15 @@ The following are some examples:
 * To connect, store, and make available data produced by different divisions of a company.
 * To serve as the foundation for data platforms, event-driven architectures, and microservices.
 
-## Netcracker Kafka Delivery and Features
+## Qubership Kafka Delivery and Features
 
-The Netcracker platform provides Kafka deployment to Kubernetes/OpenShift using their own helm chart with operator and additional features.
+The Qubership platform provides Kafka deployment to Kubernetes/OpenShift using their own helm chart with operator and additional features.
 The deployment procedure and additional features include the following:
 
-* Support of Netcracker deployment jobs for HA scheme and different configurations.
+* Support of Qubership deployment jobs for HA scheme and different configurations.
   For more information, refer to [Installation Guide](/docs/public/installation.md).
 * Backup and restore for topics configuration.
-  For more information, refer to [Kafka Backup Daemon Guide](https://git.netcracker.com/PROD.Platform.Streaming/kafka-backup-daemon/-/blob/master/documentation/maintenance-guide/development-guide/README.md).
+  For more information, refer to [Kafka Backup Daemon Guide](https://github.com/Netcracker/qubership-kafka-backup-daemon/tree/main/documentation/maintenance-guide/development-guide/README.md).
 * Monitoring integration with Grafana Dashboard and Prometheus Alerts.
   For more information, refer to [Monitoring Guide](/docs/public/monitoring.md).
 * Mirroring data between Kafka clusters. For more information, refer to [Replication Guide](/docs/public/replication.md).
@@ -167,7 +167,7 @@ Not Applicable: default HA scheme is used for deployment to Google Cloud.
 
 The Kafka Service allows you to deploy Kafka supplementary services (AKHQ, Monitoring, Mirror Maker, Cruise Control, Backup Daemon) without
 deploying Kafka, using Amazon Managed Streaming for Apache Kafka (MSK) connection. 
-Thus, the features and functions of these services are adopted to Amazon MSK and available as for Netcracker Kafka delivery. 
+Thus, the features and functions of these services are adopted to Amazon MSK and available as for Qubership Kafka delivery. 
 
 ![AWS scheme](images/kafka_aws_deploy.drawio.png)
 

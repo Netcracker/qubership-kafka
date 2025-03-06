@@ -51,9 +51,9 @@ type KafkaReconciler struct {
 	StatusUpdater StatusUpdater
 }
 
-//+kubebuilder:rbac:groups=netcracker.com,resources=kafkas,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netcracker.com,resources=kafkas/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netcracker.com,resources=kafkas/finalizers,verbs=update
+//+kubebuilder:rbac:groups=qubership.org,resources=kafkas,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=qubership.org,resources=kafkas/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=qubership.org,resources=kafkas/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

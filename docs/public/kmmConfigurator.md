@@ -33,7 +33,7 @@ spec:
     transformation:
       transforms:
         - name: HeartbeatHeaderFilter
-          type: com.netcracker.kafka.mirror.extension.HeaderFilter
+          type: com.qubership.kafka.mirror.extension.HeaderFilter
           params:
             filter.type: exclude
             headers: heartbeat,type=heartbeat
@@ -114,7 +114,7 @@ clusters = dc2, dc1
 target.dc = dc1
 ...
 dc2->dc1.enabled = true
-dc2->dc1.transforms.example-kmm-config_kafka-service_HeartbeatHeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter
+dc2->dc1.transforms.example-kmm-config_kafka-service_HeartbeatHeaderFilter.type = com.qubership.kafka.mirror.extension.HeaderFilter
 dc2->dc1.transforms.example-kmm-config_kafka-service_HeartbeatHeaderFilter.filter.type = exclude
 dc2->dc1.transforms.example-kmm-config_kafka-service_HeartbeatHeaderFilter.headers = heartbeat,type=heartbeat
 dc2->dc1.transforms.example-kmm-config_kafka-service_HeartbeatHeaderFilter.topics = dc2.topic1,dc2.topic2

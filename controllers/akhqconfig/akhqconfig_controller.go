@@ -39,7 +39,7 @@ import (
 var log = logf.Log.WithName("controller_akhq_config")
 
 const (
-	akhqFinalizer               = "netcracker.com/akhq-config-controller"
+	akhqFinalizer               = "qubership.org/akhq-config-controller"
 	internalServerError         = "internal server error, config was not applied"
 	protobufConfigurationCMName = "akhq-protobuf-configuration"
 	decodingValidationError     = "can not decode descriptor-file-base64 config which is associated with [%s] regular expression"
@@ -70,9 +70,9 @@ type AkhqConfigReconciler struct {
 	Namespace string
 }
 
-//+kubebuilder:rbac:groups=netcracker.com,resources=akhqconfigs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netcracker.com,resources=akhqconfigs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netcracker.com,resources=akhqconfigs/finalizers,verbs=update
+//+kubebuilder:rbac:groups=qubership.org,resources=akhqconfigs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=qubership.org,resources=akhqconfigs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=qubership.org,resources=akhqconfigs/finalizers,verbs=update
 
 func (r *AkhqConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", req.Namespace, "Request.Name", req.Name)

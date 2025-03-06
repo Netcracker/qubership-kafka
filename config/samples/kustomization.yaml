@@ -1,16 +1,16 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
-- netcracker.com_v1alpha1_kafkaservice.yaml
-- netcracker.com_v1_kafkaservice.yaml
-- netcracker.com_v2_kafkaservice.yaml
-- netcracker.com_v3alpha1_kafkaservice.yaml
-- netcracker.com_v4_kafkaservice.yaml
-- netcracker.com_v5_kafkaservice.yaml
-- netcracker.com_v6_kafkaservice.yaml
-- netcracker.com_v7_kafkaservice.yaml
-- netcracker.com_v1_kmmconfig.yaml
-- netcracker.com_v1_akhqconfig.yaml
-- netcracker.com_v1_kafkauser.yaml
+- qubership.org_v1alpha1_kafkaservice.yaml
+- qubership.org_v1_kafkaservice.yaml
+- qubership.org_v2_kafkaservice.yaml
+- qubership.org_v3alpha1_kafkaservice.yaml
+- qubership.org_v4_kafkaservice.yaml
+- qubership.org_v5_kafkaservice.yaml
+- qubership.org_v6_kafkaservice.yaml
+- qubership.org_v7_kafkaservice.yaml
+- qubership.org_v1_kmmconfig.yaml
+- qubership.org_v1_akhqconfig.yaml
+- qubership.org_v1_kafkauser.yaml
 - _v8_kafkaservice.yaml
 - _v8_kafka.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

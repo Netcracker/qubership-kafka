@@ -44,11 +44,11 @@ const (
 	failureState          = "failure"
 	processingState       = "processing"
 	disabledState         = "disabled"
-	kafkaUserFinalizer    = "netcracker.com/kafka-user-controller"
+	kafkaUserFinalizer    = "qubership.org/kafka-user-controller"
 	specName              = "spec"
 	labelsName            = "labels"
 	annotationsName       = "annotations"
-	bootstrapServersLabel = "kafka.netcracker.com/bootstrap.servers"
+	bootstrapServersLabel = "kafka.qubership.org/bootstrap.servers"
 	authorizationDisabled = "Security features are disabled"
 	kafkaScheme           = "kafka"
 	saslPlaintextProtocol = "sasl_plaintext"
@@ -69,9 +69,9 @@ type KafkaUserReconciler struct {
 	KafkaSslSecret        string
 }
 
-//+kubebuilder:rbac:groups=netcracker.com,resources=kafkausers,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=netcracker.com,resources=kafkausers/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=netcracker.com,resources=kafkausers/finalizers,verbs=update
+//+kubebuilder:rbac:groups=qubership.org,resources=kafkausers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=qubership.org,resources=kafkausers/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=qubership.org,resources=kafkausers/finalizers,verbs=update
 
 func (r *KafkaUserReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	logger := logf.Log.WithName("controller_kafka_user").

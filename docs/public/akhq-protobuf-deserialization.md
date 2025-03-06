@@ -21,11 +21,11 @@ To apply Protobuf configuration to AKHQ:
        topics-mapping:            
          - topic-regex: "dev-.*|test_.*"
            descriptor-file: "streaming.desc"
-           key-message-type: "com.netcracker.protobuf.serialization.protocol.Row"
-           value-message-type: "com.netcracker.protobuf.serialization.protocol.Envelope"
+           key-message-type: "com.qubership.protobuf.serialization.protocol.Row"
+           value-message-type: "com.qubership.protobuf.serialization.protocol.Envelope"
          - topic-regex: "album.*"
            descriptor-file-base64: "Cs4BCgthbGJ1bS5wcm90bxIXY29tLm5ldGNyYWNrZXIucHJvdG9idWYidwoFQWxidW0SFAoFdGl0bGUYASABKAlSBXRpdGxlEhYKBmFydGlzdBgCIAMoCVIGYXJ0aXN0EiEKDHJlbGVhc2VfeWVhchgDIAEoBVILcmVsZWFzZVllYXISHQoKc29uZ190aXRsZRgEIAMoCVIJc29uZ1RpdGxlQiUKF2NvbS5uZXRjcmFja2VyLnByb3RvYnVmQgpBbGJ1bVByb3RvYgZwcm90bzM="
-           value-message-type: "com.netcracker.protobuf.Album"
+           value-message-type: "com.qubership.protobuf.Album"
    ```
 
    **Note**: Be careful with topic regexes, they should match only the desired topics.
@@ -46,9 +46,9 @@ To apply Protobuf configuration to AKHQ:
    
    ```protobuf
    syntax = "proto3";
-   package com.netcracker.protobuf.serialization.protocol;
+   package com.qubership.protobuf.serialization.protocol;
 
-   option java_package = "com.netcracker.proto";
+   option java_package = "com.qubership.proto";
    option java_outer_classname = "StreamingProtocol";
    option optimize_for = SPEED;
    
@@ -61,8 +61,8 @@ To apply Protobuf configuration to AKHQ:
    }
    ```
    
-   Full-qualified names for `Row` and `Envelope` are `com.netcracker.protobuf.serialization.protocol.Row` and
-   `com.netcracker.protobuf.serialization.protocol.Envelope` respectively.
+   Full-qualified names for `Row` and `Envelope` are `com.qubership.protobuf.serialization.protocol.Row` and
+   `com.qubership.protobuf.serialization.protocol.Envelope` respectively.
 
    Copy the configuration you created.
 
@@ -102,6 +102,6 @@ deserialization:
     topics-mapping:            
       - topic-regex: "set appropriate regex"
         descriptor-file: "streaming.desc"
-        key-message-type: "com.netcracker.protobuf.serialization.protocol.Row"
-        value-message-type: "com.netcracker.protobuf.serialization.protocol.Envelope"     
+        key-message-type: "com.qubership.protobuf.serialization.protocol.Row"
+        value-message-type: "com.qubership.protobuf.serialization.protocol.Envelope"     
 ```

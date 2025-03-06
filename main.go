@@ -45,8 +45,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	netcrackercomv1 "github.com/Netcracker/qubership-kafka/api/v1"
-	netcrackercomv7 "github.com/Netcracker/qubership-kafka/api/v7"
+	qubershiporgv1 "github.com/Netcracker/qubership-kafka/api/v1"
+	qubershiporgv7 "github.com/Netcracker/qubership-kafka/api/v7"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -74,8 +74,8 @@ func logKmmConfigMgrEndGoroutine() {
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(netcrackercomv1.AddToScheme(scheme))
-	utilruntime.Must(netcrackercomv7.AddToScheme(scheme))
+	utilruntime.Must(qubershiporgv1.AddToScheme(scheme))
+	utilruntime.Must(qubershiporgv7.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

@@ -39,7 +39,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsOnlyTransforms(t *
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -56,7 +56,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsOnlyTransforms(t *
 	replicationConfig = transformationConfigurator.AddTransformationProperties(
 		replicationConfig, sourceClusterName, targetClusterName, false)
 	expected := []string{
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = test.*",
@@ -72,7 +72,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsOnly
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -88,7 +88,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsOnly
 	transformationConfigurator := NewTransformationConfigurator(&transformation, "test_")
 	replicationConfig = transformationConfigurator.AddTransformationProperties(replicationConfig, sourceClusterName, targetClusterName, false)
 	expected := []string{
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = test.*",
@@ -104,7 +104,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsTransformsAndPredi
 		Transforms: []kmm.Transform{
 			{
 				Name:      "HeaderFilter",
-				Type:      "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type:      "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Predicate: "HasHeaderKey",
 				Negate:    boolPointer(true),
 				Params: map[string]string{
@@ -139,7 +139,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsTransformsAndPredi
 	transformationConfigurator := NewTransformationConfigurator(&transformation, "")
 	replicationConfig = transformationConfigurator.AddTransformationProperties(replicationConfig, sourceClusterName, targetClusterName, false)
 	expected := []string{
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.predicate = HasHeaderKey",
 		"cluster1->cluster2.transforms.HeaderFilter.negate = true",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
@@ -163,7 +163,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsTran
 		Transforms: []kmm.Transform{
 			{
 				Name:      "HeaderFilter",
-				Type:      "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type:      "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Predicate: "HasHeaderKey",
 				Negate:    boolPointer(true),
 				Params: map[string]string{
@@ -199,7 +199,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsTran
 	replicationConfig = transformationConfigurator.AddTransformationProperties(
 		replicationConfig, sourceClusterName, targetClusterName, false)
 	expected := []string{
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.predicate = test_HasHeaderKey",
 		"cluster1->cluster2.transforms.test_HeaderFilter.negate = true",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
@@ -223,7 +223,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsParamsWithReplicat
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -250,7 +250,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsParamsWithReplicat
 	replicationConfig = transformationConfigurator.AddTransformationProperties(
 		replicationConfig, sourceClusterName, targetClusterName, false)
 	expected := []string{
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = cluster1.test.*",
@@ -270,7 +270,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsPara
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -297,7 +297,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsPara
 	replicationConfig = transformationConfigurator.AddTransformationProperties(
 		replicationConfig, sourceClusterName, targetClusterName, false)
 	expected := []string{
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = cluster1.test.*",
@@ -317,7 +317,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsParamsWithReplicat
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -344,7 +344,7 @@ func TestAddTransformationPropertiesWhenTransformationContainsParamsWithReplicat
 	replicationConfig = transformationConfigurator.AddTransformationProperties(
 		replicationConfig, sourceClusterName, targetClusterName, true)
 	expected := []string{
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = test.*",
@@ -364,7 +364,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsPara
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -391,7 +391,7 @@ func TestAddTransformationPropertiesWithNamePrefixWhenTransformationContainsPara
 	replicationConfig = transformationConfigurator.AddTransformationProperties(
 		replicationConfig, sourceClusterName, targetClusterName, true)
 	expected := []string{
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = test.*",
@@ -438,7 +438,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsOnlyTransformsA
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -457,7 +457,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsOnlyTransformsA
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = test.*",
@@ -475,7 +475,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsOnlyTransformsA
 	replicationConfig := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = include",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = .*",
@@ -491,7 +491,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsOnlyTransformsA
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -510,7 +510,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsOnlyTransformsA
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = test.*",
@@ -537,7 +537,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsO
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -555,7 +555,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsO
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = test.*",
@@ -573,7 +573,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsO
 	replicationConfig := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = include",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = .*",
@@ -589,7 +589,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsO
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -607,7 +607,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsO
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = test.*",
@@ -634,7 +634,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsTransformsAndPr
 		Transforms: []kmm.Transform{
 			{
 				Name:      "HeaderFilter",
-				Type:      "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type:      "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Predicate: "HasHeaderKey",
 				Negate:    boolPointer(true),
 				Params: map[string]string{
@@ -671,7 +671,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsTransformsAndPr
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.predicate = HasHeaderKey",
 		"cluster1->cluster2.transforms.HeaderFilter.negate = true",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
@@ -697,7 +697,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsT
 	replicationConfig := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = include",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = .*",
@@ -718,7 +718,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsT
 		Transforms: []kmm.Transform{
 			{
 				Name:      "HeaderFilter",
-				Type:      "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type:      "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Predicate: "HasHeaderKey",
 				Negate:    boolPointer(true),
 				Params: map[string]string{
@@ -756,7 +756,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsT
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.predicate = test_HasHeaderKey",
 		"cluster1->cluster2.transforms.test_HeaderFilter.negate = true",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
@@ -782,7 +782,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsParamsWithRepli
 	replicationConfig := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = include",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = .*",
@@ -801,7 +801,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsParamsWithRepli
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -830,7 +830,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsParamsWithRepli
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = cluster1.test.*",
@@ -852,7 +852,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsP
 	replicationConfig := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = include",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = .*",
@@ -871,7 +871,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsP
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -900,7 +900,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsP
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = cluster1.test.*",
@@ -922,7 +922,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsParamsWithRepli
 	replicationConfig := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = include",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = .*",
@@ -941,7 +941,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsParamsWithRepli
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -970,7 +970,7 @@ func TestUpdateTransformationPropertiesWhenTransformationContainsParamsWithRepli
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.HeaderFilter.topics = test.*",
@@ -992,7 +992,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsP
 	replicationConfig := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = include",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = .*",
@@ -1011,7 +1011,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsP
 		Transforms: []kmm.Transform{
 			{
 				Name: "HeaderFilter",
-				Type: "com.netcracker.kafka.mirror.extension.HeaderFilter",
+				Type: "org.qubership.kafka.mirror.extension.HeaderFilter",
 				Params: map[string]string{
 					"filter.type": "exclude",
 					"headers":     "messageType=heartbeat",
@@ -1040,7 +1040,7 @@ func TestUpdateTransformationPropertiesWithNamePrefixWhenTransformationContainsP
 	expected := []string{
 		"clusters = cluster1, cluster2",
 		"cluster1->cluster2.enabled = true",
-		"cluster1->cluster2.transforms.test_HeaderFilter.type = com.netcracker.kafka.mirror.extension.HeaderFilter",
+		"cluster1->cluster2.transforms.test_HeaderFilter.type = org.qubership.kafka.mirror.extension.HeaderFilter",
 		"cluster1->cluster2.transforms.test_HeaderFilter.filter.type = exclude",
 		"cluster1->cluster2.transforms.test_HeaderFilter.headers = messageType=heartbeat",
 		"cluster1->cluster2.transforms.test_HeaderFilter.topics = test.*",

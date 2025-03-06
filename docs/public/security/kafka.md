@@ -58,7 +58,7 @@ To authenticate, clients must send credentials within a connection request. It r
    ```properties
    security.protocol=SASL_PLAINTEXT
    sasl.mechanism=OAUTHBEARER
-   sasl.login.callback.handler.class=com.netcracker.kafka.security.oauthbearer.OAuthBearerLoginCallbackHandler
+   sasl.login.callback.handler.class=com.qubership.kafka.security.oauthbearer.OAuthBearerLoginCallbackHandler
    ```
 
 **Note**: These properties are required for any consumer and producer configurations.
@@ -192,11 +192,11 @@ So it can lead to a large number of log entries.
 Samples of audit logs:
 
 ```text
-[2020-06-24T11:37:41,604][INFO][category=kafka.audit] CEF:1|Netcracker|Kafka|2.7.1|AUTHENTICATION|Successful authentication for principal 'admin'|1|result=successful suser=admin src=172.25.0.1 authenticationType=SCRAM-SHA-512 type=audit_log_type
-[2020-06-24 11:35:02,471][INFO][category=kafka.audit] CEF:1|Netcracker|Kafka|2.7.1|AUTHENTICATION|[SocketServer brokerId=1] Failed authentication with /172.25.0.1 (Authentication failed during authentication due to invalid credentials with SASL mechanism SCRAM-SHA-512)|1|result=FAILED type=audit_log_type
+[2020-06-24T11:37:41,604][INFO][category=kafka.audit] CEF:1|Qubership|Kafka|2.7.1|AUTHENTICATION|Successful authentication for principal 'admin'|1|result=successful suser=admin src=172.25.0.1 authenticationType=SCRAM-SHA-512 type=audit_log_type
+[2020-06-24 11:35:02,471][INFO][category=kafka.audit] CEF:1|Qubership|Kafka|2.7.1|AUTHENTICATION|[SocketServer brokerId=1] Failed authentication with /172.25.0.1 (Authentication failed during authentication due to invalid credentials with SASL mechanism SCRAM-SHA-512)|1|result=FAILED type=audit_log_type
 
-[2020-06-24T11:37:41,606][INFO][category=kafka.audit] CEF:1|Netcracker|Kafka|2.7.1|AUTHORIZATION|Principal 'admin' with client IP '172.25.0.1' is authorized to perform operation 'Read' on resource 'Topic:LITERAL:kafka-oauth-example-topic'|2|result=authorized suser=admin resource=Topic:LITERAL:kafka-oauth-example-topic src=172.25.0.1 type=audit_log_type operation=Read
-[2020-06-24T11:37:43,333][INFO][category=kafka.audit] CEF:1|Netcracker|Kafka|2.7.1|AUTHORIZATION|Principal '20f0d8e2-a255-493c-9512-e6a9652cbbea' with client IP '172.25.0.1' is unauthorized to perform operation 'Describe' on resource 'Topic:LITERAL:kafka-oauth-example-topic'|2|result=unauthorized suser=20f0d8e2-a255-493c-9512-e6a9652cbbea resource=Topic:LITERAL:kafka-oauth-example-topic src=172.25.0.1 type=audit_log_type operation=Describe
+[2020-06-24T11:37:41,606][INFO][category=kafka.audit] CEF:1|Qubership|Kafka|2.7.1|AUTHORIZATION|Principal 'admin' with client IP '172.25.0.1' is authorized to perform operation 'Read' on resource 'Topic:LITERAL:kafka-oauth-example-topic'|2|result=authorized suser=admin resource=Topic:LITERAL:kafka-oauth-example-topic src=172.25.0.1 type=audit_log_type operation=Read
+[2020-06-24T11:37:43,333][INFO][category=kafka.audit] CEF:1|Qubership|Kafka|2.7.1|AUTHORIZATION|Principal '20f0d8e2-a255-493c-9512-e6a9652cbbea' with client IP '172.25.0.1' is unauthorized to perform operation 'Describe' on resource 'Topic:LITERAL:kafka-oauth-example-topic'|2|result=unauthorized suser=20f0d8e2-a255-493c-9512-e6a9652cbbea resource=Topic:LITERAL:kafka-oauth-example-topic src=172.25.0.1 type=audit_log_type operation=Describe
 ```
 
 **NOTE:** The set of parameters in logs can differ for different type of events and results.

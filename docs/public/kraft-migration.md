@@ -20,9 +20,6 @@ This section describes how to manually migrate Kafka service from ZooKeeper to K
 
 ## Initial step
 
-Use Kafka image with migration support, for example: `artifactorycn.netcracker.com:17014/product/prod.platform.streaming_docker-kafka:0.7.0_3.7.0_20240813-093403`
-([docker-kafka 0.7.0_3.7.0](https://git.netcracker.com/PROD.Platform.Streaming/docker-kafka/-/releases/0.7.0_3.7.0))
-
 Get `KRAFT_CLUSTER_ID`, to do that from one of Kafka pods use command `${KAFKA_HOME}/bin/get-cluster-id.sh`.
 
 Prepare Kraft controller PVC, deployment and service template, to do that modify following templates:

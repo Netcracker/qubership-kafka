@@ -5,7 +5,7 @@ metadata:
   name: kmmconfig-editor-role
 rules:
 - apiGroups:
-  - netcracker.com
+  - qubership.org
   resources:
   - kmmconfigs
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - netcracker.com
+  - qubership.org
   resources:
   - kmmconfigs/status
   verbs:

@@ -29,7 +29,7 @@ spec:
       key-type: ""
       descriptor-file-base64: "CuMCCghteS5wcm90bxIIdHV0b3JpYWwi/AEKBlBlcnNvbhISCgRuYW1lGAEgASgJUgRuYW1lEg4KAmlkGAIgASgFUgJpZBIUCgVlbWFpbBgDIAEoCVIFZW1haWwSNAoGcGhvbmVzGAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyUgZwaG9uZXMaVQoLUGhvbmVOdW1iZXISFgoGbnVtYmVyGAEgASgJUgZudW1iZXISLgoEdHlwZRgCIAEoDjIaLnR1dG9yaWFsLlBlcnNvbi5QaG9uZVR5cGVSBHR5cGUiKwoJUGhvbmVUeXBlEgoKBk1PQklMRRAAEggKBEhPTUUQARIICgRXT1JLEAIiNwoLQWRkcmVzc0Jvb2sSKAoGcGVvcGxlGAEgAygLMhAudHV0b3JpYWwuUGVyc29uUgZwZW9wbGVCDVoLLi9yZXNvdXJjZXNiBnByb3RvMw=="
     - topic-regex: "topic-1,topic-2"
-      message-type: "com.netcracker.Employee"
+      message-type: "com.qubership.Employee"
       descriptor-file-base64: "Cp8BCg5lbXBsb3llZS5wcm90bxIOY29tLm5ldGNyYWNrZXIiZgoIRW1wbG95ZWUSEgoEbmFtZRgBIAEoCVIEbmFtZRIOCgJpZBgCIAEoBVICaWQSFgoGc2FsYXJ5GAMgASgFUgZzYWxhcnkSHgoKZXhwZXJpZW5jZRgEIAEoBVIKZXhwZXJpZW5jZUINWgsuL2VtcGxveWVlc2IGcHJvdG8z"
 ```
 
@@ -48,7 +48,7 @@ of Kafka message. For example, we have the following proto file
 
 ```protobuf
 syntax = "proto3";
-package com.netcracker;
+package com.qubership;
 
 option java_package = "my.java.packege";
 
@@ -60,7 +60,7 @@ message Employee {
 }
 ```
 
-if value of Kafka message is serialised Employee message `com.netcracker.Employee` should be used as `message-type`.
+if value of Kafka message is serialised Employee message `com.qubership.Employee` should be used as `message-type`.
 
 `key-type` is the same as `message-type` but used for Kafka message key. This config can be omitted if key is not serialised or `null`.  
 

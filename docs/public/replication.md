@@ -180,7 +180,7 @@ mirrorMaker:
   transformation:
     transforms:
       - name: HeartbeatHeaderFilter
-        type: com.netcracker.kafka.mirror.extension.HeaderFilter
+        type: com.qubership.kafka.mirror.extension.HeaderFilter
         params:
           filter.type: exclude
           headers: heartbeat,type=heartbeat
@@ -198,7 +198,7 @@ mirrorMaker:
 
 where:
 
-* `com.netcracker.kafka.mirror.extension.HeaderFilter` - The transformation class to filter messages by headers.
+* `com.qubership.kafka.mirror.extension.HeaderFilter` - The transformation class to filter messages by headers.
   The filter provides more advanced features than `org.apache.kafka.connect.transforms.Filter` implementation in conjunction with predicates.
   - `filter.type` - The type of filter that can have `include` or `exclude` value.
   - `headers` - The comma-separated list of headers in format: `key` or `key=value`.

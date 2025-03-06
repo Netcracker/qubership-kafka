@@ -10,7 +10,6 @@ using Aiven for Apache Kafka bootstrap servers.
 ## Global
 
 * External Kafka bootstrap servers are available from Kubernetes cluster where you are going to deploy side services.
-* There is DP Helm Deploy, App Deployer or local Helm configured to deploy to necessary Kubernetes cluster.
 * Monitoring services and Prometheus-operator should be pre-installed.
 
 ## Preparations for Monitoring
@@ -26,7 +25,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
    * Check that monitoring endpoints are available from EKS cluster. For example:
 
     ```bash
-    curl -k -u prometheus_:prometheus_ https://kafka-2e256717-netcracker-3c57.aivencloud.com:9273/metrics
+    curl -k -u prometheus_:prometheus_ https://kafka-2e256717-qubership-3c57.aivencloud.com:9273/metrics
     ```
 
 2. Configure Prometheus scrappers for Kafka exporters:
@@ -50,7 +49,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
         password: prometheus_
       dns_sd_configs:
         - names:
-            - kafka-2e256717-netcracker-3c57.aivencloud.com
+            - kafka-2e256717-qubership-3c57.aivencloud.com
           type: A
           port: 9273
       tls_config:
@@ -216,7 +215,7 @@ global:
 
   externalKafka:
     enabled: true
-    bootstrapServers: "kafka-26d21ee2-netcracker-3c57.aivencloud.com:21170"
+    bootstrapServers: "kafka-26d21ee2-qubership-3c57.aivencloud.com:21170"
     saslMechanism: ""
     enableSsl: true
     sslSecretName: "kafka-tls-secret"

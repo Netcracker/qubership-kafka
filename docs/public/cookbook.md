@@ -44,22 +44,10 @@ The following are some examples:
 
 The important links are described in the table below.
 
-| Name                    | URL                                                                                                                                                                                                                      |
-|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Docker GIT repository   | [https://git.netcracker.com/PROD.Platform.Streaming/docker-kafka](https://git.netcracker.com/PROD.Platform.Streaming/docker-kafka)                                                                                       |
-| Deploy GIT repository   | [https://git.netcracker.com/PROD.Platform.Streaming/kafka-service](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service)                                                                                     |
-| Documentation           | [https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs)                                               |
-| Operator Documentation  | [https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs/public/installation.md](https://git.netcracker.com/PROD.Platform.Streaming/kafka-service/-/tree/master/docs/public/installation.md) |
-| Official Documentation  | [https://kafka.apache.org/documentation/](https://kafka.apache.org/documentation/)                                                                                                                                       |
-
-# Reference Implementations
-
-The Kafka implementations are provided in the table below.
-
-| Product Name            | BASS Reference                                                                                             |
-|-------------------------|------------------------------------------------------------------------------------------------------------|
-| ESO                     | [E2E Service Orchestration](https://bass.netcracker.com/display/ESO/E2E+Service+Orchestration)             |
-| NDO                     | [Network Domain Orchestrator NDO](https://bass.netcracker.com/display/AVP/Network+Domain+Orchestrator+NDO) |
-| DMP                     | [SaaS Cloud Catalog Home](https://bass.netcracker.com/display/SAAS/SaaS+Cloud+Catalog+Home)                |
-| Digital Sales (DS, SFA) | [Cloud DS Stream](https://bass.netcracker.com/display/CloudCRM/Cloud+DS+Stream)                            |
-| Cloud JPG (CPQ, CIM)    | [Cloud CRM Home](https://bass.netcracker.com/display/CloudCRM/Cloud+CRM+Home)                              |
+| Name                   | URL                                                                                                                                                                                |
+|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Docker GIT repository  | [https://github.com/Netcracker/qubership-docker-kafka](https://github.com/Netcracker/qubership-docker-kafka)                                                                       |
+| Deploy GIT repository  | [https://github.com/Netcracker/qubership-kafka](https://github.com/Netcracker/qubership-kafka)                                                                                     |
+| Documentation          | [https://github.com/Netcracker/qubership-kafka/tree/main/docs](https://github.com/Netcracker/qubership-kafka/tree/main/docs)                                                       |
+| Operator Documentation | [https://github.com/Netcracker/qubership-kafka/tree/main/docs/public/installation.md](https://github.com/Netcracker/qubership-kafka-service/tree/main/docs/public/installation.md) |
+| Official Documentation | [https://kafka.apache.org/documentation/](https://kafka.apache.org/documentation/)                                                                                                 |
