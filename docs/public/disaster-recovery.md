@@ -245,9 +245,9 @@ kafka:
       - storage
   zookeeperConnect: zookeeper.zookeeper-service:2181
   externalHostNames:
-    - kafka-1.kafka-service.svc.cluster-1.local
-    - kafka-2.kafka-service.svc.cluster-1.local
-    - kafka-3.kafka-service.svc.cluster-1.local
+    - kafka-1.kafka-services.svc.cluster-1.local
+    - kafka-2.kafka-services.svc.cluster-1.local
+    - kafka-3.kafka-services.svc.cluster-1.local
   externalPorts:
     - 9094
     - 9094
@@ -259,15 +259,15 @@ monitoring:
 akhq:
   install: true
   ingress:
-    host: akhq-kafka-service.cloud.openshift.sdntest.example.com
+    host: akhq-kafka-services.cloud.openshift.sdntest.example.com
 
 mirrorMaker:
   install: true
   replicas: 1
   regionName: "dc1"
   clusters:
-    - {"name": "dc1", "bootstrapServers": "kafka.kafka-service:9092", "username": "client", "password": "client"}
-    - {"name": "dc2", "bootstrapServers": "kafka.kafka-service.svc.cluster-2.local:9094", "username": "client", "password": "client"}
+    - {"name": "dc1", "bootstrapServers": "kafka.kafka-services:9092", "username": "client", "password": "client"}
+    - {"name": "dc2", "bootstrapServers": "kafka.kafka-services.svc.cluster-2.local:9094", "username": "client", "password": "client"}
   topicsToReplicate: "topic1,topic2,topic3"
   replicationFactor: 3
 ```
@@ -313,9 +313,9 @@ kafka:
       - storage
   zookeeperConnect: zookeeper.zookeeper-service:2181
   externalHostNames:
-    - kafka-1.kafka-service.svc.cluster-2.local
-    - kafka-2.kafka-service.svc.cluster-2.local
-    - kafka-3.kafka-service.svc.cluster-2.local
+    - kafka-1.kafka-services.svc.cluster-2.local
+    - kafka-2.kafka-services.svc.cluster-2.local
+    - kafka-3.kafka-services.svc.cluster-2.local
   externalPorts:
     - 9094
     - 9094
@@ -327,15 +327,15 @@ monitoring:
 akhq:
   install: true
   ingress:
-    host: akhq-kafka-service.cloud.openshift.sdntest.example.com
+    host: akhq-kafka-services.cloud.openshift.sdntest.example.com
 
 mirrorMaker:
   install: true
   replicas: 1
   regionName: "dc2"
   clusters:
-    - {"name": "dc1", "bootstrapServers": "kafka.kafka-service.svc.cluster-1.local:9094", "username": "client", "password": "client"}
-    - {"name": "dc2", "bootstrapServers": "kafka.kafka-service:9092", "username": "client", "password": "client"}
+    - {"name": "dc1", "bootstrapServers": "kafka.kafka-services.svc.cluster-1.local:9094", "username": "client", "password": "client"}
+    - {"name": "dc2", "bootstrapServers": "kafka.kafka-services:9092", "username": "client", "password": "client"}
   topicsToReplicate: "topic.*"
   replicationFactor: 3
 ```
@@ -393,7 +393,7 @@ monitoring:
 akhq:
   install: true
   ingress:
-    host: akhq-kafka-service.cloud.openshift.sdntest.example.com
+    host: akhq-kafka-services.cloud.openshift.sdntest.example.com
 
 backupDaemon:
   install: true
@@ -455,7 +455,7 @@ monitoring:
 akhq:
   install: true
   ingress:
-    host: akhq-kafka-service.cloud.openshift.sdntest.example.com
+    host: akhq-kafka-services.cloud.openshift.sdntest.example.com
 
 backupDaemon:
   install: true
@@ -528,9 +528,9 @@ kafka:
       - standard
   zookeeperConnect: zookeeper.zookeeper-service:2181
   externalHostNames:
-    - kafka-us-central-1.kafka-service.svc.clusterset.local
-    - kafka-us-central-2.kafka-service.svc.clusterset.local
-    - kafka-us-central-3.kafka-service.svc.clusterset.local
+    - kafka-us-central-1.kafka-services.svc.clusterset.local
+    - kafka-us-central-2.kafka-services.svc.clusterset.local
+    - kafka-us-central-3.kafka-services.svc.clusterset.local
   externalPorts:
     - 9094
     - 9094
@@ -546,8 +546,8 @@ mirrorMaker:
   replicas: 1
   regionName: "dc1"
   clusters:
-    - {"name": "dc1", "bootstrapServers": "kafka.kafka-service:9092", "username": "client", "password": "client"}
-    - {"name": "dc2", "bootstrapServers": "kafka-northamerica.kafka-service.svc.clusterset.local:9094", "username": "client", "password": "client"}
+    - {"name": "dc1", "bootstrapServers": "kafka.kafka-services:9092", "username": "client", "password": "client"}
+    - {"name": "dc2", "bootstrapServers": "kafka-northamerica.kafka-services.svc.clusterset.local:9094", "username": "client", "password": "client"}
   replicationFactor: 3
 
 backupDaemon:
@@ -598,9 +598,9 @@ kafka:
       - standard
   zookeeperConnect: zookeeper.zookeeper-service:2181
   externalHostNames:
-    - kafka-northamerica-1.kafka-service.svc.clusterset.local
-    - kafka-northamerica-2.kafka-service.svc.clusterset.local
-    - kafka-northamerica-3.kafka-service.svc.clusterset.local
+    - kafka-northamerica-1.kafka-services.svc.clusterset.local
+    - kafka-northamerica-2.kafka-services.svc.clusterset.local
+    - kafka-northamerica-3.kafka-services.svc.clusterset.local
   externalPorts:
     - 9094
     - 9094
@@ -616,8 +616,8 @@ mirrorMaker:
   replicas: 1
   regionName: "dc2"
   clusters:
-    - {"name": "dc1", "bootstrapServers": "kafka-us-central.kafka-service.svc.clusterset.local:9094", "username": "client", "password": "client"}
-    - {"name": "dc2", "bootstrapServers": "kafka.kafka-service:9092", "username": "client", "password": "client"}
+    - {"name": "dc1", "bootstrapServers": "kafka-us-central.kafka-services.svc.clusterset.local:9094", "username": "client", "password": "client"}
+    - {"name": "dc2", "bootstrapServers": "kafka.kafka-services:9092", "username": "client", "password": "client"}
   replicationFactor: 3
 
 backupDaemon:

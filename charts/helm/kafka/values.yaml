@@ -54,7 +54,7 @@ operator:
 #                "key": "component",
 #                "operator": "In",
 #                "values": [
-#                    "kafka-service-operator"
+#                    "kafka-services-operator"
 #                ]
 #              }
 #            ]

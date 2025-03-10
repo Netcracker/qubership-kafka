@@ -35,11 +35,11 @@ jobs:
           - name: qubership-kafka-operator
             file: Dockerfile
             context: .
-          - name: qubership-kafka-service-operator
+          - name: qubership-kafka-services-operator
             file: Dockerfile
             context: .
-          - name: qubership-kafka-service-transfer
-            file: docker-transfer/kafka-service/Dockerfile
+          - name: qubership-kafka-services-transfer
+            file: docker-transfer/kafka-services/Dockerfile
             context: ""
           - name: qubership-kafka-transfer
             file: docker-transfer/kafka/Dockerfile

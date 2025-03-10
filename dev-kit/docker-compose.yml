@@ -6,5 +6,5 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ../../kafka-service-operator:/kafka-service-operator
-    working_dir: /kafka-service-operator
+      - ../../kafka-services-operator:/kafka-services-operator
+    working_dir: /kafka-services-operator

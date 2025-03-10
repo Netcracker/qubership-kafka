@@ -56,17 +56,17 @@ To monitor Amazon Kafka you need to perform the following steps before deploy:
                 - b-1.test-kafka-cluster.test.kafka.us-east-1.amazonaws.com:11002
               labels:
                 service: kafka-1
-                namespace: kafka-service
+                namespace: kafka-services
             - targets:
                 - b-2.test-kafka-cluster.test.kafka.us-east-1.amazonaws.com:11002
               labels:
                 service: kafka-2
-                namespace: kafka-service
+                namespace: kafka-services
             - targets:
                 - b-3.test-kafka-cluster.test.kafka.us-east-1.amazonaws.com:11002
               labels:
                 service: kafka-3
-                namespace: kafka-service
+                namespace: kafka-services
           tls_config:
             insecure_skip_verify: true
           metric_relabel_configs:
@@ -87,19 +87,19 @@ To monitor Amazon Kafka you need to perform the following steps before deploy:
               labels:
                 service: kafka-1
                 broker: kafka-1
-                namespace: kafka-service
+                namespace: kafka-services
             - targets:
                 - b-2.test-kafka-cluster.test.kafka.us-east-1.amazonaws.com:11001
               labels:
                 service: kafka-2
                 broker: kafka-2
-                namespace: kafka-service
+                namespace: kafka-services
             - targets:
                 - b-3.test-kafka-cluster.test.kafka.us-east-1.amazonaws.com:11001
               labels:
                 service: kafka-3
                 broker: kafka-3
-                namespace: kafka-service
+                namespace: kafka-services
           tls_config:
             insecure_skip_verify: true
         ```
@@ -250,7 +250,7 @@ monitoring:
 akhq:
   install: true
   ingress:
-    host: akhq-kafka-service.aws.test.example.com
+    host: akhq-kafka-services.aws.test.example.com
   securityContext: {
     "runAsUser": 1000
   }

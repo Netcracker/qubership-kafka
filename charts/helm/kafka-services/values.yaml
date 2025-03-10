@@ -127,7 +127,7 @@ global:
         password: ""
 
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka:kafka-service-operator
+  dockerImage: ghcr.io/netcracker/qubership-kafka:kafka-services-operator
   replicas: 1
   kmmConfiguratorEnabled: false
   resources:
@@ -138,7 +138,7 @@ operator:
       memory: 128Mi
       cpu: 100m
 #  watchNamespace: ""
-#  serviceAccount: kafka-service-operator
+#  serviceAccount: kafka-services-operator
 #  affinity: {
 #    "podAntiAffinity": {
 #      "requiredDuringSchedulingIgnoredDuringExecution": [
@@ -149,7 +149,7 @@ operator:
 #                "key": "component",
 #                "operator": "In",
 #                "values": [
-#                    "kafka-service-operator"
+#                    "kafka-services-operator"
 #                ]
 #              }
 #            ]

@@ -669,163 +669,68 @@ Ingress host for Cruise Control
   {{- end -}}
 {{- end -}}
 
-
-{{/*
-Find a Kafka service operator image in various places.
-Image can be found from:
-* SaaS/App deployer (or groovy.deploy.v3) from .Values.deployDescriptor "kafka-service" "image"
-* DP.Deployer from .Values.deployDescriptor.kafkaOperator.image
-* or from default values .Values.operator.dockerImage
-*/}}
 {{- define "operator.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if index .Values.deployDescriptor "kafka-service" -}}
-      {{- printf "%s" (index .Values.deployDescriptor "kafka-service" "image") -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaServiceOperator.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.operator.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find a Kafka image in various places.
 */}}
 {{- define "kafka.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.dockerKafka -}}
-      {{- printf "%s" .Values.dockerKafka -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.dockerKafka.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.kafka.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find a Kafka monitoring image in various places.
 */}}
 {{- define "monitoring.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.kafkaMonitoring -}}
-      {{- printf "%s" .Values.kafkaMonitoring -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaMonitoring.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.monitoring.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find a Kafka Lag exporter image in various places.
 */}}
 {{- define "lagExporter.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.kafkaLagExporter -}}
-      {{- printf "%s" .Values.kafkaLagExporter -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaLagExporter.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.monitoring.lagExporter.service.image -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find an AKHQ image in various places.
 */}}
 {{- define "akhq.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.dockerAkhq -}}
-      {{- printf "%s" .Values.dockerAkhq -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.dockerAkhq.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.akhq.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find a Kafka Mirror Maker image in various places.
 */}}
 {{- define "mirrorMaker.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.kafkaMirrorMaker -}}
-      {{- printf "%s" .Values.kafkaMirrorMaker -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaMirrorMaker.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.mirrorMaker.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find a Kafka Mirror Maker monitoring image in various places.
 */}}
 {{- define "mirrorMakerMonitoring.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.kafkaMirrorMakerMonitoring -}}
-      {{- printf "%s" .Values.kafkaMirrorMakerMonitoring -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaMirrorMakerMonitoring.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.mirrorMakerMonitoring.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find a Kafka Backup Daemon image in various places.
 */}}
 {{- define "backupDaemon.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.kafkaBackupDaemon -}}
-      {{- printf "%s" .Values.kafkaBackupDaemon -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaBackupDaemon.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.backupDaemon.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
 Find a kafka-integration-tests image in various places.
 */}}
 {{- define "kafka-integration-tests.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.kafkaIntegrationTests -}}
-      {{- printf "%s" .Values.kafkaIntegrationTests -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaIntegrationTests.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.integrationTests.image -}}
-  {{- end -}}
 {{- end -}}
 
-{{/*
-Find an Kafka Service disaster recovery service operator image in various places.
-Image can be found from:
-* SaaS/App deployer (or groovy.deploy.v3) from .Values.disasterRecoveryImage
-* DP.Deployer from .Values.deployDescriptor.disasterRecoveryImage.image
-* or from default values .Values.global.disasterRecovery.image
-*/}}
 {{- define "disasterRecovery.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.disasterRecoveryImage -}}
-      {{- printf "%s" .Values.disasterRecoveryImage -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.disasterRecoveryImage.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.global.disasterRecovery.image -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
@@ -928,15 +833,7 @@ Calculate Kafka Broker disk size for Cruise Control config
 Find a Kafka Cruise Control image in various places.
 */}}
 {{- define "cruise-control.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.kafkaCruiseControl -}}
-      {{- printf "%s" .Values.kafkaCruiseControl -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.kafkaCruiseControl.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.cruiseControl.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{/*
@@ -957,7 +854,7 @@ Configure replicas number for backup-daemon pod
 {{- end }}
 
 {{- define "kafka.monitoredImages" -}}
-  {{- printf "deployment %s-service-operator kafka-service-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-service")) -}}
+  {{- printf "deployment %s-service-operator kafka-services-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-services")) -}}
   {{- if .Values.monitoring.install }}
     {{- printf "deployment %s-monitoring kafka-monitoring %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-monitoring")) -}}
       {{- if .Values.monitoring.lagExporter.enabled }}
@@ -1028,15 +925,7 @@ Configure replicas number for backup-daemon pod
 Find an CRD Init job Docker image in various places.
 */}}
 {{- define "crd-init.image" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- if .Values.crdInitJob -}}
-      {{- printf "%s" .Values.crdInitJob -}}
-    {{- else -}}
-      {{- printf "%s" (index .Values.deployDescriptor.crdInitJob.image) -}}
-    {{- end -}}
-  {{- else -}}
     {{- printf "%s" .Values.crdInit.dockerImage -}}
-  {{- end -}}
 {{- end -}}
 
 {{- define "crd-init.crdsToCreate" -}}

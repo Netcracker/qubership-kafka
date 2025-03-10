@@ -24,7 +24,7 @@ apiVersion: qubership.org/v1
 kind: KmmConfig
 metadata:
   name: example-kmm-config
-  namespace: kafka-service
+  namespace: kafka-services
 spec:
   kmmTopics:
     topics: topic1,topic2
