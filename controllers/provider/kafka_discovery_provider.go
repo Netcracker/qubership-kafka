@@ -31,7 +31,7 @@ const (
 	ConsulDiscoveryTags                  string = "tags"
 	ConsulHealthCheckInterval            string = "10s"
 	ConsulHealthCheckTimeout             string = "1s"
-	DiscoveryConfigurationName           string = "kafka-services-discovery-data"
+	DiscoveryConfigurationName           string = "kafka-service-discovery-data"
 )
 
 type KafkaDiscoveryProvider struct {
@@ -56,7 +56,7 @@ func (kdp KafkaDiscoveryProvider) CreateDiscoveryConfigMapDef() (*corev1.ConfigM
 		return nil, err
 	}
 	labels := make(map[string]string)
-	labels["component"] = "kafka-services"
+	labels["component"] = "kafka-service"
 	labels = util.JoinMaps(labels, kdp.cr.Spec.DefaultLabels)
 	discoveryConfig := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{

@@ -34,8 +34,8 @@
 7. Run the following command if you deploy Kafka's supplementary services only:
 
      ```sh
-     # Run in /charts/helm/kafka-services directory
-     helm install kafka-services ./ -f sample.yaml -n <TARGET_NAMESPACE>
+     # Run in /charts/helm/kafka-service directory
+     helm install kafka-service ./ -f sample.yaml -n <TARGET_NAMESPACE>
      ```
 
 ### Smoke tests

@@ -258,7 +258,7 @@ monitoring:
 akhq:
   install: true
   ingress:
-    host: akhq-kafka-services.test.example.com
+    host: akhq-kafka-service.test.example.com
   securityContext: {
     "runAsUser": 1000
   }

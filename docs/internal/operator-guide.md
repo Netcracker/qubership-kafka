@@ -53,7 +53,7 @@ docker inspect ${IMAGE_NAME}
 To run the environment you can use the following command:
 
 ```sh
-docker run -it -v <path_to_operator>:/kafka-services-operator operator-sdk-ext:v1.16
+docker run -it -v <path_to_operator>:/kafka-service-operator operator-sdk-ext:v1.16
 ```
 
 where `<path_to_operator>` is the path to your `kafka-service-operator` directory.
@@ -153,7 +153,7 @@ Make changes to the file with `golangci-lint` configuration (`.golangci.yml`) if
 Then go to the folder that contains main module and run linter:
 
 ```sh
-cd kafka-services-operator
+cd kafka-service-operator
 ```
 
 ```sh

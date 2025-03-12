@@ -207,7 +207,7 @@ If it is not possible to provide them to the deployment user, you have to apply 
     name: token-review-crb-NAMESPACE
   subjects:
     - kind: ServiceAccount
-      name: kafka-services-operator
+      name: kafka-service-operator
       namespace: NAMESPACE
   roleRef:
     apiGroup: rbac.authorization.k8s.io
@@ -429,7 +429,7 @@ need to create that resources before running deploy job.
     name: <NAMESPACE>-service-operator-clusterrolebinding
   subjects:
     - kind: ServiceAccount
-      name: kafka-services-operator
+      name: kafka-service-operator
       namespace: <NAMESPACE>
   roleRef:
     kind: ClusterRole
@@ -1490,7 +1490,7 @@ You can use the following tags:
 |-----------------------------------------|---------|-----------|--------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | cruiseControl.install                   | boolean | no        | false                                                              | Whether the Cruise Control component is to be deployed or not. The value should be equal to `true` to install Cruise Control.                                                                                                                                                                                                                                                           |
 | cruiseControl.dockerImage               | string  | no        | Calculates automatically                                           | The Docker image of Cruise Control.                                                                                                                                                                                                                                                                                                                                                     |
-| cruiseControl.config                    | object  | no        | See in  [values.yaml](../../charts/helm/kafka-services/values.yaml) | The set of parameters for Cruise Control. Parameters can be changed and added during deployment if needed. See whole parameter list in official Cruise Control deployment documentation [https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/](https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/). |
+| cruiseControl.config                    | object  | no        | See in  [values.yaml](../../charts/helm/kafka-service/values.yaml) | The set of parameters for Cruise Control. Parameters can be changed and added during deployment if needed. See whole parameter list in official Cruise Control deployment documentation [https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/](https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/). |
 | cruiseControl.capacity.diskSpace        | string  | no        | ""                                                                 | The disk space in MB for Kafka Broker. The default value is taken from `kafka.storage.size` parameter.                                                                                                                                                                                                                                                                                  |
 | cruiseControl.capacity.cpu              | string  | no        | 100                                                                | The cpu usage in percentage for Kafka Broker.                                                                                                                                                                                                                                                                                                                                           |
 | cruiseControl.capacity.nwIn             | string  | no        | 10000                                                              | The network inbound in KB for Kafka Broker.                                                                                                                                                                                                                                                                                                                                             |
@@ -1801,7 +1801,7 @@ The service topic will be recreated with credentials specified via Config Provid
 ## Helm
 
 To deploy via Helm you need to prepare yaml file with custom deploy parameters and run the following
-command in [Kafka Chart](/charts/helm/kafka) and [Kafka-Services Chart](/charts/helm/kafka-services):
+command in [Kafka Chart](/charts/helm/kafka) and [Kafka-Services Chart](/charts/helm/kafka-service):
 
 ```sh
 helm install [release-name] ./ -f [parameters-yaml] -n [namespace]
@@ -1825,7 +1825,7 @@ To upgrade an existing Kafka service, you need to change the Helm Chart configur
 command:
 
 ```sh
-helm upgrade ${RELEASE_NAME} ./kafka-services -n ${NAMESPACE}
+helm upgrade ${RELEASE_NAME} ./kafka-service -n ${NAMESPACE}
 ```
 
 where:
@@ -1885,7 +1885,7 @@ Otherwise, the command deletes the PVCs with the service, and you can lose your 
 Custom resource definitions for Kafka Service should be upgraded before the installation if the new version has major
 changes.
 
-The CRDs for version are stored in [crds](../../charts/helm/kafka-services/crds) and can be applied with the following commands:
+The CRDs for version are stored in [crds](../../charts/helm/kafka-service/crds) and can be applied with the following commands:
 
 ```sh
 kubectl replace -f crd.yaml
@@ -1948,13 +1948,13 @@ You can apply new custom resource definition version with versioning and without
 If you create the CRD manually, apply the new version of CRD using the following command:
 
 ```sh
-kubectl apply -f charts/helm/kafka-services/crds/crd.yaml
+kubectl apply -f charts/helm/kafka-service/crds/crd.yaml
 ```
 
 If you create the CRD using Helm, apply the new version of CRD using the following command:
 
 ```sh
-kubectl replace -f charts/helm/kafka-services/crds/crd.yaml
+kubectl replace -f charts/helm/kafka-service/crds/crd.yaml
 ```
 
 ### Custom Resource Definition without Versioning
@@ -1987,10 +1987,10 @@ Then apply the new CRD version by running one of the following commands:
 
 ```sh
 # if the CRD is created manually
-kubectl apply -f charts/helm/kafka-services/crds/crd.yaml
+kubectl apply -f charts/helm/kafka-service/crds/crd.yaml
 
 # if the CRD is created by Helm
-kubectl replace -f charts/helm/kafka-services/crds/crd.yaml
+kubectl replace -f charts/helm/kafka-service/crds/crd.yaml
 ```
 
 ## Migration from Joint to Separate Deployment
@@ -2027,8 +2027,8 @@ The following steps can be performed manually:
 3. Remove presented Helm release with the command:
 
     ```bash
-    helm uninstall kafka-services
-    helm uninstall kafka-services-${KAFKA_NAMESPACE}
+    helm uninstall kafka-service
+    helm uninstall kafka-service-${KAFKA_NAMESPACE}
     ```
 
 After removing all these entities you can install `Kafka` and `Kafka Services` service.

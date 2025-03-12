@@ -17,9 +17,9 @@ apiVersion: qubership.org/v1
 kind: KafkaUser
 metadata:
   name: kafka-user
-  namespace: kafka-services
+  namespace: kafka-service
   annotations:
-    kafka.qubership.org/bootstrap.servers: kafka.kafka-services:9092
+    kafka.qubership.org/bootstrap.servers: kafka.kafka-service:9092
 spec:
   authentication:
     type: scram-sha-512
@@ -56,9 +56,9 @@ kind: Secret
 apiVersion: v1
 metadata:
   name: kafka-user-secret
-  namespace: kafka-services
+  namespace: kafka-service
 data:
-  bootstrap.servers: "kafka.kafka-services:9092"
+  bootstrap.servers: "kafka.kafka-service:9092"
   security.protocol: "sasl_plaintext"
   sasl.mechanism: "scram-sha-512"
   username: kafka-service_kafka-user
@@ -72,9 +72,9 @@ kind: Secret
 apiVersion: v1
 metadata:
   name: kafka-user-secret
-  namespace: kafka-services
+  namespace: kafka-service
 data:
-  connection-uri: kafka://kafka-service_kafka-user:password@kafka.kafka-services:9092?security.protocol=sasl_plaintext&sasl.mechanism=scram-sha-512
+  connection-uri: kafka://kafka-service_kafka-user:password@kafka.kafka-service:9092?security.protocol=sasl_plaintext&sasl.mechanism=scram-sha-512
 ```
 
 **Note**: The Secret for `KafkaUser` must be created in the same namespace as `KafkaUser` Custom Resource.

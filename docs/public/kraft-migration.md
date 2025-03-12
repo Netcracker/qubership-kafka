@@ -110,9 +110,9 @@ environment parameters (security context, node affinity, etc.):
                 - name: EXTERNAL_PORT
                 - name: CONF_KAFKA_BROKER_RACK
                 - name: INTERNAL_HOST_NAME
-                  value: kafka-kraft-controller.kafka-services
+                  value: kafka-kraft-controller.kafka-service
                 - name: INTER_BROKER_HOST_NAME
-                  value: kafka-kraft-controller.kafka-broker.kafka-services
+                  value: kafka-kraft-controller.kafka-broker.kafka-service
                 - name: HEAP_OPTS
                   value: '-Xms256m -Xmx256m'
                 - name: DISABLE_SECURITY

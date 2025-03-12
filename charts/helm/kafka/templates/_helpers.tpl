@@ -363,7 +363,7 @@ Storage class from various places.
 {{/*
 Find a Kafka service operator image in various places.
 Image can be found from:
-* SaaS/App deployer (or groovy.deploy.v3) from .Values.deployDescriptor "kafka-services" "image"
+* SaaS/App deployer (or groovy.deploy.v3) from .Values.deployDescriptor "kafka-service" "image"
 * DP.Deployer from .Values.deployDescriptor.kafkaOperator.image
 * or from default values .Values.operator.dockerImage
 */}}

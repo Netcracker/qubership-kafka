@@ -35,7 +35,7 @@ global:
   externalKafka:
     enabled: false
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka:kafka-operator-main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
   replicas: 1
   resources:
     requests:
@@ -54,7 +54,7 @@ operator:
 #                "key": "component",
 #                "operator": "In",
 #                "values": [
-#                    "kafka-services-operator"
+#                    "kafka-service-operator"
 #                ]
 #              }
 #            ]

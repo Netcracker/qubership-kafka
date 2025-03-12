@@ -854,7 +854,7 @@ Configure replicas number for backup-daemon pod
 {{- end }}
 
 {{- define "kafka.monitoredImages" -}}
-  {{- printf "deployment %s-service-operator kafka-services-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-services")) -}}
+  {{- printf "deployment %s-service-operator kafka-service-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-service")) -}}
   {{- if .Values.monitoring.install }}
     {{- printf "deployment %s-monitoring kafka-monitoring %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-monitoring")) -}}
       {{- if .Values.monitoring.lagExporter.enabled }}

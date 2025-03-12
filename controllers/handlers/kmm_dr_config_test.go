@@ -26,7 +26,7 @@ func makeDefaultTestProperties() map[string]string {
 	properties["clusters"] = "dc1,dc2"
 	properties["target.dc"] = "dc1"
 	properties["dc1.bootstrap.servers"] = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
-	properties["dc2.bootstrap.servers"] = "kafka-1.kafka-services:9092"
+	properties["dc2.bootstrap.servers"] = "kafka-1.kafka-service:9092"
 	properties["dc2->dc1.enabled"] = "true"
 	properties["dc2->dc1.topics"] = "topic-7"
 	properties["topics.blacklist"] = "dc2\\.*,dc1\\.*"
@@ -121,7 +121,7 @@ func TestKmmDrConfig_validateClusters(t *testing.T) {
 func TestKmmDrConfig_getBrokers(t *testing.T) {
 	properties := makeDefaultTestProperties()
 	expectedTarget := []string{"kafka-1:9092", "kafka-2:9092", "kafka-3:9092"}
-	expectedSource := []string{"kafka-1.kafka-services:9092"}
+	expectedSource := []string{"kafka-1.kafka-service:9092"}
 	var expectedErr error
 
 	propertiesWithoutSourceBrokers := makeDefaultTestProperties()
@@ -134,7 +134,7 @@ func TestKmmDrConfig_getBrokers(t *testing.T) {
 
 	propertiesWithIncorrectSourceBrokers := makeDefaultTestProperties()
 	delete(propertiesWithIncorrectSourceBrokers, "dc2.bootstrap.servers")
-	propertiesWithIncorrectSourceBrokers["dc3.bootstrap.servers"] = "kafka-1.kafka-services:9092"
+	propertiesWithIncorrectSourceBrokers["dc3.bootstrap.servers"] = "kafka-1.kafka-service:9092"
 
 	propertiesWithIncorrectTargetBrokers := makeDefaultTestProperties()
 	delete(propertiesWithIncorrectTargetBrokers, "dc1.bootstrap.servers")

@@ -84,18 +84,18 @@ func Test_deserializationConfigFullUpdate_addToEmpty(t *testing.T) {
 		},
 	}
 	suffix := util.StringHash("topic1")
-	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-services")
+	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-service")
 	expectedConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffix),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffix),
 		},
 	}
 	expectedMapToUpdate := map[string]string{
-		fmt.Sprintf("akhq-kafka-services-%s", suffix): "cjhsAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffix): "cjhsAkjdsa==",
 	}
 
 	if !areSlicesEqualWithoutOrder(actualConfigs, expectedConfigs) {
@@ -111,17 +111,17 @@ func Test_deserializationConfigFullUpdate_addToEnd(t *testing.T) {
 	existingConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
 
@@ -138,42 +138,42 @@ func Test_deserializationConfigFullUpdate_addToEnd(t *testing.T) {
 		},
 	}
 
-	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-services")
+	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-service")
 
 	expectedConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic3",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic3),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic3),
 		},
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
 	expectedMapToUpdate := map[string]string{
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic3): "cjhsdfjrAkjdsa==",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic4): "cjhfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic3): "cjhsdfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic4): "cjhfjrAkjdsa==",
 	}
 
 	if !areSlicesEqualWithoutOrder(actualConfigs, expectedConfigs) {
@@ -189,17 +189,17 @@ func Test_deserializationConfigFullUpdate_updateWithDeleting(t *testing.T) {
 	existingConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
 
@@ -216,30 +216,30 @@ func Test_deserializationConfigFullUpdate_updateWithDeleting(t *testing.T) {
 		},
 	}
 
-	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-services")
+	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-service")
 
 	expectedConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic3",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic3),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic3),
 		},
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
 	expectedMapToUpdate := map[string]string{
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic1): "",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic2): "",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic3): "cjhsdfjrAkjdsa==",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic4): "cjhfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic1): "",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic2): "",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic3): "cjhsdfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic4): "cjhfjrAkjdsa==",
 	}
 
 	if !areSlicesEqualWithoutOrder(actualConfigs, expectedConfigs) {
@@ -255,17 +255,17 @@ func Test_deserializationConfigFullUpdate_updateExistedOnly(t *testing.T) {
 	existingConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
 
@@ -282,28 +282,28 @@ func Test_deserializationConfigFullUpdate_updateExistedOnly(t *testing.T) {
 		},
 	}
 
-	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-services")
+	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-service")
 
 	expectedConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 	}
 
 	expectedMapToUpdate := map[string]string{
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic1): "cjhsdfjrAkjdsa==",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic2): "cjhfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic1): "cjhsdfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic2): "cjhfjrAkjdsa==",
 	}
 
 	if !areSlicesEqualWithoutOrder(actualConfigs, expectedConfigs) {
@@ -319,24 +319,24 @@ func Test_deserializationConfigFullUpdate_updateAndInsert(t *testing.T) {
 	existingConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
@@ -358,43 +358,43 @@ func Test_deserializationConfigFullUpdate_updateAndInsert(t *testing.T) {
 		},
 	}
 
-	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-services")
+	actualConfigs, actualMapToUpdate := r.fullUpdateDeserializationConfig(existingConfigs, crConfigs, "akhq-kafka-service")
 
 	expectedConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic3",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic3),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic3),
 		},
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
 	expectedMapToUpdate := map[string]string{
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic1): "cjhsdfjrAkjdsa==",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic2): "cjhfjrAkjdsa==",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic3): "fgtjhgswDsfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic1): "cjhsdfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic2): "cjhfjrAkjdsa==",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic3): "fgtjhgswDsfjrAkjdsa==",
 	}
 
 	if !areSlicesEqual(actualConfigs, expectedConfigs) {
@@ -410,42 +410,42 @@ func Test_deleteDeserializationConfig_crOnly(t *testing.T) {
 	existingConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:       "topic2",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic2),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic2),
 		},
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
-	actualConfigs, actualMapToDelete := r.deleteDeserializationConfig(existingConfigs, "akhq-kafka-services")
+	actualConfigs, actualMapToDelete := r.deleteDeserializationConfig(existingConfigs, "akhq-kafka-service")
 
 	expectedConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
 	expectedMapToDelete := map[string]string{
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic1): "",
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic2): "",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic1): "",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic2): "",
 	}
 
 	if !areSlicesEqual(actualConfigs, expectedConfigs) {
@@ -461,41 +461,41 @@ func Test_deleteDeserializationConfig_crAndGarbage(t *testing.T) {
 	existingConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic1",
-			Name:             "akhq-kafka-services",
+			Name:             "akhq-kafka-service",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic1),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic1),
 		},
 		{
 			TopicRegex:           "topic2",
-			Name:                 "akhq-kafka-services",
+			Name:                 "akhq-kafka-service",
 			KeyMessageType:       "",
 			ValueMessageType:     "org.qubership.Employee",
 			DescriptorFileBase64: "jdshfGGGjjhxxs==",
 		},
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
-	actualConfigs, actualMapToDelete := r.deleteDeserializationConfig(existingConfigs, "akhq-kafka-services")
+	actualConfigs, actualMapToDelete := r.deleteDeserializationConfig(existingConfigs, "akhq-kafka-service")
 
 	expectedConfigs := []TopicMapping{
 		{
 			TopicRegex:       "topic4",
-			Name:             "akhq-kafka-services-1",
+			Name:             "akhq-kafka-service-1",
 			KeyMessageType:   "",
 			ValueMessageType: "org.qubership.Employee",
-			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-services-%s", suffixTopic4),
+			DescriptorFile:   fmt.Sprintf("descs/akhq-kafka-service-%s", suffixTopic4),
 		},
 	}
 
 	expectedMapToDelete := map[string]string{
-		fmt.Sprintf("akhq-kafka-services-%s", suffixTopic1): "",
+		fmt.Sprintf("akhq-kafka-service-%s", suffixTopic1): "",
 	}
 
 	if !areSlicesEqual(actualConfigs, expectedConfigs) {
