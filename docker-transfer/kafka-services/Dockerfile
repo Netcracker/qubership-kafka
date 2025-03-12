@@ -1,5 +1,5 @@
 FROM scratch
 
 # Transfer
-COPY charts /charts/helm/kafka-service
+COPY charts/helm/kafka-services /charts/helm/kafka-services
 COPY docs /docs
