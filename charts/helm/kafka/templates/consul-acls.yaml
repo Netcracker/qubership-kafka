@@ -1,6 +1,6 @@
 {{- if and .Values.kafka.install (not .Values.global.externalKafka.enabled) }}
 {{- if .Values.kafka.consulDiscovery }}
-apiVersion: qubership.org/v1alpha1
+apiVersion: {{ .Values.global.disasterRecovery.siteManagerApiGroup }}/v1alpha1
 kind: ConsulACL
 metadata:
   name: kafka-consul-acl-config
