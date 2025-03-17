@@ -83,7 +83,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_akhqconfigs.yaml
 	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kafkaservices.yaml
 	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kmmconfigs.yaml
-	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kafkas.yaml
+	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kafka.yaml
 	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kafkausers.yaml
 
 .PHONY: generate

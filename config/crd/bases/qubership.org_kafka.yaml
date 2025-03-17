@@ -6,7 +6,7 @@ metadata:
     crd.qubership.org/version: 1.9.0
     controller-gen.kubebuilder.io/version: v0.11.1
   creationTimestamp: null
-  name: kafkas.qubership.org
+  name: kafka.qubership.org
 spec:
   group: qubership.org
   names:

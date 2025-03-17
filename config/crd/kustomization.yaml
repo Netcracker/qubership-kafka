@@ -5,7 +5,7 @@ resources:
 - bases/qubership.org_kafkaservices.yaml
 - bases/qubership.org_kmmconfigs.yaml
 - bases/qubership.org_akhqconfigs.yaml
-- bases/qubership.org_kafkas.yaml
+- bases/qubership.org_kafka.yaml
 - bases/qubership.org_kafkausers.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
@@ -15,7 +15,7 @@ patchesStrategicMerge:
 #- patches/webhook_in_kafkaservices.yaml
 #- patches/webhook_in_kmmconfigs.yaml
 #- patches/webhook_in_akhqconfigs.yaml
-#- patches/webhook_in_kafkas.yaml
+#- patches/webhook_in_kafka.yaml
 #- patches/webhook_in_kafkausers.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
@@ -24,7 +24,7 @@ patchesStrategicMerge:
 #- patches/cainjection_in_kafkaservices.yaml
 #- patches/cainjection_in_kmmconfigs.yaml
 #- patches/cainjection_in_akhqconfigs.yaml
-#- patches/cainjection_in_kafkas.yaml
+#- patches/cainjection_in_kafka.yaml
 #- patches/cainjection_in_kafkausers.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
