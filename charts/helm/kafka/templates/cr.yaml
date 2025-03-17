@@ -14,7 +14,7 @@
 {{ fail "\nError: You cannot upgrade Kraft to Kafka with ZooKeeper.\nFind more information in corresponding release documentation." }}
 {{- end }}
 {{- end }}
-apiVersion: {{ .Values.global.disasterRecovery.siteManagerApiGroup }}/v1
+apiVersion: qubership.org/v1
 kind: Kafka
 metadata:
   name: {{ template "kafka.name" . }}

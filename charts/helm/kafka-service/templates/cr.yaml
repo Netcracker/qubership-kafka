@@ -12,7 +12,7 @@
 {{- if and .Values.deployDescriptor .Values.kafkaOperator (ne (.Values.DEPLOY_W_HELM | toString) "true") }}
   {{- fail "Kafka Service requires `DEPLOY_W_HELM` parameter to be set to `true` for App Deployer" }}
 {{- end }}
-apiVersion: {{ .Values.global.disasterRecovery.siteManagerApiGroup }}/v7
+apiVersion: qubership.org/v7
 kind: KafkaService
 metadata:
   name: {{ template "kafka.name" . }}
