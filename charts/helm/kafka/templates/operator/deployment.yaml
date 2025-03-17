@@ -52,6 +52,8 @@ spec:
               value: {{ template "kafka.name" . }}-operator
             - name: OPERATOR_MODE
               value: "kafka"
+            - name: API_GROUP
+              value: {{ .Values.operator.apiGroup }}
           resources:
             requests:
               memory: {{ default "128Mi" .Values.operator.resources.requests.memory }}

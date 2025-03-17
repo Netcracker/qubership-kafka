@@ -1,5 +1,5 @@
 {{- if and (eq (include "kafka-service.enableDisasterRecovery" .) "true") .Values.global.disasterRecovery.siteManagerEnabled }}
-apiVersion: qubership.org/v3
+apiVersion: {{ .Values.global.disasterRecovery.siteManagerApiGroup }}/v3
 kind: SiteManager
 metadata:
   name: kafka-{{ .Release.Namespace }}

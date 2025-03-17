@@ -101,6 +101,8 @@ spec:
               value: "kafkaservice"
             - name: CLUSTER_NAME
               value: {{ template "kafka.name" . }}
+            - name: API_GROUP
+              value: {{ .Values.operator.apiGroup }}
           resources:
             requests:
               memory: {{ default "128Mi" .Values.operator.resources.requests.memory }}

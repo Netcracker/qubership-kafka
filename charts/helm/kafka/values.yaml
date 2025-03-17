@@ -37,6 +37,7 @@ global:
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
   replicas: 1
+  apiGroup: "qubership.org"
   resources:
     requests:
       memory: 128Mi
