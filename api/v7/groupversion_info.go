@@ -19,7 +19,6 @@ package v7
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
@@ -33,10 +32,3 @@ var (
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
 )
-
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
-}
