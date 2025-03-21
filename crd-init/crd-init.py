@@ -48,6 +48,8 @@ crd_api = client.resources.get(
     api_version="apiextensions.k8s.io/v1", kind="CustomResourceDefinition"
 )
 
+api_version = os.getenv("API_VERSION", "qubership.org")
+
 """
 ########################################################################################################################
 ###################################### CUSTOM RESOURCE DEFINITION CONTAINER ############################################
@@ -190,6 +192,14 @@ def _process_crd(file_path) -> bool:
         return True
     return False
 
+def replace_api_versin_in_crd(file_path, old_text, new_text):
+    with open(file_path, "r", encoding="utf-8") as file:
+        content = file.read()
+
+    new_content = content.replace(old_text, new_text)
+
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.write(new_content)
 
 def run():
     crds_to_create = os.getenv("CRDS_TO_CREATE", "")
@@ -208,6 +218,8 @@ def run():
             path = root + "/" + file
             try:
                 if file in crds_to_create:
+                    path = os.path.join(root, file)
+                    replace_api_versin_in_crd(path, "qubership.org", api_version)
                     if _process_crd(path):
                         print(f"Waiting {crd_upgrade_waiting_time} second after CRD upgrade")
                         sleep(crd_upgrade_waiting_time)

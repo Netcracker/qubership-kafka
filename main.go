@@ -18,7 +18,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Netcracker/qubership-kafka/controllers/kafkauser"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"os"
 	"strconv"
 	"strings"
@@ -29,7 +28,6 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	suppscheme "sigs.k8s.io/controller-runtime/pkg/scheme"
 
 	"github.com/Netcracker/qubership-kafka/controllers/kafka"
 	"github.com/Netcracker/qubership-kafka/controllers/kafkaservice"
@@ -53,9 +51,8 @@ import (
 )
 
 var (
-	scheme              = runtime.NewScheme()
-	supplementaryScheme = runtime.NewScheme()
-	setupLog            = ctrl.Log.WithName("setup")
+	scheme   = runtime.NewScheme()
+	setupLog = ctrl.Log.WithName("setup")
 )
 
 const (
@@ -159,8 +156,6 @@ func main() {
 			}()
 		}
 
-		registerSupplementaryScheme(supplementaryScheme)
-
 		if akhqNamespaces, ok := os.LookupEnv(watchAkhqCollecNamespaceEnv); ok {
 			akhqMgr := createAkhqConfigMgr(akhqNamespaces, ownNamespace, enableLeaderElection)
 			go func() {
@@ -219,7 +214,7 @@ func createKmmConfigMgr(enableLeaderElection bool, ownNamespace string) manager.
 	}
 
 	kmmMgrOptions := ctrl.Options{
-		Scheme:                  supplementaryScheme,
+		Scheme:                  scheme,
 		MetricsBindAddress:      "0",
 		Port:                    9543,
 		HealthProbeBindAddress:  "0",
@@ -256,7 +251,7 @@ func createKmmConfigMgr(enableLeaderElection bool, ownNamespace string) manager.
 
 func createAkhqConfigMgr(namespace string, ownNamespace string, enableLeaderElection bool) manager.Manager {
 	akhqMgrOptions := ctrl.Options{
-		Scheme:                  supplementaryScheme,
+		Scheme:                  scheme,
 		MetricsBindAddress:      "0",
 		Port:                    9542,
 		HealthProbeBindAddress:  "0",
@@ -294,7 +289,7 @@ func createAkhqConfigMgr(namespace string, ownNamespace string, enableLeaderElec
 
 func createKafkaUsersMgr(namespace string, ownNamespace string, enableLeaderElection bool) manager.Manager {
 	kafkaUsersMgrOptions := ctrl.Options{
-		Scheme:                  supplementaryScheme,
+		Scheme:                  scheme,
 		MetricsBindAddress:      "0",
 		Port:                    9544,
 		HealthProbeBindAddress:  "0",
@@ -378,21 +373,4 @@ func configureManagerNamespaces(configMgrOptions *ctrl.Options, namespace string
 		}
 		configMgrOptions.NewCache = cache.MultiNamespacedCacheBuilder(namespaces)
 	}
-}
-
-func registerSupplementaryScheme(suppScheme *runtime.Scheme) {
-	utilruntime.Must(clientgoscheme.AddToScheme(supplementaryScheme))
-	group := getEnv("API_GROUP", "qubership.org")
-	gv := schema.GroupVersion{Group: group, Version: "v1"}
-	schemeBuilder := &suppscheme.Builder{GroupVersion: gv}
-	utilruntime.Must(schemeBuilder.AddToScheme(suppScheme))
-	gv = schema.GroupVersion{Group: group, Version: "v7"}
-	schemeBuilder = &suppscheme.Builder{GroupVersion: gv}
-	utilruntime.Must(schemeBuilder.AddToScheme(suppScheme))
-}
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
 }

@@ -43,6 +43,8 @@ spec:
               value: {{ .Values.crdInit.sleepAfterCompletion | toString | default "1" | quote}}
             - name: CRDS_TO_CREATE
               value: "{{ template "crd-init.crdsToCreate" . }}"
+            - name: API_GROUP
+              value: {{ .Values.operator.apiGroup }}
           resources:
             requests:
               memory: "128Mi"
