@@ -47,7 +47,7 @@ rules:
       - create
   {{- end }}
   - apiGroups:
-      - qubership.org
+      - {{ .Values.operator.apiGroup }}
     resources:
       - '*'
     verbs:

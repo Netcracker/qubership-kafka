@@ -13,7 +13,7 @@ metadata:
     {{- end }}
 rules:
   - apiGroups:
-      - qubership.org
+      - {{ .Values.operator.apiGroup }}
     resources:
       - kafkausers
       - kafkausers/status

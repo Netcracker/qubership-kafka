@@ -40,7 +40,7 @@ rules:
       - patch
       - delete
   - apiGroups:
-      - qubership.org
+      - {{ .Values.operator.apiGroup }}
     resources:
       - '*'
     verbs:
