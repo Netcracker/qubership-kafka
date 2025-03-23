@@ -218,7 +218,6 @@ def run():
             path = root + "/" + file
             try:
                 if file in crds_to_create:
-                    path = os.path.join(root, file)
                     replace_api_versin_in_crd(path, "qubership.org", api_version)
                     if _process_crd(path):
                         print(f"Waiting {crd_upgrade_waiting_time} second after CRD upgrade")
