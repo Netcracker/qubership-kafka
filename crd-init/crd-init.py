@@ -48,7 +48,7 @@ crd_api = client.resources.get(
     api_version="apiextensions.k8s.io/v1", kind="CustomResourceDefinition"
 )
 
-api_version = os.getenv("API_VERSION", "qubership.org")
+api_group = os.getenv("API_GROUP", "qubership.org")
 
 """
 ########################################################################################################################
@@ -79,7 +79,7 @@ class CRD:
 
     def _extract_metadata(self):
         self.name = self.crd_dict['metadata']['name']
-        self.version = self.crd_dict['metadata']['annotations']['crd.qubership.org/version']
+        self.version = self.crd_dict['metadata']['annotations'][f'crd.{api_group}/version']
 
     def _extract_spec(self):
         self.group = self.crd_dict['spec']['group']
@@ -175,7 +175,7 @@ def _process_crd(file_path) -> bool:
         return True
 
     print(f"CRD {local_crd.get_name()} was found, so comparing versions...")
-    loaded_crd_version = loaded_crd['metadata']['annotations'][f'crd.{api_version}/version']
+    loaded_crd_version = loaded_crd['metadata']['annotations'][f'crd.{api_group}/version']
 
     compare_result = compare_crd_versions(local_crd.get_version(), loaded_crd_version)
     if compare_result == 0:
@@ -192,13 +192,13 @@ def _process_crd(file_path) -> bool:
         return True
     return False
 
-def replace_api_versin_in_crd(file_path, old_text, new_text):
-    with open(file_path, "r", encoding="utf-8") as file:
+def replace_api_version_in_crd(file_path, old_text, new_text):
+    with open(file_path, "r") as file:
         content = file.read()
 
     new_content = content.replace(old_text, new_text)
 
-    with open(file_path, "w", encoding="utf-8") as file:
+    with open(file_path, "w") as file:
         file.write(new_content)
 
 def run():
@@ -218,7 +218,7 @@ def run():
             path = root + "/" + file
             try:
                 if file in crds_to_create:
-                    replace_api_versin_in_crd(path, "qubership.org", api_version)
+                    replace_api_version_in_crd(path, "qubership.org", api_group)
                     if _process_crd(path):
                         print(f"Waiting {crd_upgrade_waiting_time} second after CRD upgrade")
                         sleep(crd_upgrade_waiting_time)
