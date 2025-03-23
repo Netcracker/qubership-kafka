@@ -175,7 +175,7 @@ def _process_crd(file_path) -> bool:
         return True
 
     print(f"CRD {local_crd.get_name()} was found, so comparing versions...")
-    loaded_crd_version = loaded_crd['metadata']['annotations']['crd.qubership.org/version']
+    loaded_crd_version = loaded_crd['metadata']['annotations'][f'crd.{api_version}/version']
 
     compare_result = compare_crd_versions(local_crd.get_version(), loaded_crd_version)
     if compare_result == 0:
