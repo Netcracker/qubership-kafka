@@ -98,6 +98,7 @@ func main() {
 
 	ownNamespace := os.Getenv("OPERATOR_NAMESPACE")
 	mode := os.Getenv("OPERATOR_MODE")
+	apiGroup := os.Getenv("API_GROUP")
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                  scheme,
@@ -107,7 +108,7 @@ func main() {
 		HealthProbeBindAddress:  probeAddr,
 		LeaderElection:          enableLeaderElection,
 		LeaderElectionNamespace: ownNamespace,
-		LeaderElectionID:        fmt.Sprintf("%s.%s.netcracker.com", mode, ownNamespace),
+		LeaderElectionID:        fmt.Sprintf("%s.%s.%s", mode, ownNamespace, apiGroup),
 	})
 	if err != nil {
 		setupLog.Error(err, fmt.Sprintf("unable to start %s manager", mode))
@@ -145,7 +146,7 @@ func main() {
 			kmmEnabled = false
 		}
 		if kmmEnabled {
-			kmmMgr := createKmmConfigMgr(enableLeaderElection, ownNamespace)
+			kmmMgr := createKmmConfigMgr(enableLeaderElection, ownNamespace, apiGroup)
 			go func() {
 				defer logKmmConfigMgrEndGoroutine()
 				setupLog.Info("starting KmmConfig manager")
@@ -157,7 +158,7 @@ func main() {
 		}
 
 		if akhqNamespaces, ok := os.LookupEnv(watchAkhqCollecNamespaceEnv); ok {
-			akhqMgr := createAkhqConfigMgr(akhqNamespaces, ownNamespace, enableLeaderElection)
+			akhqMgr := createAkhqConfigMgr(akhqNamespaces, ownNamespace, enableLeaderElection, apiGroup)
 			go func() {
 				defer func() {
 					setupLog.Info("AkhqConfig manager goroutine has been finished")
@@ -171,7 +172,7 @@ func main() {
 		}
 
 		if kafkaUsersNamespaces, ok := os.LookupEnv(watchKafkaUsersCollectNamespaceEnv); ok {
-			kafkaUserMgr := createKafkaUsersMgr(kafkaUsersNamespaces, ownNamespace, enableLeaderElection)
+			kafkaUserMgr := createKafkaUsersMgr(kafkaUsersNamespaces, ownNamespace, enableLeaderElection, apiGroup)
 			go func() {
 				defer func() {
 					setupLog.Info("KafkaUser manager goroutine has been finished")
@@ -206,7 +207,7 @@ func main() {
 	}
 }
 
-func createKmmConfigMgr(enableLeaderElection bool, ownNamespace string) manager.Manager {
+func createKmmConfigMgr(enableLeaderElection bool, ownNamespace string, apiGroup string) manager.Manager {
 	namespace, err := getWatchNamespace()
 	if err != nil {
 		setupLog.Error(err, "Failed to get watch namespace")
@@ -220,7 +221,7 @@ func createKmmConfigMgr(enableLeaderElection bool, ownNamespace string) manager.
 		HealthProbeBindAddress:  "0",
 		LeaderElection:          enableLeaderElection,
 		LeaderElectionNamespace: ownNamespace,
-		LeaderElectionID:        fmt.Sprintf("kmmconfig.%s.netcracker.com", ownNamespace),
+		LeaderElectionID:        fmt.Sprintf("kmmconfig.%s.%s", ownNamespace, apiGroup),
 	}
 	configureManagerNamespaces(&kmmMgrOptions, namespace, ownNamespace)
 
@@ -249,7 +250,7 @@ func createKmmConfigMgr(enableLeaderElection bool, ownNamespace string) manager.
 	return kmmMgr
 }
 
-func createAkhqConfigMgr(namespace string, ownNamespace string, enableLeaderElection bool) manager.Manager {
+func createAkhqConfigMgr(namespace string, ownNamespace string, enableLeaderElection bool, apiGroup string) manager.Manager {
 	akhqMgrOptions := ctrl.Options{
 		Scheme:                  scheme,
 		MetricsBindAddress:      "0",
@@ -257,7 +258,7 @@ func createAkhqConfigMgr(namespace string, ownNamespace string, enableLeaderElec
 		HealthProbeBindAddress:  "0",
 		LeaderElection:          enableLeaderElection,
 		LeaderElectionNamespace: ownNamespace,
-		LeaderElectionID:        fmt.Sprintf("akhqconfig.%s.netcracker.com", ownNamespace),
+		LeaderElectionID:        fmt.Sprintf("akhqconfig.%s.%s", ownNamespace, apiGroup),
 	}
 	configureManagerNamespaces(&akhqMgrOptions, namespace, ownNamespace)
 
@@ -287,7 +288,7 @@ func createAkhqConfigMgr(namespace string, ownNamespace string, enableLeaderElec
 	return akhqMgr
 }
 
-func createKafkaUsersMgr(namespace string, ownNamespace string, enableLeaderElection bool) manager.Manager {
+func createKafkaUsersMgr(namespace string, ownNamespace string, enableLeaderElection bool, apiGroup string) manager.Manager {
 	kafkaUsersMgrOptions := ctrl.Options{
 		Scheme:                  scheme,
 		MetricsBindAddress:      "0",
@@ -295,7 +296,7 @@ func createKafkaUsersMgr(namespace string, ownNamespace string, enableLeaderElec
 		HealthProbeBindAddress:  "0",
 		LeaderElection:          enableLeaderElection,
 		LeaderElectionNamespace: ownNamespace,
-		LeaderElectionID:        fmt.Sprintf("kafkausers.%s.netcracker.com", ownNamespace),
+		LeaderElectionID:        fmt.Sprintf("kafkausers.%s.%s", ownNamespace, apiGroup),
 	}
 	configureManagerNamespaces(&kafkaUsersMgrOptions, namespace, ownNamespace)
 
