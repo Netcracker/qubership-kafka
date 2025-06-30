@@ -204,9 +204,5 @@ func (r *KafkaReconciler) writeFailedStatus(errorMessage string) {
 func (r *KafkaReconciler) buildReconcilers(cr *kafka.Kafka, logger logr.Logger) []ReconcileService {
 	var reconcilers []ReconcileService
 	reconcilers = append(reconcilers, NewReconcileKafka(r, cr, logger))
-	if cr.Spec.DiscoveryEnabled {
-		reconcilers = append(reconcilers, NewReconcileKafkaDiscovery(r, cr, logger))
-	}
-
 	return reconcilers
 }

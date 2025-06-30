@@ -282,18 +282,6 @@ func (in *Kafka) DeepCopyInto(out *Kafka) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.KafkaDiscoveryMeta != nil {
-		in, out := &in.KafkaDiscoveryMeta, &out.KafkaDiscoveryMeta
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
-	}
-	if in.KafkaDiscoveryTags != nil {
-		in, out := &in.KafkaDiscoveryTags, &out.KafkaDiscoveryTags
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	if in.CustomLabels != nil {
 		in, out := &in.CustomLabels, &out.CustomLabels
 		*out = make(map[string]string, len(*in))

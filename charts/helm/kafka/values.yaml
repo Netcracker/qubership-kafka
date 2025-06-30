@@ -136,8 +136,6 @@ kafka:
     enabled: false
     maxUnavailable: 0
   dockerImage: ghcr.io/netcracker/qubership-docker-kafka:main
-  consulDiscovery: false
-  consulAclEnabled: false
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",

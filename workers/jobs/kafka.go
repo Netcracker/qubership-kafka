@@ -87,8 +87,6 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 	}
 
 	exec := func() error {
-		// Data is cleared after an error occurs or a stop signal is received by the controller manager.
-		defer kafka.CleanData(logger)
 
 		logger.Info(fmt.Sprintf("starting %s manager", string(opts.Mode)))
 		if err = mgr.Start(ctx); err != nil {

@@ -118,17 +118,6 @@ spec:
                   name: {{ template "kafka.name" . }}-backup-daemon-secret
                   key: password
             {{- end }}
-            {{- if .Values.kafka.consulDiscovery }}
-            - name: CONSUL_HOST
-              value: {{ .Values.integrationTests.consulHost }}
-            - name: CONSUL_PORT
-              value: {{ .Values.integrationTests.consulPort | quote }}
-            - name: CONSUL_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: consul-token
-            {{- end }}
             {{- if and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install }}
             - name: PROMETHEUS_URL
               value: {{ .Values.integrationTests.prometheusUrl }}

@@ -52,10 +52,6 @@ type ReconcileKafka struct {
 	kafkaProvider provider.KafkaResourceProvider
 }
 
-func CleanData(logger logr.Logger) {
-	CleanDiscoveryData(logger)
-}
-
 func NewReconcileKafka(r *KafkaReconciler, cr *kafka.Kafka, logger logr.Logger) ReconcileKafka {
 	return ReconcileKafka{
 		cr:            cr,

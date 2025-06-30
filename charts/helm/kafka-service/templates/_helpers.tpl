@@ -192,12 +192,6 @@ Configure Kafka Mirror Maker monitoring type
 {{- coalesce .Values.mirrorMakerMonitoring.monitoringType .Values.global.monitoringType "prometheus" -}}
 {{- end -}}
 
-{{/*
-Create the name for service registration in Consul
-*/}}
-{{- define "kafka-service.registeredServiceName" -}}
-    {{ printf "%s-%s" (include "kafka.name" .) .Release.Namespace }}
-{{- end -}}
 
 {{/*
 Create list of Kafka brokers separated by ",".

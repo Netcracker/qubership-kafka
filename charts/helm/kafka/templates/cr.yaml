@@ -115,18 +115,6 @@ spec:
   healthCheckTimeout: {{ .Values.kafka.healthCheckTimeout | default 30 }}
   enableAuditLogs: {{ .Values.kafka.enableAuditLogs }}
   enableAuthorization: {{ .Values.kafka.enableAuthorization }}
-  consulDiscovery: {{ .Values.kafka.consulDiscovery | default false }}
-  {{- if .Values.kafka.consulDiscovery }}
-  consulAclEnabled: {{ .Values.kafka.consulAclEnabled | default false }}
-  consulAuthMethod: {{ default "consul-k8s-auth-method" .Values.kafka.consulAuthMethod | quote }}
-  registeredServiceName: {{ template "kafka-service.registeredServiceName" . }}
-  {{- if .Values.kafka.kafkaDiscoveryTags }}
-  kafkaDiscoveryTags: {{ .Values.kafka.kafkaDiscoveryTags | toYaml | nindent 6 }}
-  {{- end }}
-  {{- if .Values.kafka.kafkaDiscoveryMeta }}
-  kafkaDiscoveryMeta: {{ .Values.kafka.kafkaDiscoveryMeta | toYaml | nindent 6 }}
-  {{- end }}
-  {{- end }}
   zookeeperConnect: "{{ include "kafka.zooKeeperConnect" . }}"
   zookeeperEnableSsl: {{ .Values.kafka.zookeeperEnableSsl }}
   zookeeperSslSecretName: {{ .Values.kafka.zookeeperSslSecretName | quote }}

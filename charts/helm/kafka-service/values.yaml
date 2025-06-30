@@ -121,8 +121,6 @@ global:
         username: ""
         password: ""
         registrationToken: ""
-      consul:
-        token: ""
       prometheus:
         user: ""
         password: ""
@@ -545,8 +543,6 @@ integrationTests:
   zabbixUrl: ""
   backupDaemonHost: "kafka-backup-daemon"
   prometheusUrl: ""
-  consulHost: ""
-  consulPort: 8500
   resources:
     requests:
       memory: 256Mi
