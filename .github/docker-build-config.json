@@ -64,6 +64,11 @@
     "name": "qubership-kafka-mirror-maker-monitoring",
     "file": "kafka-mirror-maker-monitoring/docker/Dockerfile",
     "context": "kafka-mirror-maker-monitoring"
+    },
+    {
+    "name": "qubership-docker-kafka-mirror-maker",
+    "file": "kafka-mirror-maker/docker/Dockerfile",
+    "context": "kafka-mirror-maker"
     }
   ],
   "platforms": "linux/amd64,linux/arm64"
