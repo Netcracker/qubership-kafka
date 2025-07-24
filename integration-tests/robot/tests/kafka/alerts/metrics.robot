@@ -11,7 +11,7 @@ Resource  ../../shared/keywords.robot
 
 *** Keywords ***
 Check JMX Metrics Exist In Prometheus
-    ${data}=  Get Metric Values  kafka_server_ReplicaManager_Count
+    ${data}=  Get Metric Values  kafka_server_ReplicaManager_Count_total
     Should Not Be Empty  ${data}
     Should Contain  str(${data})  %{KAFKA_OS_PROJECT}
 
