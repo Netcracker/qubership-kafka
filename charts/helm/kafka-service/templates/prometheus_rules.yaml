@@ -76,7 +76,7 @@ spec:
           annotations:
             description: 'Some of Kafka Service pods have Garbage collections count rate higher than {{ .Values.monitoring.thresholds.gcCountAlert }}'
             summary: Some of Kafka Service pods have Garbage collections count rate higher than {{ .Values.monitoring.thresholds.gcCountAlert }}
-          expr: max(rate(java_GarbageCollector_CollectionCount{namespace="{{ .Release.Namespace }}", broker=~"{{ template "kafka.name" . }}-[0-9].*"}[5m])) > {{ .Values.monitoring.thresholds.gcCountAlert }}
+          expr: max(rate(java_GarbageCollector_CollectionCount_total{namespace="{{ .Release.Namespace }}", broker=~"{{ template "kafka.name" . }}-[0-9].*"}[5m])) > {{ .Values.monitoring.thresholds.gcCountAlert }}
           for: 3m
           labels:
             severity: high
