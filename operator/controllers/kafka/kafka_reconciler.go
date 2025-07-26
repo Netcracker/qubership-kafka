@@ -35,7 +35,6 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -127,7 +126,7 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 	}
 
 	clientService := r.kafkaProvider.NewKafkaClientServiceForCR()
-	if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	if err := r.reconciler.CreateOrUpdateService(clientService, r.logger); err != nil {
@@ -135,7 +134,7 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 	}
 
 	domainClientService := r.kafkaProvider.NewKafkaDomainClientServiceForCR()
-	if err := controllerutil.SetControllerReference(r.cr, domainClientService, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, domainClientService, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	if err := r.reconciler.CreateOrUpdateService(domainClientService, r.logger); err != nil {
@@ -348,7 +347,7 @@ func (r ReconcileKafka) Status() error {
 
 func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *corev1.Secret) error {
 	brokerService := r.kafkaProvider.NewKafkaBrokerServiceForCR(brokerId)
-	if err := controllerutil.SetControllerReference(r.cr, brokerService, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, brokerService, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	if err := r.reconciler.CreateOrUpdateService(brokerService, r.logger); err != nil {
@@ -367,7 +366,7 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 		return err
 	}
 	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, "")
-	if err := controllerutil.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	if kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true" {
@@ -407,7 +406,7 @@ func (r *ReconcileKafka) updateBrokerDeploymentForMigration(brokerId int, replic
 		brokerDeployment = r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, true, zkClusterID)
 		brokerDeployment.Spec.Template.Spec.Containers[0].Env = append(brokerDeployment.Spec.Template.Spec.Containers[0].Env, additionalEnvs...)
 	}
-	if err := controllerutil.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	if err := r.reconciler.CreateOrUpdateDeployment(brokerDeployment, r.logger); err != nil {
@@ -418,7 +417,7 @@ func (r *ReconcileKafka) updateBrokerDeploymentForMigration(brokerId int, replic
 
 func (r *ReconcileKafka) createMigrationControllerEntities(zkClusterID string) error {
 	controllerService := r.kafkaProvider.NewKafkaControllerServiceForCR()
-	if err := controllerutil.SetControllerReference(r.cr, controllerService, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, controllerService, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	if err := r.reconciler.CreateOrUpdateService(controllerService, r.logger); err != nil {
@@ -432,7 +431,7 @@ func (r *ReconcileKafka) createMigrationControllerEntities(zkClusterID string) e
 		}
 	}
 	controllerDeployment := r.kafkaProvider.NewKafkaKraftControllerDeploymentForCR(zkClusterID, false, true)
-	if err := controllerutil.SetControllerReference(r.cr, controllerDeployment, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, controllerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
 
@@ -470,7 +469,7 @@ func (r *ReconcileKafka) removeMigrationControllerEntities(zkClusterID string) e
 
 func (r *ReconcileKafka) updateMigrationControllerWithoutZooKeeper(zkClusterID string) error {
 	controllerDeployment := r.kafkaProvider.NewKafkaKraftControllerDeploymentForCR(zkClusterID, true, false)
-	if err := controllerutil.SetControllerReference(r.cr, controllerDeployment, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, controllerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
 
@@ -524,7 +523,7 @@ func (r *ReconcileKafka) updateBrokersWithoutKraftMigrationController(zkClusterI
 			return err
 		}
 		brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, true, zkClusterID)
-		if err := controllerutil.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if err := r.reconciler.CreateOrUpdateDeployment(brokerDeployment, r.logger); err != nil {

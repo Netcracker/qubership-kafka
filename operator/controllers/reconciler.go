@@ -17,6 +17,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"strings"
 
 	"github.com/Netcracker/qubership-kafka/operator/util"
@@ -32,7 +35,6 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -453,12 +455,16 @@ func (r *Reconciler) FindSecret(name string, namespace string, logger logr.Logge
 	return foundSecret, err
 }
 
-func (r *Reconciler) WatchSecret(secretName string, cr metav1.Object, logger logr.Logger) (*corev1.Secret, error) {
+func (r *Reconciler) WatchSecret(secretName string, obj runtime.Object, logger logr.Logger) (*corev1.Secret, error) {
+	cr, err := toUnstructured(obj)
+	if err != nil {
+		return nil, err
+	}
 	secret, err := r.FindSecret(secretName, cr.GetNamespace(), logger)
 	if err != nil {
 		return nil, err
 	} else {
-		if err := controllerutil.SetControllerReference(cr, secret, r.Scheme); err != nil {
+		if err := r.SetControllerReference(cr, secret, r.Scheme); err != nil {
 			return nil, err
 		}
 		if err := r.UpdateSecret(secret, logger); err != nil {
@@ -466,6 +472,23 @@ func (r *Reconciler) WatchSecret(secretName string, cr metav1.Object, logger log
 		}
 	}
 	return secret, nil
+}
+
+// SetControllerReference Extension for controllerutil.SetControllerReference to clean up previous owner reference
+func (r *Reconciler) SetControllerReference(owner, controlled runtime.Object, scheme *runtime.Scheme) error {
+	ownerStructured, err := toUnstructured(owner)
+	if err != nil {
+		return err
+	}
+	controlledStructured, err := toUnstructured(controlled)
+	if err != nil {
+		return err
+	}
+	// Check if there's an existing owner reference
+	if existing := metav1.GetControllerOf(controlledStructured); existing != nil && !ReferSameObject(existing.Name, existing.APIVersion, existing.Kind, ownerStructured.GetName(), ownerStructured.GetAPIVersion(), ownerStructured.GetKind()) {
+		controlledStructured.SetOwnerReferences(nil)
+	}
+	return controllerutil.SetControllerReference(ownerStructured, controlledStructured, scheme)
 }
 
 func (r *Reconciler) UpdateSecret(secret *corev1.Secret, logger logr.Logger) error {
@@ -514,4 +537,34 @@ func (r *Reconciler) ScaleDeployment(name string, replicas int32, namespace stri
 		return r.Client.Update(context.TODO(), foundDeployment)
 	}
 	return err
+}
+
+func ReferSameObject(aName string, aGroup string, aKind string, bName string, bGroup string, bKind string) bool {
+	aGV, err := schema.ParseGroupVersion(aGroup)
+	if err != nil {
+		return false
+	}
+
+	bGV, err := schema.ParseGroupVersion(bGroup)
+	if err != nil {
+		return false
+	}
+
+	return aGV.Group == bGV.Group && aKind == bKind && aName == bName
+}
+
+// ToUnstructured converts runtime.Object into *unstructured.Unstructured.
+func toUnstructured(obj runtime.Object) (*unstructured.Unstructured, error) {
+	if u, ok := obj.(*unstructured.Unstructured); ok {
+		return u, nil
+	}
+	if obj == nil {
+		return nil, fmt.Errorf("to unstructured: nil object")
+	}
+
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+	if err != nil {
+		return nil, fmt.Errorf("to unstructured: %w", err)
+	}
+	return &unstructured.Unstructured{Object: m}, nil
 }

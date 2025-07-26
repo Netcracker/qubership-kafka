@@ -16,7 +16,9 @@ package akhqprotobuf
 
 import (
 	"context"
+	"github.com/Netcracker/qubership-kafka/operator/controllers"
 	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v7"
 	corev1 "k8s.io/api/core/v1"
@@ -26,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -74,6 +75,9 @@ func CreateProtobufConfigMapIfNotExist(namespace string, client client.Client, l
 	}
 
 	if controller != nil && scheme != nil {
+		if existing := metav1.GetControllerOf(protobufConfigMap); existing != nil && !controllers.ReferSameObject(existing.Name, existing.APIVersion, existing.Kind, controller.Name, controller.APIVersion, controller.Kind) {
+			protobufConfigMap.SetOwnerReferences(nil)
+		}
 		if err = controllerutil.SetControllerReference(controller, protobufConfigMap, scheme); err != nil {
 			return &corev1.ConfigMap{}, err
 		}

@@ -23,7 +23,6 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -72,7 +71,7 @@ func (r ReconcileMirrorMakerMonitoring) Reconcile() error {
 		mirrorMakerMonitoringProvider := r.mirrorMakerMonitoringProvider
 
 		clientService := mirrorMakerMonitoringProvider.NewMonitoringClientService()
-		if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if err := r.reconciler.CreateOrUpdateService(clientService, r.logger); err != nil {
@@ -85,7 +84,7 @@ func (r ReconcileMirrorMakerMonitoring) Reconcile() error {
 		}
 
 		deployment := mirrorMakerMonitoringProvider.NewMirrorMakerMonitoringDeployment()
-		if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if err := r.reconciler.CreateOrUpdateDeployment(deployment, r.logger); err != nil {

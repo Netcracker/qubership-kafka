@@ -26,7 +26,6 @@ import (
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -70,7 +69,7 @@ func (r ReconcileMirrorMaker) Reconcile() error {
 		if err != nil {
 			if errors.IsNotFound(err) {
 				configMap = mirrorMakerProvider.NewConfigurationMapForCR()
-				if err := controllerutil.SetControllerReference(r.cr, configMap, r.reconciler.Scheme); err != nil {
+				if err := r.reconciler.SetControllerReference(r.cr, configMap, r.reconciler.Scheme); err != nil {
 					return err
 				}
 				if err := r.reconciler.CreateOrUpdateConfigMap(configMap, r.logger); err != nil {
@@ -168,11 +167,11 @@ func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, sec
 
 	mirrorMakerDeployment := mirrorMakerProvider.NewMirrorMakerDeploymentForCR(cluster,
 		mirrorMakerSpec.Clusters, secretVersion, configurationVersion, currentClusterName, deploymentName)
-	if err := controllerutil.SetControllerReference(r.cr, mirrorMakerDeployment, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, mirrorMakerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	mirrorMakerService := mirrorMakerProvider.GetService(deploymentName)
-	if err := controllerutil.SetControllerReference(r.cr, mirrorMakerService, r.reconciler.Scheme); err != nil {
+	if err := r.reconciler.SetControllerReference(r.cr, mirrorMakerService, r.reconciler.Scheme); err != nil {
 		return err
 	}
 	if err := r.reconciler.CreateOrUpdateService(mirrorMakerService, r.logger); err != nil {

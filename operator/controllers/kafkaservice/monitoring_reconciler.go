@@ -24,7 +24,6 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -65,7 +64,7 @@ func (r ReconcileMonitoring) Reconcile() error {
 			log.Error(err, fmt.Sprintf("Config map - %s is not found and Kafka Lag Exporter can't be configured",
 				r.lagExporterConfigMapName))
 		}
-		if err := controllerutil.SetControllerReference(r.cr, configMap, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, configMap, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if err := r.reconciler.CreateOrUpdateConfigMap(configMap, r.logger); err != nil {
@@ -86,7 +85,7 @@ func (r ReconcileMonitoring) Reconcile() error {
 		monitoringLabels := r.monitoringProvider.GetMonitoringSelectorLabels()
 
 		clientService := r.monitoringProvider.NewMonitoringClientService()
-		if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if err := r.reconciler.CreateOrUpdateService(clientService, r.logger); err != nil {
@@ -99,7 +98,7 @@ func (r ReconcileMonitoring) Reconcile() error {
 		}
 
 		deployment := r.monitoringProvider.NewMonitoringDeployment(currentCMResourceVersion)
-		if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if err := r.reconciler.CreateOrUpdateDeployment(deployment, r.logger); err != nil {

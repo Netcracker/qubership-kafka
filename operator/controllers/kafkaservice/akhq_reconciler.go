@@ -28,7 +28,6 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -117,7 +116,7 @@ func (r ReconcileAkhq) Reconcile() error {
 		}
 
 		clientService := r.akhqProvider.NewAkhqClientService()
-		if err := controllerutil.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, clientService, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if err := r.reconciler.CreateOrUpdateService(clientService, r.logger); err != nil {
@@ -144,7 +143,7 @@ func (r ReconcileAkhq) Reconcile() error {
 		}
 
 		deployment := r.akhqProvider.NewAkhqDeployment(protobufConfigMap.ResourceVersion, deserealizationSourceConfigMaps)
-		if err := controllerutil.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
+		if err := r.reconciler.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
 		if kafkaServicesSecret.Annotations != nil && kafkaServicesSecret.Annotations[autoRestartAnnotation] == "true" {
