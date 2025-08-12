@@ -1587,7 +1587,7 @@ You can use the following tags:
 |-----------------------------------------|---------|-----------|-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | cruiseControl.install                   | boolean | no        | false                                                             | Whether the Cruise Control component is to be deployed or not. The value should be equal to `true` to install Cruise Control.                                                                                                                                                                                                                                                           |
 | cruiseControl.dockerImage               | string  | no        | Calculates automatically                                          | The Docker image of Cruise Control.                                                                                                                                                                                                                                                                                                                                                     |
-| cruiseControl.config                    | object  | no        | See in  [values.yaml](../../charts/helm/kafka-service/values.yaml) | The set of parameters for Cruise Control. Parameters can be changed and added during deployment if needed. See whole parameter list in official Cruise Control deployment documentation [https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/](https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/). |
+| cruiseControl.config                    | object  | no        | See in  [values.yaml](../../operator/charts/helm/kafka-service/values.yaml) | The set of parameters for Cruise Control. Parameters can be changed and added during deployment if needed. See whole parameter list in official Cruise Control deployment documentation [https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/](https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/). |
 | cruiseControl.capacity.diskSpace        | string  | no        | ""                                                                | The disk space in MB for Kafka Broker. The default value is taken from `kafka.storage.size` parameter.                                                                                                                                                                                                                                                                                  |
 | cruiseControl.capacity.cpu              | string  | no        | 100                                                               | The cpu usage in percentage for Kafka Broker.                                                                                                                                                                                                                                                                                                                                           |
 | cruiseControl.capacity.nwIn             | string  | no        | 10000                                                             | The network inbound in KB for Kafka Broker.                                                                                                                                                                                                                                                                                                                                             |
@@ -1901,7 +1901,7 @@ The service topic will be recreated with credentials specified via Config Provid
 ## Helm
 
 To deploy via Helm you need to prepare yaml file with custom deploy parameters and run the following
-command in [Kafka Chart](/charts/helm/kafka) and [Kafka-Services Chart](/charts/helm/kafka-service):
+command in [Kafka Chart](/operator/charts/helm/kafka) and [Kafka-Services Chart](/operator/charts/helm/kafka-service):
 
 ```sh
 helm install [release-name] ./ -f [parameters-yaml] -n [namespace]
@@ -1985,7 +1985,7 @@ Otherwise, the command deletes the PVCs with the service, and you can lose your 
 Custom resource definitions for Kafka Service should be upgraded before the installation if the new version has major
 changes.
 
-The CRDs for version are stored in [crds](../../charts/helm/kafka-service/crds) and can be applied with the following commands:
+The CRDs for version are stored in [crds](../../operator/charts/helm/kafka-service/crds) and can be applied with the following commands:
 
 ```sh
 kubectl replace -f crd.yaml

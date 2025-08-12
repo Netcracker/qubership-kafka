@@ -17,11 +17,11 @@ jobs:
             file: crd-init/docker/Dockerfile
             context: crd-init
           - name: qubership-kafka-operator
-            file: Dockerfile
-            context: .
+            file: operator/Dockerfile
+            context: operator
           - name: qubership-kafka-service-operator
-            file: Dockerfile
-            context: .
+            file: operator/Dockerfile
+            context: operator
           - name: qubership-kafka-service-transfer
             file: docker-transfer/kafka-service/Dockerfile
             context: ""
@@ -41,8 +41,14 @@ jobs:
             file: docker-akhq/docker/Dockerfile
             context: docker-akhq
           - name: qubership-docker-kafka-lag-exporter
-            file: docker-kafka-lag-exporter/docker/Dockerfile
-            context: docker-kafka-lag-exporter
+            file: lag-exporter/docker/Dockerfile
+            context: lag-exporter
+          - name: qubership-kafka-mirror-maker-monitoring
+            file: mirror-maker-monitoring/docker/Dockerfile
+            context: mirror-maker-monitoring
+          - name: qubership-docker-kafka-mirror-maker
+            file: mirror-maker/docker/Dockerfile
+            context: mirror-maker
     if: github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     steps:

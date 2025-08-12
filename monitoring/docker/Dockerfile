@@ -1,4 +1,4 @@
-FROM golang:1.24.4-alpine3.22 as builder
+FROM golang:1.24-alpine3.22 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -22,7 +22,7 @@ RUN set -x \
 # Build
 RUN GOOS=linux GOARCH=amd64 GO111MODULE=on go build -tags musl -a -o additional-metrics main.go
 
-FROM telegraf:1.35.1-alpine
+FROM telegraf:1.35-alpine
 
 ENV KAFKA_MONITORING_HOME=/opt/kafka-monitoring \
     KAFKA_CTL_CONFIG=/opt/kafka-monitoring/kafkactl.yml \
@@ -39,10 +39,6 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN chmod +x /docker-entrypoint.sh
 
-# Set the Alpine version to 3.19
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.19/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.19/community" >> /etc/apk/repositories
-
 RUN set -x \
     && apk add --update --no-cache \
          bash \
@@ -54,12 +50,12 @@ RUN set -x \
          rsync \
          apk-tools \
          build-base \
-         librdkafka-dev=2.3.0-r1
+         librdkafka-dev
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
 
-RUN rm /usr/lib/python3.11/EXTERNALLY-MANAGED
+RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
 
 # Install misc tools
 RUN set -x \

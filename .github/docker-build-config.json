@@ -12,23 +12,23 @@
     },
     {
     "name": "qubership-kafka-operator",
-    "file": "Dockerfile",
-    "context": "."
+    "file": "operator/Dockerfile",
+    "context": "operator"
     },
     {
     "name": "qubership-kafka-service-operator",
-    "file": "Dockerfile",
-    "context": "."
+    "file": "operator/Dockerfile",
+    "context": "operator"
     },
     {
     "name": "qubership-kafka-transfer",
     "file": "docker-transfer/kafka/Dockerfile",
-    "context": ""
+    "context": "."
     },
     {
     "name": "qubership-kafka-service-transfer",
     "file": "docker-transfer/kafka-service/Dockerfile",
-    "context": ""
+    "context": "."
     },
     {
     "name": "qubership-kafka-backup-daemon",
@@ -52,8 +52,8 @@
     },
     {
     "name": "qubership-docker-kafka-lag-exporter",
-    "file": "docker-kafka-lag-exporter/docker/Dockerfile",
-    "context": "docker-kafka-lag-exporter"
+    "file": "lag-exporter/docker/Dockerfile",
+    "context": "lag-exporter"
     },
     {
     "name": "qubership-docker-cruise-control",
@@ -62,13 +62,13 @@
     },
     {
     "name": "qubership-kafka-mirror-maker-monitoring",
-    "file": "kafka-mirror-maker-monitoring/docker/Dockerfile",
-    "context": "kafka-mirror-maker-monitoring"
+    "file": "mirror-maker-monitoring/docker/Dockerfile",
+    "context": "mirror-maker-monitoring"
     },
     {
     "name": "qubership-docker-kafka-mirror-maker",
-    "file": "kafka-mirror-maker/docker/Dockerfile",
-    "context": "kafka-mirror-maker"
+    "file": "mirror-maker/docker/Dockerfile",
+    "context": "mirror-maker"
     }
   ],
   "platforms": "linux/amd64,linux/arm64"
