@@ -70,6 +70,8 @@ The developer should configure environment variables:
 * `WATCH_NAMESPACE` - namespace, in which custom resources should be proceeded.
 * `OPERATOR_NAMESPACE` - namespace, where Kafka-Services should be proceeded.
 
+> **Note:** The `secondaryApiGroup` parameter was added to enable listening to several API groups with the same CR type.
+
 ### How to troubleshoot
 
 There are no well-defined rules for troubleshooting, as each task is unique, but there are some tips that can do:
@@ -94,8 +96,3 @@ To keep the component up to date, the following activities should be performed r
 * [Troubleshooting guide](/docs/public/troubleshooting.md).
 * [Architecture Guide](/docs/public/architecture.md).
 * [Internal Developer Guide](/docs/internal/developing.md).
-
-## License
-
-* Main part is distributed under `Apache License, Version 2.0`.
-* Folder `docker-kafka` is distributed under `The GNU General Public License, Version 2`.

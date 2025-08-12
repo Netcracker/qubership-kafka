@@ -1,6 +1,112 @@
 The following topics are covered in this chapter:
 
-[[_TOC_]]
+<!-- TOC -->
+* [General Information](#general-information)
+* [Prerequisites](#prerequisites)
+  * [Common](#common)
+    * [Custom Resource Definitions](#custom-resource-definitions)
+      * [KafkaUsers CRD](#kafkausers-crd)
+    * [Deployment Permissions](#deployment-permissions)
+    * [Pre-deployment Resources](#pre-deployment-resources)
+      * [Kafka Service Operator Roles](#kafka-service-operator-roles)
+        * [Acceptance Criteria](#acceptance-criteria)
+        * [Resources](#resources)
+        * [To do](#to-do)
+      * [CRD-Init job](#crd-init-job)
+        * [Acceptance Criteria](#acceptance-criteria-1)
+        * [Resources](#resources-1)
+    * [Multiple Availability Zone](#multiple-availability-zone)
+  * [Storage](#storage)
+    * [Disk Requirements](#disk-requirements)
+    * [Permissions](#permissions)
+  * [Kubernetes](#kubernetes)
+  * [OpenShift](#openshift)
+  * [Google Cloud](#google-cloud)
+  * [AWS](#aws)
+* [Best Practices and Recommendations](#best-practices-and-recommendations)
+  * [Kafka Configurations](#kafka-configurations)
+    * [Automatic Topic Creation](#automatic-topic-creation)
+  * [HWE](#hwe)
+    * [Small](#small)
+    * [Medium](#medium)
+    * [Large](#large)
+    * [XLarge](#xlarge)
+  * [Topic Configurations](#topic-configurations)
+    * [Partitions Number](#partitions-number)
+  * [Performance Optimization](#performance-optimization)
+* [Parameters](#parameters)
+  * [Cloud Integration Parameters](#cloud-integration-parameters)
+  * [Global](#global)
+    * [External Kafka](#external-kafka)
+    * [Disaster Recovery](#disaster-recovery)
+    * [Secrets](#secrets)
+  * [Operator](#operator)
+  * [Kafka](#kafka)
+  * [Monitoring](#monitoring)
+    * [Lag Exporter](#lag-exporter)
+  * [AKHQ](#akhq)
+  * [Mirror Maker](#mirror-maker)
+  * [Mirror Maker Monitoring](#mirror-maker-monitoring)
+  * [Integration Tests](#integration-tests)
+    * [Integration test tags description](#integration-test-tags-description)
+  * [Backup Daemon](#backup-daemon)
+  * [Cruise Control](#cruise-control)
+  * [CRD-Init job](#crd-init-job-1)
+* [Installation](#installation)
+  * [Before You Begin](#before-you-begin)
+  * [On-Prem Examples](#on-prem-examples)
+    * [HA Scheme](#ha-scheme)
+    * [DR scheme](#dr-scheme)
+  * [Google Cloud Examples](#google-cloud-examples)
+    * [HA Scheme](#ha-scheme-1)
+    * [DR Scheme](#dr-scheme-1)
+  * [AWS Examples](#aws-examples)
+    * [DR Scheme](#dr-scheme-2)
+  * [Azure Examples](#azure-examples)
+    * [HA Scheme](#ha-scheme-2)
+    * [DR Scheme](#dr-scheme-3)
+  * [Aiven Kafka](#aiven-kafka)
+  * [KRaft](#kraft)
+* [Upgrade](#upgrade)
+  * [Common](#common-1)
+  * [Scale-In Cluster](#scale-in-cluster)
+  * [Rolling Upgrade](#rolling-upgrade)
+  * [Secured Kafka Mirror Maker Credentials Migration](#secured-kafka-mirror-maker-credentials-migration)
+  * [Helm](#helm)
+    * [Manual Upgrade](#manual-upgrade)
+    * [Manual Uninstalling](#manual-uninstalling)
+  * [CRD Upgrade](#crd-upgrade)
+  * [Automatic CRD Upgrade](#automatic-crd-upgrade)
+  * [Custom Resource Definition Versioning](#custom-resource-definition-versioning)
+    * [Apply New Custom Resource Definition Version](#apply-new-custom-resource-definition-version)
+    * [Custom Resource Definition with Versioning](#custom-resource-definition-with-versioning)
+    * [Custom Resource Definition without Versioning](#custom-resource-definition-without-versioning)
+  * [Migration from Joint to Separate Deployment](#migration-from-joint-to-separate-deployment)
+    * [Manual Way](#manual-way)
+  * [HA to DR Scheme](#ha-to-dr-scheme)
+* [Rollback](#rollback)
+* [Additional Features](#additional-features)
+  * [Cluster with Arbiter Node](#cluster-with-arbiter-node)
+    * [Kafka](#kafka-1)
+    * [ZooKeeper](#zookeeper)
+  * [Kafka Mirror Maker Features](#kafka-mirror-maker-features)
+    * [Update Existing Configuration](#update-existing-configuration)
+    * [Redeploy with New Configuration](#redeploy-with-new-configuration)
+  * [Multi-datacenter Deployment with Cross-datacenter Replication (XDCR)](#multi-datacenter-deployment-with-cross-datacenter-replication-xdcr)
+    * [Multi-datacenter Prerequisites](#multi-datacenter-prerequisites)
+    * [Mirror Maker deployment](#mirror-maker-deployment)
+  * [Multiple Availability Zone Deployment](#multiple-availability-zone-deployment)
+    * [Affinity](#affinity)
+      * [Replicas Fewer than Availability Zones](#replicas-fewer-than-availability-zones)
+    * [Replicas More than Availability Zones](#replicas-more-than-availability-zones)
+  * [Broker Racks](#broker-racks)
+* [Frequently Asked Questions](#frequently-asked-questions)
+  * [What to do if a Kubernetes version is upgraded before application?](#what-to-do-if-a-kubernetes-version-is-upgraded-before-application)
+  * [Deploy job failed with status check but application works fine](#deploy-job-failed-with-status-check-but-application-works-fine)
+  * [Deploy job failed with unknown fields in kafkaservices.qubership.com](#deploy-job-failed-with-unknown-fields-in-kafkaservicesqubershipcom)
+  * [Deploy job failed with some error in templates](#deploy-job-failed-with-some-error-in-templates)
+  * [How to deploy several Kafka clusters with one ZooKeeper](#how-to-deploy-several-kafka-clusters-with-one-zookeeper)
+<!-- TOC -->
 
 # General Information
 
@@ -1096,7 +1202,6 @@ For more information, see [Kafka Service Disaster Recovery](disaster-recovery.md
 | global.secrets.integrationTests.idp.username          | string  | no        | ""            | The name of user of Identity Provider.                                                                                                                                                                                                                                                                                                                                                                                                   |
 | global.secrets.integrationTests.idp.password          | string  | no        | ""            | The password of Identity Provider.                                                                                                                                                                                                                                                                                                                                                                                                       |
 | global.secrets.integrationTests.idp.registrationToken | string  | no        | ""            | The registration token of Identity Provider.                                                                                                                                                                                                                                                                                                                                                                                             |
-| global.secrets.integrationTests.consul.token          | string  | no        | ""            | The ACL token of Consul.                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | global.secrets.integrationTests.prometheus.user       | string  | no        | ""            | The username for authentication on Prometheus/VictoriaMetrics secured endpoints.                                                                                                                                                                                                                                                                                                                                                         |
 | global.secrets.integrationTests.prometheus.password   | string  | no        | ""            | The password for authentication on Prometheus/VictoriaMetrics secured endpoints.                                                                                                                                                                                                                                                                                                                                                         |
 
@@ -1149,11 +1254,6 @@ For more information, see [Kafka Service Disaster Recovery](disaster-recovery.md
 | kafka.scaling.brokerDeploymentScaleInEnabled           | boolean | no        | true                          | Whether Kafka Broker Scale-In operation is enabled during upgrade.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | kafka.scaling.allBrokersStartTimeoutSeconds            | integer | no        | 600                           | The timeout in seconds to wait until all brokers are up before starting partitions reassignment in case of cluster scaling. For more information about Kafka cluster scaling, see [Kafka Cluster Scaling](scaling.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | kafka.scaling.topicReassignmentTimeoutSeconds          | integer | no        | 300                           | The timeout in seconds to wait until partitions reassignment is completed for a single topic in case of cluster scaling. For more information about Kafka cluster scaling, see [Kafka Cluster Scaling](scaling.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| kafka.consulDiscovery                                  | boolean | no        | false                         | Whether operator registers Kafka instances in Consul. The value should be equal to `true` to register Kafka service in Consul. For more information about Kafka service discovery, see [Kafka Service Discovery](#kafka-service-discovery)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| kafka.consulAclEnabled                                 | boolean | no        | false                         | Whether Consul ACL is enabled. The value should be equal to `true` if Kafka Service should be registered in the Consul.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| kafka.consulAuthMethod                                 | string  | no        | ""                            | The name of Consul Authentication method. If Consul has hardcoded authentication method name that is used as default value for this parameter, `consul-k8s-auth-method`. Otherwise, the parameter should be equal to Consul Authentication method name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| kafka.kafkaDiscoveryMeta                               | object  | no        | {}                            | The metadata for Kafka service in Consul. This is a map linked to the service instance of maximum 64 key/values with string semantics. The key can contain only ASCII characters and no special characters such as `A-Z`, `a-z`, `0-9`, `_` and `-`. For performance and security reasons, the keys are limited to 128 characters, and values to 512. Example" `kafka.kafkaDiscoveryMeta: '{"key1": "value1","key2": "value2"}'`. You can change this data in the `kafka-service-discovery-data` configmap at runtime. For instance, the same configuration would look as follows: ``` meta: '{"node": "primary", "version":"1"}' tags: '["primary", "v1"]' ```                                                                                                                                                                          |
-| kafka.kafkaDiscoveryTags                               | list    | no        | []                            | The tags for Kafka service in Consul. This is a list of values that are opaque to Consul but can be used to distinguish between primary or secondary nodes, different versions, or any other service level labels. Example: `kafka.kafkaDiscoveryTags: '[tag1, tag2, tag3]'`. You can change this data in the `kafka-service-discovery-data` configmap at runtime. For instance, the same configuration would look as follows: ``` meta: '{"node": "primary", "version":"1"}' tags: '["primary", "v1"]' ```                                                                                                                                                                                                                                                                                                                              |
 | kafka.resources.requests.cpu                           | string  | no        | 50m                           | The minimum number of CPUs the container should use.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | kafka.resources.requests.memory                        | string  | no        | 512Mi                         | The minimum amount of memory the container should use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | kafka.resources.limits.cpu                             | string  | no        | 400m                          | The maximum number of CPUs the container can use.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -1397,8 +1497,6 @@ For more information, see [Kafka Service Disaster Recovery](disaster-recovery.md
 | integrationTests.kafkaVolumeSize           | string  | no        | 2                        | The size of the persistent volume in Gi.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | integrationTests.backupDaemonHost          | string  | no        | kafka-backup-daemon      | The host name of Kafka Backup Daemon.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | integrationTests.prometheusUrl             | string  | no        | ""                       | The URL (with schema and port) to Prometheus. For example, `http://prometheus.cloud.openshift.sdntest.example.com:80`. This parameter must be specified if you want to run integration tests with prometheus tag. **Note:** This parameter could be used as VictoriaMetrics URL instead of Prometheus. For example, `http://vmauth-k8s.monitoring:8427`.                                                                                                                                                                             |
-| integrationTests.consulHost                | string  | no        | ""                       | The host name of Consul Server.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| integrationTests.consulPort                | integer | no        | 8500                     | The port of Consul Server. The default value is `8500`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | integrationTests.resources.requests.memory | string  | no        | 256Mi                    | The minimum amount of memory the container should use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki).                                                                                                                                                                                                                                                                                                                                                 |
 | integrationTests.resources.requests.cpu    | string  | no        | 200m                     | The minimum number of CPUs the container should use.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | integrationTests.resources.limits.memory   | string  | no        | 256Mi                    | The maximum amount of memory the container can use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki).                                                                                                                                                                                                                                                                                                                                                    |
@@ -1432,7 +1530,6 @@ You can use the following tags:
         * `unauthorized_access` tag runs `Unauthorized Access` test.
         * `not_evictable` tag runs `Not Evictable Backup` test.
         * `restore_by_regex` tag runs `Granular Backup And Restore By Topic Regex` test.
-    * `kafka_status_in_consul` tag runs `Check Kafka Status In Consul` test.
     * `kafka_consumer_producer` tag runs `Test Producing And Consuming Data` test.
     * `kafka_crud` tag runs all tests for creating, reading, updating and removing Kafka data.
     * `kafka_ha` tag runs all tests connected to HA scenarios:
@@ -1486,23 +1583,26 @@ You can use the following tags:
 
 ## Cruise Control
 
-| Parameter                               | Type    | Mandatory | Default value                                                      | Description                                                                                                                                                                                                                                                                                                                                                                             |
-|-----------------------------------------|---------|-----------|--------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| cruiseControl.install                   | boolean | no        | false                                                              | Whether the Cruise Control component is to be deployed or not. The value should be equal to `true` to install Cruise Control.                                                                                                                                                                                                                                                           |
-| cruiseControl.dockerImage               | string  | no        | Calculates automatically                                           | The Docker image of Cruise Control.                                                                                                                                                                                                                                                                                                                                                     |
-| cruiseControl.config                    | object  | no        | See in  [values.yaml](../../charts/helm/kafka-service/values.yaml) | The set of parameters for Cruise Control. Parameters can be changed and added during deployment if needed. See whole parameter list in official Cruise Control deployment documentation [https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/](https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/). |
-| cruiseControl.capacity.diskSpace        | string  | no        | ""                                                                 | The disk space in MB for Kafka Broker. The default value is taken from `kafka.storage.size` parameter.                                                                                                                                                                                                                                                                                  |
-| cruiseControl.capacity.cpu              | string  | no        | 100                                                                | The cpu usage in percentage for Kafka Broker.                                                                                                                                                                                                                                                                                                                                           |
-| cruiseControl.capacity.nwIn             | string  | no        | 10000                                                              | The network inbound in KB for Kafka Broker.                                                                                                                                                                                                                                                                                                                                             |
-| cruiseControl.capacity.nwOut            | string  | no        | 10000                                                              | The network outbound in KB for Kafka Broker.                                                                                                                                                                                                                                                                                                                                            |
-| cruiseControl.ui.enabled                | boolean | no        | true                                                               | Whether Cruise Control UI enabled.                                                                                                                                                                                                                                                                                                                                                      |
-| cruiseControl.heapOpts                  | string  | no        | -Xmx1G                                                             | The heap opts of JVM.                                                                                                                                                                                                                                                                                                                                                                   |
-| cruiseControl.ingress.host              | string  | no        | ""                                                                 | The name of external host which the Cruise Control UI should be available on. It must be complex and unique enough not to intersect with other possible external host names.                                                                                                                                                                                                            |
-| cruiseControl.prometheusServerEndpoint  | string  | yes       | ""                                                                 | The Prometheus Server Endpoint for Cruise Control in `host:port` format. This parameter is mandatory in case `global.externalKafka.enabled: true`.                                                                                                                                                                                                                                      |
-| cruiseControl.resources.requests.memory | string  | no        | 512Mi                                                              | The minimum amount of memory the container should use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki).                                                                                                                                                                                                    |
-| cruiseControl.resources.requests.cpu    | string  | no        | 200m                                                               | The minimum number of CPUs the container should use.                                                                                                                                                                                                                                                                                                                                    |
-| cruiseControl.resources.limits.memory   | string  | no        | 1024Mi                                                             | The maximum amount of memory the container can use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki).                                                                                                                                                                                                       |
-| cruiseControl.resources.limits.cpu      | string  | no        | 400m                                                               | The maximum number of CPUs the container can use.                                                                                                                                                                                                                                                                                                                                       |
+| Parameter                               | Type    | Mandatory | Default value                                                     | Description                                                                                                                                                                                                                                                                                                                                                                             |
+|-----------------------------------------|---------|-----------|-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| cruiseControl.install                   | boolean | no        | false                                                             | Whether the Cruise Control component is to be deployed or not. The value should be equal to `true` to install Cruise Control.                                                                                                                                                                                                                                                           |
+| cruiseControl.dockerImage               | string  | no        | Calculates automatically                                          | The Docker image of Cruise Control.                                                                                                                                                                                                                                                                                                                                                     |
+| cruiseControl.config                    | object  | no        | See in  [values.yaml](../../operator/charts/helm/kafka-service/values.yaml) | The set of parameters for Cruise Control. Parameters can be changed and added during deployment if needed. See whole parameter list in official Cruise Control deployment documentation [https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/](https://github.com/linkedin/cruise-control/wiki/Configurations#cruise-control-configurations/). |
+| cruiseControl.capacity.diskSpace        | string  | no        | ""                                                                | The disk space in MB for Kafka Broker. The default value is taken from `kafka.storage.size` parameter.                                                                                                                                                                                                                                                                                  |
+| cruiseControl.capacity.cpu              | string  | no        | 100                                                               | The cpu usage in percentage for Kafka Broker.                                                                                                                                                                                                                                                                                                                                           |
+| cruiseControl.capacity.nwIn             | string  | no        | 10000                                                             | The network inbound in KB for Kafka Broker.                                                                                                                                                                                                                                                                                                                                             |
+| cruiseControl.capacity.nwOut            | string  | no        | 10000                                                             | The network outbound in KB for Kafka Broker.                                                                                                                                                                                                                                                                                                                                            |
+| cruiseControl.ui.enabled                | boolean | no        | true                                                              | Whether Cruise Control UI enabled.                                                                                                                                                                                                                                                                                                                                                      |
+| cruiseControl.heapOpts                  | string  | no        | -Xmx1G                                                            | The heap opts of JVM.                                                                                                                                                                                                                                                                                                                                                                   |
+| cruiseControl.ingress.host              | string  | no        | ""                                                                | The name of external host which the Cruise Control UI should be available on. It must be complex and unique enough not to intersect with other possible external host names.                                                                                                                                                                                                            |
+| cruiseControl.prometheusServerEndpoint  | string  | yes       | ""                                                                | The Prometheus Server Endpoint for Cruise Control in `host:port` format. This parameter is mandatory in case `global.externalKafka.enabled: true`.                                                                                                                                                                                                                                      |
+| cruiseControl.resources.requests.memory | string  | no        | 512Mi                                                             | The minimum amount of memory the container should use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki).                                                                                                                                                                                                    |
+| cruiseControl.resources.requests.cpu    | string  | no        | 200m                                                              | The minimum number of CPUs the container should use.                                                                                                                                                                                                                                                                                                                                    |
+| cruiseControl.resources.limits.memory   | string  | no        | 1024Mi                                                            | The maximum amount of memory the container can use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki).                                                                                                                                                                                                       |
+| cruiseControl.resources.limits.cpu      | string  | no        | 400m                                                              | The maximum number of CPUs the container can use.                                                                                                                                                                                                                                                                                                                                       |
+| cruiseControl.affinity                  | object  | no        | {}                                                                | The affinity scheduling rules. Specify the value in json format. The parameter can be empty.                                                                                                                                                                                                                                                                                            |
+| cruiseControl.tolerations               | list    | no        | []                                                                | The YAML string to specify toleration policies.                                                                                                                                                                                                                                                                                                                                         |
+| cruiseControl.nodeSelector              | object  | no        | {}                                                                | The labels for backup daemon pod assignment, formatted as a JSON string. If you use predefined Persistent Volume for backup daemon you need to specify Kubernetes node where PV's folder is placed.                                                                                                                                                                                                                                                                                                                                       |
 
 ## CRD-Init job
 
@@ -1801,7 +1901,7 @@ The service topic will be recreated with credentials specified via Config Provid
 ## Helm
 
 To deploy via Helm you need to prepare yaml file with custom deploy parameters and run the following
-command in [Kafka Chart](/charts/helm/kafka) and [Kafka-Services Chart](/charts/helm/kafka-service):
+command in [Kafka Chart](/operator/charts/helm/kafka) and [Kafka-Services Chart](/operator/charts/helm/kafka-service):
 
 ```sh
 helm install [release-name] ./ -f [parameters-yaml] -n [namespace]
@@ -1885,7 +1985,7 @@ Otherwise, the command deletes the PVCs with the service, and you can lose your 
 Custom resource definitions for Kafka Service should be upgraded before the installation if the new version has major
 changes.
 
-The CRDs for version are stored in [crds](../../charts/helm/kafka-service/crds) and can be applied with the following commands:
+The CRDs for version are stored in [crds](../../operator/charts/helm/kafka-service/crds) and can be applied with the following commands:
 
 ```sh
 kubectl replace -f crd.yaml
@@ -2122,29 +2222,6 @@ using the following parameter in **setEnv.sh** script:
 ```text
 local zookeeper_server_count=3
 ```
-
-## Kafka Service Discovery
-
-**Important**: This functionality works only when Consul is installed with `client.enabled` parameter set to `true`.
-
-One of the main goals of service discovery is to provide a catalog of available services.
-Consul provides an opportunity to register service with a health check to track the service state.
-Kafka service has the ability to register itself automatically in Consul for service discovery.
-This functionality is enabled by the `kafka.consulDiscovery` parameter set to `true`.
-Each Kafka broker is registered in Consul using the internal address of its service with `<service_name>-<namespace>` as name, 
-service name as ID, `kafka.kafkaDiscoveryMeta` and `kafka.kafkaDiscoveryTags` parameters
-as metadata and tags respectively to associate with the service instance.
-If `kafka.externalHostNames` parameter is specified, external Kafka broker addresses are also registered in Consul.
-For registration, the following parameters are used:
-`<service_name>-<namespace>` as name, where `<service_name>` is the name of Kafka,
-`<namespace>` is the namespace where Kafka service is located; `external-<service_name>` as ID,
-where `<service_name>` is the name of the internal service; `kafka.kafkaDiscoveryMeta` parameter as metadata;
-`kafka.kafkaDiscoveryTags` parameter with additional `external` tag as tags.
-If Kafka broker is unavailable for more than 100 seconds, it deregisters from Consul. If it returns to a working state,
-it registers in Consul again.
-Besides, at the end of the Kafka service operator work, all internal and external Kafka addresses are deregistered automatically.
-Both internal and external addresses of the Kafka broker register on the Kubernetes/OpenShift node on which it is located.
-For more information about registered services in Consul, see [Catalog HTTP API](https://www.consul.io/api-docs/catalog).
 
 ## Kafka Mirror Maker Features
 

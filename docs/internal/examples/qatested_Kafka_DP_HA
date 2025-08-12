@@ -147,17 +147,6 @@ kafka:
   environmentVariables:
     - CONF_KAFKA_PROPERTY_NAME=propertyValue
     - KEY=VALUE
-  consulAclEnabled: true
-  consulDiscovery: true
-  registeredServiceName: kafka
-  kafkaDiscoveryTags:
-    - tag1
-    - tag2
-    - tag3
-  kafkaDiscoveryMeta: {
-    "key1": "value1",
-    "key2": "value2"
-   }
 monitoring:
   install: true
   affinity: {

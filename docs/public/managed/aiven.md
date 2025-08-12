@@ -78,7 +78,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
         - source_labels: [__name__]
           regex: 'kafka_controller_ControllerEventManager_([0-9A-Za-z]+)_Count'
           target_label: '__name__'
-          replacement: 'kafka_controller_ControllerEventManager_Count'
+          replacement: 'kafka_controller_ControllerEventManager_Count_total'
         - source_labels: [__name__]
           regex: 'kafka_controller_ControllerEventManager_([0-9A-Za-z]+)_Value'
           target_label: '__name__'
@@ -90,11 +90,11 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
         - source_labels: [__name__]
           regex: 'kafka_server_BrokerTopicMetrics_([0-9A-Za-z]+)_Count'
           target_label: '__name__'
-          replacement: 'kafka_server_BrokerTopicMetrics_Count'
+          replacement: 'kafka_server_BrokerTopicMetrics_Count_total'
         - source_labels: [__name__]
           regex: 'kafka_server_ReplicaManager_([0-9A-Za-z]+)_Count'
           target_label: '__name__'
-          replacement: 'kafka_server_ReplicaManager_Count'
+          replacement: 'kafka_server_ReplicaManager_Count_total'
         - source_labels: [__name__]
           regex: 'kafka_server_ReplicaManager_([0-9A-Za-z]+)_Value'
           target_label: '__name__'
@@ -122,7 +122,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
         - source_labels: [__name__]
           regex: 'java_lang_GarbageCollector_G1_Young_Generation_CollectionCount'
           target_label: '__name__'
-          replacement: 'java_GarbageCollector_CollectionCount'
+          replacement: 'java_GarbageCollector_CollectionCount_total'
         - source_labels: [__name__]
           regex: 'java_lang_GarbageCollector_G1_Young_Generation_CollectionTime'
           target_label: 'name'
@@ -130,7 +130,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
         - source_labels: [__name__]
           regex: 'java_lang_GarbageCollector_G1_Young_Generation_CollectionTime'
           target_label: '__name__'
-          replacement: 'java_GarbageCollector_CollectionTime'
+          replacement: 'java_GarbageCollector_CollectionTime_total'
         - source_labels: [__name__]
           regex: 'kafka_server_group_coordinator_metrics_group_completed_rebalance_count'
           target_label: 'name'
