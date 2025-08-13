@@ -2,38 +2,20 @@ version: 2
 updates:
   # Go modules
   - package-ecosystem: "gomod"
-    directory: "/operator"
+    directories: 
+      - "/operator"
+      - "/monitoring"
     schedule:
       interval: "weekly"
-  
-  - package-ecosystem: "gomod"
-    directory: "/monitoring"
-    schedule:
-      interval: "weekly"
-  
+
   # Python pip dependencies
   - package-ecosystem: "pip"
-    directory: "/backup-daemon/docker"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "pip"
-    directory: "/crd-init/docker"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "pip"
-    directory: "/integration-tests/docker"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "pip"
-    directory: "/monitoring/docker/config"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "pip"
-    directory: "/mirror-maker-monitoring/docker/config"
+    directories: 
+      - "/backup-daemon/docker"
+      - "/crd-init/docker"
+      - "/integration-tests/docker"
+      - "/monitoring/docker/config"
+      - "/mirror-maker-monitoring/docker/config"
     schedule:
       interval: "weekly"
   
@@ -45,71 +27,19 @@ updates:
   
   # Docker images
   - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/integration-tests"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/crd-init"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/operator"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/docker-transfer/kafka"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/docker-transfer/kafka-service"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/backup-daemon"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/monitoring"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/docker-kafka"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/docker-akhq"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/lag-exporter"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/docker-cruise-control"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/mirror-maker-monitoring"
-    schedule:
-      interval: "weekly"
-  
-  - package-ecosystem: "docker"
-    directory: "/mirror-maker"
+    directories: 
+      - "/integration-tests"
+      - "/crd-init"
+      - "/operator"
+      - "/docker-transfer/kafka"
+      - "/docker-transfer/kafka-service"
+      - "/backup-daemon"
+      - "/monitoring"
+      - "/docker-kafka"
+      - "/docker-akhq"
+      - "/lag-exporter"
+      - "/docker-cruise-control"
+      - "/mirror-maker-monitoring"
+      - "/mirror-maker"
     schedule:
       interval: "weekly"
