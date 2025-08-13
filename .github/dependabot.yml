@@ -43,12 +43,6 @@ updates:
     schedule:
       interval: "weekly"
   
-  # GitHub Actions
-  - package-ecosystem: "github_actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-  
   # Docker images
   - package-ecosystem: "docker"
     directory: "/"
