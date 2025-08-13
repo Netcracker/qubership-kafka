@@ -1,0 +1,45 @@
+version: 2
+updates:
+  # Go modules
+  - package-ecosystem: "gomod"
+    directories: 
+      - "/operator"
+      - "/monitoring"
+    schedule:
+      interval: "weekly"
+
+  # Python pip dependencies
+  - package-ecosystem: "pip"
+    directories: 
+      - "/backup-daemon/docker"
+      - "/crd-init/docker"
+      - "/integration-tests/docker"
+      - "/monitoring/docker/config"
+      - "/mirror-maker-monitoring/docker/config"
+    schedule:
+      interval: "weekly"
+  
+  # Java Maven dependencies
+  - package-ecosystem: "maven"
+    directory: "/mirror-maker/kafka-mm2-extension"
+    schedule:
+      interval: "weekly"
+  
+  # Docker images
+  - package-ecosystem: "docker"
+    directories: 
+      - "/integration-tests"
+      - "/crd-init"
+      - "/operator"
+      - "/docker-transfer/kafka"
+      - "/docker-transfer/kafka-service"
+      - "/backup-daemon"
+      - "/monitoring"
+      - "/docker-kafka"
+      - "/docker-akhq"
+      - "/lag-exporter"
+      - "/docker-cruise-control"
+      - "/mirror-maker-monitoring"
+      - "/mirror-maker"
+    schedule:
+      interval: "weekly"
