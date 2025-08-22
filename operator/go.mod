@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/IBM/sarama v1.45.2
-	github.com/go-logr/logr v0.4.0
+	github.com/go-logr/logr v1.4.3
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/sethvargo/go-password v0.3.1
