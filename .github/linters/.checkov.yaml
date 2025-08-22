@@ -3,12 +3,17 @@
 quiet: true
 
 directory:
-  - operator/charts/helm/opensearch-service
-  - docker-opensearch
-  - dbaas-adapter
-  - curator
+  - mirror-maker
+  - mirror-maker-monitoring
   - monitoring
+  - operator
+  - monitoring
+  - backup-daemon
+  - docker-akhq
+  - docker-cruise-control
+  - docker-kafka
   - integration-tests
+  - lag-exporter
 
 skip-check:
   # https://www.checkov.io/5.Policy%20Index/kubernetes.html
