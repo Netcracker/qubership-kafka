@@ -1,4 +1,4 @@
-FROM bellsoft/liberica-openjdk-alpine:11
+FROM eclipse-temurin:21-jdk-alpine-3.22
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -86,7 +86,7 @@ RUN set -x \
     && wget \
         -nv \
         -O ${KAFKA_HOME}/libs/cruise-control-metrics-reporter-${CC_VERSION}.jar \
-        "https://linkedin.jfrog.io/ui/native/cruise-control/com/linkedin/cruisecontrol/cruise-control-metrics-reporter/${CC_VERSION}/cruise-control-metrics-reporter-${CC_VERSION}.jar"
+        "https://linkedin.jfrog.io/artifactory/cruise-control/com/linkedin/cruisecontrol/cruise-control-metrics-reporter/${CC_VERSION}/cruise-control-metrics-reporter-${CC_VERSION}.jar"
 
 ARG PROMETHEUS_JMX_EXPORTER_VERSION="1.1.0"
 # Download jmx_prometheus_javaagent

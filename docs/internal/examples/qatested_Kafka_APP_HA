@@ -28,9 +28,6 @@ global:
       s3:
         keyId: keyid
         keySecret: keysecret
-    integrationTests:
-      consul:
-        token: token
   tls:
     enabled: false
     allowNonencryptedAccess: true
@@ -110,16 +107,6 @@ kafka:
     - CONF_KAFKA_PROPERTY_NAME=propertyValue
     - KEY=VALUE
   rollingUpdate: false
-  consulAclEnabled: true
-  consulDiscovery: true
-  registeredServiceName: kafka
-  kafkaDiscoveryTags:
-    - tag1
-    - tag2
-    - tag3
-  kafkaDiscoveryMeta:
-    key1: value1
-    key2: value2
   tls:
     enabled: true
   kraft:
@@ -277,8 +264,6 @@ integrationTests:
   kafkaHost: kafka
   kafkaPort: 9092
   prometheusUrl: http://prometheus.qa-kubernetes.openshift.sdntest
-  consulHost: consul-server.consul-service
-  consulPort: 8500
   resources:
     requests:
       memory: 258Mi

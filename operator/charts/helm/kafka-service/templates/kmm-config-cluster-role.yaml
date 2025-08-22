@@ -1,0 +1,31 @@
+{{- if and (not .Values.operator.serviceAccount) .Values.operator.kmmConfiguratorEnabled .Values.mirrorMaker.install (not .Values.global.restrictedEnvironment) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "kafka.name" . }}-service-operator-kmm-{{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - {{ .Values.operator.apiGroup }}
+      {{- if .Values.operator.secondaryApiGroup}}
+      - {{ .Values.operator.secondaryApiGroup }}
+      {{- end }}
+    resources:
+      - kmmconfigs
+      - kmmconfigs/status
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - list
+      - watch
+{{- end }}

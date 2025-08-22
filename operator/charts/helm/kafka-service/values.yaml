@@ -1,0 +1,757 @@
+# Default values for charts.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  name: kafka
+
+  waitForPodsReady: true
+  podReadinessTimeout: 600
+
+  monitoringType: "prometheus"
+  installDashboard: true
+
+  restrictedEnvironment: false
+#  smDbHost: "http://monitoring.com:8086"
+#  smDbName: "cloud_openshift_com"
+  ipv6: false
+
+  tls:
+    enabled: false
+    cipherSuites: []
+    allowNonencryptedAccess: true
+    generateCerts:
+      enabled: true
+      certProvider: cert-manager
+      durationDays: 365
+      clusterIssuerName: ""
+
+  externalKafka:
+    enabled: false
+    bootstrapServers: ""
+    replicas: ""
+    saslMechanism: ""
+    enableSsl: false
+    sslSecretName: ""
+    username: ""
+    password: ""
+
+  velero:
+    preHookBackupEnabled: true
+    postHookRestoreEnabled: true
+
+  customLabels: {}
+  securityContext: {}
+
+  disasterRecovery:
+    siteManagerApiGroup: "qubership.org"
+    image: ghcr.io/netcracker/qubership-disaster-recovery-daemon:main
+    tls:
+      enabled: true
+      certificates:
+        crt: ""
+        key: ""
+        ca: ""
+      secretName: ""
+      cipherSuites: []
+      subjectAlternativeName:
+        additionalDnsNames: []
+        additionalIpAddresses: []
+    httpAuth:
+      enabled: false
+      smSecureAuth: false
+      smNamespace: "site-manager"
+      smServiceAccountName: ""
+      restrictedEnvironment: false
+      customAudience: "sm-services"
+    mode: ""
+    region: ""
+    siteManagerEnabled: true
+    afterServices: []
+    serviceExport:
+      enabled: false
+    mirrorMakerReplication:
+      enabled: false
+    topicsBackup:
+      enabled: false
+    resources:
+      limits:
+        cpu: "32m"
+        memory: "32Mi"
+      requests:
+        cpu: "10m"
+        memory: "10Mi"
+    customLabels: {}
+
+  secrets:
+    kafka:
+      disableSecurity: false
+      adminUsername: ""
+      adminPassword: ""
+      clientUsername: ""
+      clientPassword: ""
+    monitoring:
+      prometheusUsername: ""
+      prometheusPassword: ""
+      smDbUsername: ""
+      smDbPassword: ""
+#      smDbUsernameVaultPath: "vault:/#username"
+#      smDbPasswordVaultPath: "vault:/#password"
+    akhq:
+      defaultUsername: ""
+      defaultPassword: ""
+      schemaRegistryUsername: ""
+      schemaRegistryPassword: ""
+    backupDaemon:
+      username: ""
+      password: ""
+      s3:
+        keyId: ""
+        keySecret: ""
+    cruiseControl:
+      adminUsername: ""
+      adminPassword: ""
+      viewerUsername: ""
+      viewerPassword: ""
+    integrationTests:
+      zabbix:
+        username: ""
+        password: ""
+      idp:
+        username: ""
+        password: ""
+        registrationToken: ""
+      prometheus:
+        user: ""
+        password: ""
+
+operator:
+  dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main
+  replicas: 1
+  apiGroup: "qubership.org"
+  secondaryApiGroup: ""
+  kmmConfiguratorEnabled: false
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 25m
+    limits:
+      memory: 128Mi
+      cpu: 100m
+#  watchNamespace: ""
+#  serviceAccount: kafka-service-operator
+#  affinity: {
+#    "podAntiAffinity": {
+#      "requiredDuringSchedulingIgnoredDuringExecution": [
+#        {
+#          "labelSelector": {
+#            "matchExpressions": [
+#              {
+#                "key": "component",
+#                "operator": "In",
+#                "values": [
+#                    "kafka-service-operator"
+#                ]
+#              }
+#            ]
+#          },
+#          "topologyKey": "kubernetes.io/hostname"
+#        }
+#      ]
+#    }
+#  }
+#  tolerations:
+#    - key: "key"
+#      operator: "Equal"
+#      value: "value"
+#      effect: "NoExecute"
+#      tolerationSeconds: 3600
+  ## Name of the priority class to be used by Kafka operator pods, priority class needs to be created beforehand
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  ##
+  priorityClassName: ""
+  akhqConfigurator:
+    enabled: false
+    watchNamespace: ""
+  kafkaUserConfigurator:
+    enabled: false
+    secretCreatingEnabled: true
+    watchNamespace: ""
+  customLabels: {}
+  securityContext: {}
+
+crdInit:
+  dockerImage: ghcr.io/netcracker/qubership-kafka-crd-init:main
+  lifetimeAfterCompletion: 120
+  sleepAfterCompletion: 10
+
+kafka:
+  replicas: 3
+  tls:
+    enabled: true
+    secretName: ""
+  kraft:
+    enabled: false
+  autoRestartOnSecretChange: true
+
+monitoring:
+  install: true
+  dockerImage: ghcr.io/netcracker/qubership-kafka-monitoring:main
+  serviceMonitorEnabled: true
+#  affinity: {
+#    "podAffinity": {
+#      "preferredDuringSchedulingIgnoredDuringExecution": [
+#      {
+#        "podAffinityTerm": {
+#          "labelSelector": {
+#            "matchExpressions": [
+#            {
+#              "key": "component",
+#              "operator": "In",
+#              "values": [
+#                "kafka"
+#              ]
+#            }
+#            ]
+#          },
+#          "topologyKey": "kubernetes.io/hostname"
+#        },
+#        "weight": 100
+#      }
+#      ]
+#    }
+#  }
+#  tolerations:
+#    - key: "key2"
+#      operator: "Equal"
+#      value: "value2"
+#      effect: "NoExecute"
+#      tolerationSeconds: 3600
+  ## Name of the priority class to be used by Kafka monitoring pod, priority class needs to be created beforehand
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  ##
+  serviceMonitor:
+    clusterStateScrapeInterval: "60s"
+    clusterStateScrapeTimeout: "10s"
+    jmxScrapeInterval: "60s"
+    jmxScrapeTimeout: "10s"
+    kmmScrapeInterval: "60s"
+    kmmScrapeTimeout: "10s"
+    lagExporterScrapeInterval: "60s"
+    lagExporterScrapeTimeout: "10s"
+  priorityClassName: ""
+  kafkaTotalBrokerCount: 3
+  dataCollectionInterval: "10s"
+  kafkaExecPluginTimeout: "10s"
+  enableAdditionalMetrics: true
+  thresholds:
+    gcCountAlert: 10
+    lagAlert: 1000
+    partitionCountAlert: 4000
+    brokerSkewAlert: 50
+    brokerLeaderSkewAlert: 50
+#  securityContext: {
+#    "runAsUser": 1000
+#  }
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+  monitoringCoreosGroup: false
+
+  lagExporter:
+    enabled: false
+    service:
+      image: "ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main"
+      port: 8000
+    pollIntervalSeconds: 30
+    lookupTableSize: 60
+    clientGroupId: "kafkalagexporter"
+    kafkaClientTimeoutSeconds: 60
+    kafkaRetries: 5
+    cluster:
+      name: "kafka"
+      topicWhitelist:
+        - ".*"
+      topicBlacklist: []
+      groupWhitelist:
+        - ".*"
+      groupBlacklist: []
+      consumerProperties: []
+      adminClientProperties: []
+      labels: []
+    metricWhitelist:
+      - .*
+    akkaLogLevel: DEBUG
+    rootLogLevel: INFO
+    kafkaLagExporterLogLevel: INFO
+    kafkaLogLevel: INFO
+  customLabels: {}
+
+akhq:
+  install: true
+  dockerImage: ghcr.io/netcracker/qubership-docker-akhq:main
+#  affinity: {
+#    "podAffinity": {
+#      "preferredDuringSchedulingIgnoredDuringExecution": [
+#      {
+#        "podAffinityTerm": {
+#          "labelSelector": {
+#            "matchExpressions": [
+#            {
+#              "key": "component",
+#              "operator": "In",
+#              "values": [
+#                "kafka"
+#              ]
+#            }
+#            ]
+#          },
+#          "topologyKey": "kubernetes.io/hostname"
+#        },
+#        "weight": 100
+#      }
+#      ]
+#    }
+#  }
+#  tolerations:
+#    - key: "key3"
+#      operator: "Equal"
+#      value: "value3"
+#      effect: "NoExecute"
+#      tolerationSeconds: 3600
+  ## Name of the priority class to be used by AKHQ pod, priority class needs to be created beforehand
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  ##
+  priorityClassName: ""
+  kafkaPollTimeout: 10000
+  enableAccessLog: false
+  ingress:
+    host: ""
+    className: ""
+  ldap:
+    enabled: false
+    enableSsl: false
+    server:
+      context:
+        server: ""
+        managerDn: ""
+        managerPassword: ""
+      search:
+        base: ""
+        filter: ""
+      groups:
+        enabled: false
+    usersconfig:
+      groups:
+      - name: ""
+        groups: []
+      users:
+      - username: ""
+        groups: []
+#  securityContext: {
+#    "runAsUser": 1000
+#  }
+# environmentVariables:
+#   - CONF_KAFKA_PROPERTY_NAME=propertyValue
+  heapSize: 0
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 50m
+    limits:
+      memory: 1200Mi
+      cpu: 400m
+  customLabels: {}
+  schemaRegistryUrl: ""
+  schemaRegistryType: "confluent"
+
+mirrorMaker:
+  install: false
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-mirror-maker:main
+#  affinity: {
+#    "podAffinity": {
+#      "preferredDuringSchedulingIgnoredDuringExecution": [
+#      {
+#        "podAffinityTerm": {
+#          "labelSelector": {
+#            "matchExpressions": [
+#            {
+#              "key": "component",
+#              "operator": "In",
+#              "values": [
+#                "kafka"
+#              ]
+#            }
+#            ]
+#          },
+#          "topologyKey": "kubernetes.io/hostname"
+#        },
+#        "weight": 100
+#      }
+#      ]
+#    }
+#  }
+#  tolerations:
+#    - key: "key4"
+#      operator: "Equal"
+#      value: "value4"
+#      effect: "NoExecute"
+#      tolerationSeconds: 3600
+  ## Name of the priority class to be used by Kafka Mirror Maker pods, priority class needs to be created beforehand
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  ##
+  priorityClassName: ""
+  heapSize: 256
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 400m
+  replicas: 1
+  tasksMax: -1
+#  regionName: "first"
+#  clusters:
+#    - {"name": "first", "bootstrapServers": "left-kafka:9092", "nodeLabel": "site=left", "username": "client", "password": "client"}
+#    - {"name": "second", "bootstrapServers": "right-kafka:9092", "nodeLabel": "site=right", "username": "client", "password": "client", "enableSsl": "true", "sslSecretName": "external-kafka-trusted-certs", "saslMechanism": "SCRAM-SHA-512"}
+  replicationFlowEnabled: false
+  replicationPrefixEnabled: true
+  topicsToReplicate: ""
+  replicationFactor: 3
+  customLabels: {}
+  securityContext: {}
+  # Example:
+  # transformation:
+  #   transforms:
+  #     - name: HeartbeatHeaderFilter
+  #       type: com.netcracker.kafka.mirror.extension.HeaderFilter
+  #       params:
+  #         filter.type: exclude
+  #         headers: heartbeat,type=heartbeat
+  #         topics: ${replication_prefix}topic1,${replication_prefix}topic2
+  #     - name: PingHeaderFilter
+  #       predicate: HasPingHeaderKey
+  #       type: org.apache.kafka.connect.transforms.Filter
+  #   predicates:
+  #     - name: HasPingHeaderKey
+  #       type: org.apache.kafka.connect.transforms.predicates.HasHeaderKey
+  #       params:
+  #         name: ping
+  transformation: {}
+  # Do not change this value without a cause. This is internal ability to disable `dedicated.mode.enable.internal.rest` for KMM.
+  internalRestEnabled: null
+
+mirrorMakerMonitoring:
+  install: false
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-kafka-mirror-maker-monitoring:main
+#  affinity: {
+#    "podAffinity": {
+#      "preferredDuringSchedulingIgnoredDuringExecution": [
+#      {
+#        "podAffinityTerm": {
+#          "labelSelector": {
+#            "matchExpressions": [
+#            {
+#              "key": "component",
+#              "operator": "In",
+#              "values": [
+#                "kafka"
+#              ]
+#            }
+#            ]
+#          },
+#          "topologyKey": "kubernetes.io/hostname"
+#        },
+#        "weight": 100
+#      }
+#      ]
+#    }
+#  }
+#  tolerations:
+#    - key: "key5"
+#      operator: "Equal"
+#      value: "value5"
+#      effect: "NoExecute"
+#      tolerationSeconds: 3600
+  ## Name of the priority class to be used by Kafka Mirror Maker monitoring pod, priority class needs to be created beforehand
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  ##
+  priorityClassName: ""
+  kmmExecPluginTimeout: "20s"
+  kmmCollectionInterval: "5s"
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+#  securityContext: {
+#    "runAsUser": 1000
+#  }
+  customLabels: {}
+
+# integration tests are not performed by default
+integrationTests:
+  install: false
+  image: "ghcr.io/netcracker/qubership-kafka-integration-tests:main"
+  service:
+    name: kafka-integration-tests-runner
+  waitForResult: true
+  timeout: 1200
+  affinity: {
+    "podAffinity": {
+      "preferredDuringSchedulingIgnoredDuringExecution": [
+        {
+          "podAffinityTerm": {
+            "labelSelector": {
+              "matchExpressions": [
+                {
+                  "key": "component",
+                  "operator": "In",
+                  "values": [
+                    "kafka"
+                  ]
+                }
+              ]
+            },
+            "topologyKey": "kubernetes.io/hostname"
+          },
+          "weight": 100
+        }
+      ]
+    }
+  }
+  tags: "kafka_crud"
+  # Example: https://kube:6443
+  url: ""
+  kafkaIsManagedByOperator: true
+  zookeeperOsProject: "zookeeper-service"
+  zookeeperHost: "zookeeper"
+  zookeeperPort: 2181
+  kafkaHost: "kafka"
+  kafkaPort: 9092
+  kafkaPvNames: "pv-1,pv-2,pv-3"
+  kafkaVolumeSize: "2"
+  identityProviderUrl: ""
+  # Example: https://monitoring.openshift.com
+  zabbixUrl: ""
+  backupDaemonHost: "kafka-backup-daemon"
+  prometheusUrl: ""
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 200m
+    limits:
+      memory: 256Mi
+      cpu: 400m
+  customLabels: {}
+  securityContext: {}
+
+# Backup Daemon is a service to manage Kafka topics configurations backups.
+backupDaemon:
+  # Enable Backup Daemon installation.
+  install: false
+  dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main"
+
+  tls:
+    enabled: true
+    certificates:
+      crt: ""
+      key: ""
+      ca: ""
+    secretName: ""
+    subjectAlternativeName:
+      additionalDnsNames: []
+      additionalIpAddresses: []
+
+  # storage and storageClass are the settings for configuring stateful
+  # storage for the server pods. storage should be set to the disk size of
+  # the attached volume. storageClass is the class of storage which defaults
+  # to null (the Kube cluster will pick the default).
+  # If storageClass and persistentVolume are not specified the Backup Daemon is deployed with emptyDir.
+  storage: 1Gi
+  storageClass: "null"
+
+  # The predefined Persistent Volume for the Backup Daemon.
+  persistentVolume: "null"
+
+  ## Enable S3 backup storage
+  s3:
+    enabled: false
+    sslVerify: true
+    sslSecretName: ""
+    sslCert: ""
+    url: ""
+    bucket: ""
+
+  # Specifies the cron-like backup schedule. If this parameter is empty,
+  # the default schedule "0 0 * * *" is used.
+  # The value `0 0 * * *` means that snapshots are created every day at midnight.
+  backupSchedule: "0 0 * * *"
+
+  #  Specifies the backup eviction policy. It is a comma-separated string of policies
+  #  written as `$start_time/$interval`. This policy splits all backups older than `$start_time` to numerous time intervals
+  #  `$interval` time long. Then it deletes all backups in every interval except the newest one. For example, `1d/7d` policy
+  #  means "take all backups older than one day, split them in groups by 7-days interval, and leave only the newest."
+  # If this parameter is empty, the default eviction policy "0/1d,7d/delete" is used.
+  evictionPolicy: "0/1d,7d/delete"
+
+  # Resource requests, limits, etc. for the server cluster placement. This
+  # should map directly to the value of the `resources` field for a PodSpec,
+  # formatted as a YAML string.
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "25m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+  # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  # Example:
+  # affinity: {
+  #   "nodeAffinity": {
+  #     "requiredDuringSchedulingIgnoredDuringExecution": {
+  #       "nodeSelectorTerms": [
+  #         {
+  #           "matchExpressions": [
+  #             {
+  #               "key": "node-role.kubernetes.io/master",
+  #               "operator": "DoesNotExist"
+  #             }
+  #           ]
+  #         }
+  #       ]
+  #     }
+  #   }
+  # }
+  affinity: {}
+
+  # Toleration Settings for Backup Daemon pod
+  # This should be a JSON string matching the Toleration array
+  # in a PodSpec.
+  # Example:
+  # tolerations: [
+  #   {
+  #     "operator": "Exists"
+  #   }
+  # ]
+  tolerations: []
+
+  # nodeSelector labels for syncCatalog pod assignment, formatted as a JSON string.
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  # Example:
+  # nodeSelector: {
+  #   "beta.kubernetes.io/arch": "amd64"
+  # }
+  nodeSelector: {}
+
+  # used to assign priority to the backup daemon pod
+  # ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  priorityClassName: ""
+
+  securityContext: {
+    "runAsGroup": 1000,
+    "runAsUser": 1000,
+    # "fsGroup": 1000
+  }
+  customLabels: {}
+
+cruiseControl:
+  install: false
+  dockerImage: ghcr.io/netcracker/qubership-docker-cruise-control:main
+  config:
+    sample.store.topic.replication.factor: "{{ template \"cruise-control.replicationFactor\" . }}"
+    self.healing.enabled: false
+    num.concurrent.partition.movements.per.broker: 50
+    concurrency.adjuster.max.partition.movements.per.broker: 500
+    metric.reporter.topic: __CruiseControlMetrics
+    partition.metric.sample.store.topic: __KafkaCruiseControlPartitionMetricSamples
+    broker.metric.sample.store.topic: __KafkaCruiseControlModelTrainingSamples
+    hard.goals: com.linkedin.kafka.cruisecontrol.analyzer.goals.RackAwareGoal,com.linkedin.kafka.cruisecontrol.analyzer.goals.ReplicaCapacityGoal
+    broker.metrics.window.ms: 300000
+    min.valid.partition.ratio: 0.95
+    num.partition.metrics.windows: 5
+    partition.metrics.window.ms: 300000
+
+  capacity:
+    diskSpace: ""
+    cpu: "100"
+    nwIn: "10000"
+    nwOut: "10000"
+
+  securityContext: {}
+
+  heapOpts: "-Xmx1G"
+
+  ui:
+    enabled: true
+
+  ingress:
+    host: ""
+
+  prometheusServerEndpoint: ""
+
+  # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  # Example:
+  # affinity: {
+  #   "nodeAffinity": {
+  #     "requiredDuringSchedulingIgnoredDuringExecution": {
+  #       "nodeSelectorTerms": [
+  #         {
+  #           "matchExpressions": [
+  #             {
+  #               "key": "node-role.kubernetes.io/master",
+  #               "operator": "DoesNotExist"
+  #             }
+  #           ]
+  #         }
+  #       ]
+  #     }
+  #   }
+  # }
+  affinity: {}
+
+  # Toleration Settings for Backup Daemon pod
+  # This should be a JSON string matching the Toleration array
+  # in a PodSpec.
+  # Example:
+  # tolerations: [
+  #   {
+  #     "operator": "Exists"
+  #   }
+  # ]
+  tolerations: []
+
+  # nodeSelector labels for syncCatalog pod assignment, formatted as a JSON string.
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  # Example:
+  # nodeSelector: {
+  #   "beta.kubernetes.io/arch": "amd64"
+  # }
+  nodeSelector: {}
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "1024Mi"
+      cpu: "400m"
+# Cloud Release Integration
+# The name of the Service exposed for the database.
+SERVICE_NAME: "kafka-services"
+# Microservice belonging to a group
+PART_OF: "kafka-services"
+# Delimiter for labels
+DELIMITER: "-"
+# Artifact descriptor version which is installed.
+ARTIFACT_DESCRIPTOR_VERSION: ""  # TO_BE_REPLACED

@@ -13,7 +13,7 @@ resources:
   controller: true
   domain: qubership.org
   kind: KafkaService
-  path: github.com/Netcracker/qubership-kafka/api/v7
+  path: github.com/Netcracker/qubership-kafka/operator/api/v7
   version: v7
 - api:
     crdVersion: v1
@@ -21,7 +21,7 @@ resources:
   controller: true
   domain: qubership.org
   kind: KmmConfig
-  path: github.com/Netcracker/qubership-kafka/api/v1
+  path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -29,7 +29,7 @@ resources:
   controller: true
   domain: qubership.org
   kind: AkhqConfig
-  path: github.com/Netcracker/qubership-kafka/api/v1
+  path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -37,7 +37,7 @@ resources:
   controller: true
   domain: qubership.org
   kind: Kafka
-  path: github.com/Netcracker/qubership-kafka/api/v1
+  path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1
 - api:
     crdVersion: v1
@@ -45,6 +45,6 @@ resources:
   controller: true
   domain: qubership.org
   kind: KafkaUser
-  path: github.com/Netcracker/qubership-kafka/api/v1
+  path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1
 version: "3"
