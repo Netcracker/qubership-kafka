@@ -20,8 +20,11 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/cfg"
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafkauser"
 	"github.com/go-logr/logr"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"time"
 )
 
 type KafkaUserJob struct {
@@ -94,6 +97,34 @@ func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string,
 	if err = kafkaUserMgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		logger.Error(err, "unable to set up ready check")
 		return nil, err
+	}
+
+	// TEST ONLY ERR
+	if d := os.Getenv("DEBUG_FAIL_AFTER"); d != "" {
+		if dur, perr := time.ParseDuration(d); perr == nil {
+			_ = kafkaUserMgr.Add(manager.RunnableFunc(func(inner context.Context) error {
+				select {
+				case <-time.After(dur):
+					return fmt.Errorf("debug: forced runtime failure (kafka) after %s", dur)
+				case <-inner.Done():
+					return nil
+				}
+			}))
+		}
+	}
+
+	// TEST ONLY PANIC
+	if d := os.Getenv("DEBUG_PANIC_AFTER"); d != "" {
+		if dur, perr := time.ParseDuration(d); perr == nil {
+			_ = kafkaUserMgr.Add(manager.RunnableFunc(func(inner context.Context) error {
+				select {
+				case <-time.After(dur):
+					panic("debug: forced panic in kafka manager runnable")
+				case <-inner.Done():
+					return nil
+				}
+			}))
+		}
 	}
 
 	exec := func() error {

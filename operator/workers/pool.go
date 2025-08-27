@@ -86,6 +86,7 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 			attempt++
 
 			jobCtx, cancel := context.WithCancel(wrk.ctx)
+			stopForever := false
 			func() {
 				defer cancel()
 
@@ -103,6 +104,7 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 				}
 				if exe == nil {
 					log.Info("build returned nil exec; finishing", "attempt", attempt)
+					stopForever = true
 					return
 				}
 
@@ -117,6 +119,10 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 					log.Error(runErr, "exec failed; restarting", "attempt", attempt)
 				}
 			}()
+
+			if stopForever {
+				return
+			}
 
 			select {
 			case <-wrk.ctx.Done():

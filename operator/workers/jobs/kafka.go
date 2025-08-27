@@ -22,7 +22,6 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafka"
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafkaservice"
 	"github.com/go-logr/logr"
-	"net/http"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -98,14 +97,7 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 		logger.Error(err, "unable to set up health check")
 		return nil, err
 	}
-	if err = mgr.AddReadyzCheck("readyz", func(_ *http.Request) error {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("terminating")
-		default:
-			return nil
-		}
-	}); err != nil {
+	if err = mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		logger.Error(err, "unable to set up ready check")
 		return nil, err
 	}
