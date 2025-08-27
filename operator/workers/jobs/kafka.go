@@ -8,9 +8,12 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafka"
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafkaservice"
 	"github.com/go-logr/logr"
+	"net/http"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"time"
 )
 
 const kafkaJobName = "kafka-service"
@@ -73,25 +76,62 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 			},
 		}).SetupWithManager(mgr); err != nil {
 			logger.Error(err, "unable to create controller", "controller", "KafkaService")
-			os.Exit(1)
+			return nil, err
 		}
 	}
 
 	if err = mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		logger.Error(err, "unable to set up health check")
-		os.Exit(1)
+		return nil, err
 	}
-	if err = mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+	if err = mgr.AddReadyzCheck("readyz", func(_ *http.Request) error {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("terminating")
+		default:
+			return nil
+		}
+	}); err != nil {
 		logger.Error(err, "unable to set up ready check")
-		os.Exit(1)
+		return nil, err
+	}
+
+	// TEST ONLY ERR
+	if d := os.Getenv("DEBUG_FAIL_AFTER"); d != "" {
+		if dur, perr := time.ParseDuration(d); perr == nil {
+			_ = mgr.Add(manager.RunnableFunc(func(inner context.Context) error {
+				select {
+				case <-time.After(dur):
+					return fmt.Errorf("debug: forced runtime failure (kafka) after %s", dur)
+				case <-inner.Done():
+					return nil
+				}
+			}))
+		}
+	}
+
+	// TEST ONLY PANIC
+	if d := os.Getenv("DEBUG_PANIC_AFTER"); d != "" {
+		if dur, perr := time.ParseDuration(d); perr == nil {
+			_ = mgr.Add(manager.RunnableFunc(func(inner context.Context) error {
+				select {
+				case <-time.After(dur):
+					panic("debug: forced panic in kafka manager runnable")
+				case <-inner.Done():
+					return nil
+				}
+			}))
+		}
 	}
 
 	exec := func() error {
-
 		logger.Info(fmt.Sprintf("starting %s manager", string(opts.Mode)))
 		if err = mgr.Start(ctx); err != nil {
 			logger.Error(err, "problem running manager")
 			return err
+		}
+		if ctx.Err() == nil {
+			return fmt.Errorf("manager stopped unexpectedly without context cancel")
 		}
 		return nil
 	}

@@ -6,7 +6,6 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/cfg"
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafkauser"
 	"github.com/go-logr/logr"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 )
@@ -71,7 +70,7 @@ func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string,
 		ApiGroup:              apiGroup,
 	}).SetupWithManager(kafkaUserMgr); err != nil {
 		logger.Error(err, "unable to create controller", "controller", "KafkaUsers")
-		os.Exit(1)
+		return nil, err
 	}
 
 	if err = kafkaUserMgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
