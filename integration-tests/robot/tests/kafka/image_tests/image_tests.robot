@@ -18,7 +18,7 @@ Test Hardcoded Images
   @{list_resources} =  Split String	${stripped_resources} 	,
   FOR  ${resource}  IN  @{list_resources}
     ${type}  ${name}  ${container_name}  ${image}=  Split String  ${resource}
-    ${resource_image}=  Get Resource Image  ${type}  ${name}  %{OS_PROJECT}  ${container_name}
+    ${resource_image}=  Get Resource Image  ${type}  ${name}  %{KAFKA_OS_PROJECT}  ${container_name}
 
     ${expected_tag}=  Get Image Tag  ${image}
     ${actual_tag}=    Get Image Tag  ${resource_image}
