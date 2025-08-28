@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -243,6 +244,7 @@ func (r *KafkaServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{RecoverPanic: true}).
 		For(&kafkaservice.KafkaService{}, builder.WithPredicates(statusPredicate, namespacePredicate)).
 		Owns(&corev1.Secret{}, builder.WithPredicates(namespacePredicate, dummyPredicate)).
 		Owns(&corev1.ConfigMap{}, builder.WithPredicates(namespacePredicate, dummyPredicate)).
