@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"runtime/debug"
 	"sync"
 	"time"
 
@@ -28,24 +27,31 @@ import (
 )
 
 type Pool struct {
-	opts cfg.Cfg
-	log  logr.Logger
-	ctx  context.Context
-	jbs  []jobs.Job
-	wg   sync.WaitGroup
+	opts                   cfg.Cfg
+	log                    logr.Logger
+	ctx                    context.Context
+	jbs                    []jobs.Job
+	wg                     sync.WaitGroup
+	stop                   context.CancelFunc
+	maxConsecutiveRestarts int
+	restartResetAfter      time.Duration
+	exitFn                 func()
 }
 
-func NewPool(ctx context.Context, opts cfg.Cfg, logger logr.Logger) *Pool {
+func NewPool(ctx context.Context, stop context.CancelFunc, opts cfg.Cfg, logger logr.Logger) *Pool {
 	return &Pool{
 		opts: opts,
 		log:  logger,
 		ctx:  ctx,
+		stop: stop,
 		jbs: []jobs.Job{
 			jobs.KafkaJob{},
 			jobs.AkhqJob{},
 			jobs.KmmJob{},
 			jobs.KafkaUserJob{},
 		},
+		maxConsecutiveRestarts: 5,
+		restartResetAfter:      60 * time.Minute,
 	}
 }
 
@@ -74,7 +80,8 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 		jobName := fmt.Sprintf("%T[%s]", job, apiGroup)
 		log := wrk.log.WithValues("job", jobName)
 
-		attempt := 0
+		var consecFails int
+		lastFail := time.Now()
 		for {
 			select {
 			case <-wrk.ctx.Done():
@@ -83,27 +90,19 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 			default:
 			}
 
-			attempt++
-
 			jobCtx, cancel := context.WithCancel(wrk.ctx)
 			stopForever := false
 			func() {
 				defer cancel()
-
 				var runErr error
-				defer func() {
-					if r := recover(); r != nil {
-						runErr = fmt.Errorf("panic: %v\n%s", r, debug.Stack())
-					}
-				}()
 
 				exe, err := job.Build(jobCtx, wrk.opts, apiGroup, log)
 				if err != nil {
-					log.Error(err, "build failed", "attempt", attempt)
+					log.Error(err, "build failed", "attempt", consecFails)
 					return
 				}
 				if exe == nil {
-					log.Info("build returned nil exec; finishing", "attempt", attempt)
+					log.Info("job does not belong to this service, shutting down")
 					stopForever = true
 					return
 				}
@@ -114,9 +113,9 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 				case jobCtx.Err() != nil:
 					return
 				case runErr == nil:
-					log.Info("exec finished unexpectedly without error; restarting", "attempt", attempt)
+					log.Info("job finished unexpectedly without error; restarting", "attempt", consecFails)
 				default:
-					log.Error(runErr, "exec failed; restarting", "attempt", attempt)
+					log.Error(runErr, "job failed; restarting", "attempt", consecFails)
 				}
 			}()
 
@@ -130,7 +129,23 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 			default:
 			}
 
-			sleep := backoffWithJitter(attempt, 30*time.Second)
+			if time.Since(lastFail) > wrk.restartResetAfter {
+				consecFails = 1
+				lastFail = time.Now()
+			} else {
+				consecFails++
+			}
+
+			if consecFails >= wrk.maxConsecutiveRestarts {
+				log.Error(fmt.Errorf("too many consecutive failures"),
+					"triggering global shutdown via context cancel",
+					"consecutiveFails", consecFails,
+					"resetAfter", wrk.restartResetAfter)
+				wrk.stop()
+				return
+			}
+
+			sleep := backoffWithJitter(consecFails, 30*time.Second)
 			timer := time.NewTimer(sleep)
 			select {
 			case <-timer.C:
@@ -142,11 +157,11 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 	}()
 }
 
-func backoffWithJitter(attempt int, capDur time.Duration) time.Duration {
-	if attempt < 1 {
-		attempt = 1
+func backoffWithJitter(consecFails int, capDur time.Duration) time.Duration {
+	if consecFails < 1 {
+		consecFails = 1
 	}
-	d := time.Second << (attempt - 1)
+	d := time.Second << (consecFails - 1)
 	if d > capDur {
 		d = capDur
 	}
