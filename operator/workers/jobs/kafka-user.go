@@ -100,26 +100,12 @@ func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string,
 	}
 
 	// TEST ONLY ERR
-	if d := os.Getenv("DEBUG_FAIL_AFTER"); d != "" {
+	if d := os.Getenv("DEBUG_FAIL_AFTER_USER"); d != "" {
 		if dur, perr := time.ParseDuration(d); perr == nil {
 			_ = kafkaUserMgr.Add(manager.RunnableFunc(func(inner context.Context) error {
 				select {
 				case <-time.After(dur):
 					return fmt.Errorf("debug: forced runtime failure (kafka) after %s", dur)
-				case <-inner.Done():
-					return nil
-				}
-			}))
-		}
-	}
-
-	// TEST ONLY PANIC
-	if d := os.Getenv("DEBUG_PANIC_AFTER"); d != "" {
-		if dur, perr := time.ParseDuration(d); perr == nil {
-			_ = kafkaUserMgr.Add(manager.RunnableFunc(func(inner context.Context) error {
-				select {
-				case <-time.After(dur):
-					panic("debug: forced panic in kafka manager runnable")
 				case <-inner.Done():
 					return nil
 				}

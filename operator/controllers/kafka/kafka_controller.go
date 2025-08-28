@@ -26,7 +26,6 @@ import (
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -190,7 +189,6 @@ func (r *KafkaReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
-		WithOptions(controller.Options{RecoverPanic: true}).
 		For(&kafka.Kafka{}).
 		Owns(&corev1.Secret{}, builder.WithPredicates(namespacePredicate, dummyPredicate)).
 		Complete(r)
