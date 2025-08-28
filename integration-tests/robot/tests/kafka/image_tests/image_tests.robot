@@ -4,6 +4,12 @@ ${MONITORED_IMAGES}         %{MONITORED_IMAGES}
 *** Settings ***
 Resource  ../../shared/keywords.robot
 
+*** Keywords ***
+Get Image Tag
+    [Arguments]  ${image}
+    ${parts}=  Split String  ${image}  :
+    ${length}=  Get Length  ${parts}
+    Run Keyword If  ${length} > 1  Return From Keyword  ${parts[2]}  ELSE  Fail  Image has no tag: ${image}
 
 *** Test Cases ***
 Test Hardcoded Images
