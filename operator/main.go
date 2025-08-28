@@ -48,7 +48,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	pool := workers.NewPool(ctx, appOpts, setupLog)
+	pool := workers.NewPool(ctx, stop, appOpts, setupLog)
 
 	if err := pool.Start(); err != nil {
 		setupLog.Error(err, "failed to start worker pool")
