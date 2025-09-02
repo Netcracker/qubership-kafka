@@ -34,6 +34,11 @@ concurrency:
   group: ${{ github.ref == 'refs/heads/main' && format('ci-main-{0}', github.sha) || format('ci-main-{0}', github.ref) }}
   cancel-in-progress: true
 
+env:
+  TAG_NAME: ${{ github.event.release.tag_name || github.ref }}
+  PUSH: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish_docker) || !startsWith(github.ref, 'refs/heads/dependabot') }}
+  GITHUB_GROUP: ${{ github.repository_owner }}
+
 jobs:
   multiplatform_build:
     if: github.event.pull_request.user.login != 'dependabot[bot]' || github.event_name == 'pull_request'
@@ -88,15 +93,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.component.name }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=tag
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -107,15 +103,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare Group
+        run: echo "GITHUB_GROUP=${GITHUB_GROUP,,}" >> $GITHUB_ENV
       - name: Get package IDs for delete
         id: get-ids-for-delete
         uses: Netcracker/get-package-ids@v0.0.1
         with:
           component-name: ${{ matrix.component.name }}
-          component-tag: ${{ steps.meta.outputs.tags }}
+          component-tag: ${{ env.TAG_NAME }}
           access-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           no-cache: true
           context: ${{ matrix.component.context }}
@@ -124,5 +122,4 @@ jobs:
           # See https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#fetching-metadata-about-a-pull-request
           push: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
           provenance: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ghcr.io/${{ env.GITHUB_GROUP }}/${{ matrix.component.name }}:${{ env.TAG_NAME }}
