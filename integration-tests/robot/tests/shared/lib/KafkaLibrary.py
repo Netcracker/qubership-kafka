@@ -78,7 +78,7 @@ class KafkaLibrary(object):
             configs = dict(self._common_configs.items())
             configs['retries'] = 10000000
             configs['max_in_flight_requests_per_connection'] = 1
-            configs['request_timeout_ms'] = 900000
+            configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
@@ -106,7 +106,7 @@ class KafkaLibrary(object):
             configs['auto_offset_reset'] = 'earliest'
             configs['enable_auto_commit'] = False
             configs['group_id'] = f'{topic_name}-group-{time.time()}'
-            configs['request_timeout_ms'] = 900000
+            configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
@@ -135,6 +135,7 @@ class KafkaLibrary(object):
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
                 configs['sasl_plain_username'] = self._kafka_username
                 configs['sasl_plain_password'] = self._kafka_password
+                configs['request_timeout_ms'] = 90000
             admin = KafkaAdminClient(**configs)
             logger.debug("Kafka admin client is created.")
         except Exception as e:
