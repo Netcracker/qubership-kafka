@@ -22,6 +22,7 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafka"
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafkaservice"
 	"github.com/go-logr/logr"
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 )
@@ -33,9 +34,6 @@ type KafkaJob struct {
 
 func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error) {
 	var err error
-	if len(opts.Mode) == 0 {
-		return nil, nil
-	}
 
 	runScheme := scheme
 	port := 9443
@@ -106,11 +104,15 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 			return err
 		}
 		if ctx.Err() == nil {
-			return fmt.Errorf("manager stopped unexpectedly without context cancel")
+			return errors.Wrap(UnexpectedError, "manager stopped unexpectedly without context cancel")
 		}
 		return nil
 	}
 
 	return exec, nil
 
+}
+
+func (rj KafkaJob) IsNotSupported(opts cfg.Cfg) bool {
+	return len(opts.Mode) == 0
 }

@@ -31,9 +31,6 @@ type AkhqJob struct {
 
 func (rj AkhqJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error) {
 	var err error
-	if opts.Mode == cfg.KafkaMode || opts.WatchAkhqCollectNamespace == nil {
-		return nil, nil
-	}
 	watchNamespace := *opts.WatchAkhqCollectNamespace
 	runScheme := scheme
 	port := 9542
@@ -98,4 +95,8 @@ func (rj AkhqJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logg
 	}
 
 	return exec, nil
+}
+
+func (rj AkhqJob) IsNotSupported(opts cfg.Cfg) bool {
+	return opts.Mode == cfg.KafkaMode || opts.WatchAkhqCollectNamespace == nil
 }

@@ -32,10 +32,6 @@ type KmmJob struct {
 func (rj KmmJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error) {
 	var err error
 
-	if opts.Mode == cfg.KafkaMode || !opts.KmmEnabled {
-		return nil, nil
-	}
-
 	runScheme := scheme
 	port := 9543
 	if mainApiGroup() != apiGroup {
@@ -103,4 +99,8 @@ func (rj KmmJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logge
 	}
 
 	return exec, nil
+}
+
+func (rj KmmJob) IsNotSupported(opts cfg.Cfg) bool {
+	return opts.Mode == cfg.KafkaMode || !opts.KmmEnabled
 }

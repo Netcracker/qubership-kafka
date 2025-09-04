@@ -29,9 +29,6 @@ type KafkaUserJob struct {
 
 func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error) {
 	var err error
-	if opts.Mode == cfg.KafkaMode || opts.WatchKafkaUsersCollectNamespace == nil {
-		return nil, nil
-	}
 
 	namespace := *opts.WatchKafkaUsersCollectNamespace
 
@@ -108,4 +105,8 @@ func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string,
 		return nil
 	}
 	return exec, nil
+}
+
+func (rj KafkaUserJob) IsNotSupported(opts cfg.Cfg) bool {
+	return opts.Mode == cfg.KafkaMode || opts.WatchKafkaUsersCollectNamespace == nil
 }

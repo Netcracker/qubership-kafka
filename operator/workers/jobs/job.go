@@ -16,6 +16,7 @@ package jobs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	qubershiporgv1 "github.com/Netcracker/qubership-kafka/operator/api/v1"
 	qubershiporgv7 "github.com/Netcracker/qubership-kafka/operator/api/v7"
@@ -43,10 +44,14 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
+var UnsupportedError = errors.New("unsupported service invocation")
+var UnexpectedError = errors.New("unexpected behavior")
+
 type Exec func() error
 
 type Job interface {
 	Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error)
+	IsNotSupported(opts cfg.Cfg) bool
 }
 
 // getWatchNamespace returns the Namespace the operator should be watching for changes

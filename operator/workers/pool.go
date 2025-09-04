@@ -59,6 +59,10 @@ func (wrk *Pool) Start() error {
 	wrk.log.Info("Starting workers")
 
 	for _, j := range wrk.jbs {
+		if j.IsNotSupported(wrk.opts) {
+			wrk.log.Error(jobs.UnsupportedError, fmt.Sprintf("Job %T is not supported", j))
+			continue
+		}
 		wrk.launchJob(j, wrk.opts.ApiGroup)
 		if sg := wrk.opts.SecondaryApiGroup; sg != "" {
 			wrk.launchJob(j, sg)
@@ -91,37 +95,27 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 			}
 
 			jobCtx, cancel := context.WithCancel(wrk.ctx)
-			stopForever := false
+			exe, err := job.Build(jobCtx, wrk.opts, apiGroup, log)
+			if err != nil {
+				log.Error(err, "build failed", "attempt", consecFails)
+				cancel()
+				return
+			}
+
 			func() {
 				defer cancel()
 				var runErr error
-
-				exe, err := job.Build(jobCtx, wrk.opts, apiGroup, log)
-				if err != nil {
-					log.Error(err, "build failed", "attempt", consecFails)
-					return
-				}
-				if exe == nil {
-					log.Info("job does not belong to this service, shutting down")
-					stopForever = true
-					return
-				}
-
 				runErr = exe()
-
 				switch {
 				case jobCtx.Err() != nil:
 					return
 				case runErr == nil:
-					log.Info("job finished unexpectedly without error; restarting", "attempt", consecFails)
+					log.Error(jobs.UnexpectedError, "job finished unexpectedly without error; restarting", "attempt", consecFails)
 				default:
 					log.Error(runErr, "job failed; restarting", "attempt", consecFails)
+					consecFails++
 				}
 			}()
-
-			if stopForever {
-				return
-			}
 
 			select {
 			case <-wrk.ctx.Done():
@@ -132,8 +126,6 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 			if time.Since(lastFail) > wrk.restartResetAfter {
 				consecFails = 1
 				lastFail = time.Now()
-			} else {
-				consecFails++
 			}
 
 			if consecFails >= wrk.maxConsecutiveRestarts {
