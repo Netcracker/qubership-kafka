@@ -69,7 +69,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="3.5.1"
+ARG KAFKACTL_VERSION="5.12.1"
 
 RUN set -x \
     && wget \
