@@ -1,5 +1,5 @@
-FROM eclipse-temurin:17-jdk-alpine AS builder
-RUN apk add --update nodejs npm
+FROM eclipse-temurin:17-jdk-ubi10-minimal AS builder
+RUN microdnf install -y nodejs npm && microdnf clean all
 WORKDIR /app
 
 ADD https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz /tmp/akhq.tar.gz
