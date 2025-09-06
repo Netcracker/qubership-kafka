@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine-3.22 AS builder
+FROM eclipse-temurin:21-jdk-alpine-3.22 AS builder
 RUN apk add --update nodejs npm
 WORKDIR /app
 
