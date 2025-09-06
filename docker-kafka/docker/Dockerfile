@@ -124,6 +124,10 @@ RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
         "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
 
+RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-*.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-${BEANUTILS_VERSION}.jar \
+       https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/${BEANUTILS_VERSION}/commons-beanutils-${BEANUTILS_VERSION}.jar
+
 # Kafka Security OAuth dependencies
 RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
