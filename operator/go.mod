@@ -12,9 +12,9 @@ require (
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 	golang.org/x/sync v0.15.0
 	k8s.io/api v0.22.1
-	k8s.io/apimachinery v0.29.0-alpha.0.0.20230815235018-4c378f8a8a61
+	k8s.io/apimachinery v0.22.1
 	k8s.io/client-go v0.22.1
-	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2
+	k8s.io/utils v0.0.0-20210802155522-efc7438f0176
 	sigs.k8s.io/controller-runtime v0.10.0
 )
 
@@ -40,6 +40,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
