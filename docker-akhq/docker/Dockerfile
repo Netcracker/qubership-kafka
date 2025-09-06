@@ -1,4 +1,4 @@
-FROM gradle:8.9-jdk17-alpine AS builder
+FROM eclipse-temurin:17-jdk-alpine-3.22 AS builder
 RUN apk add --update nodejs npm
 WORKDIR /app
 
