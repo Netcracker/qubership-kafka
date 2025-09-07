@@ -124,7 +124,7 @@ RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
         "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
 
-RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-*.jar \
+RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
 
