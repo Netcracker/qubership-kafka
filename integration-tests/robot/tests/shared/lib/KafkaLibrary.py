@@ -195,7 +195,17 @@ class KafkaLibrary(object):
         """
         message = consumer.poll(1.0)
         if message:
-            logger.debug(f'Received message is "{message}".')
+            log_str = (
+                f"\n--- Kafka ConsumerRecord ---\n"
+                f"Topic: {message.topic()}\n"
+                f"Partition: {message.partition()}\n"
+                f"Offset: {message.offset()}\n"
+                f"Key: {message.key()}\n"
+                f"Value: {message.value()}\n"
+                f"Timestamp: {message.timestamp()}\n"
+                f"-----------------------------"
+            )
+            logger.debug(log_str)
             return str(message)
         else:
             logger.debug(f'Received message is "{message}".')

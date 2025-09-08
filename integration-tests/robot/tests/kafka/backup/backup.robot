@@ -161,6 +161,7 @@ Create Topic With Custom Configuration
 Check Consumed Message
     [Arguments]  ${consumer}  ${message}
     ${receivedMessage} =  Consume Message  ${consumer}
+    Log To Console    [ROBOT] Message value received: ${receivedMessage}
     Should Contain  ${receivedMessage}  ${message}
 
 Delete Data
