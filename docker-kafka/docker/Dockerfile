@@ -69,7 +69,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="3.5.1"
+ARG KAFKACTL_VERSION="5.12.1"
 
 RUN set -x \
     && wget \
@@ -123,6 +123,10 @@ RUN set -x \
         "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/${JAXB_VERSION}/jaxb-impl-${JAXB_VERSION}.jar" \
     && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
         "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
+
+RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
+       "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
 
 # Kafka Security OAuth dependencies
 RUN set -x \
