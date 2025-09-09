@@ -193,7 +193,7 @@ class KafkaLibrary(object):
         *Example:*\n
             | Consume Message | consumer |
         """
-        message = consumer.poll(1.0)
+        message = consumer.poll(5.0)
         if message:
             log_str = (
                 f"\n--- Kafka ConsumerRecord ---\n"
