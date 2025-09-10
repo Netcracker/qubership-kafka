@@ -22,8 +22,7 @@ Prepare
     Create Session  backup_daemon_session  ${KAFKA_BACKUP_DAEMON_PROTOCOL}://${KAFKA_BACKUP_DAEMON_HOST}:${KAFKA_BACKUP_DAEMON_PORT}  auth=${auth}  verify=${verify}
     ${postfix}=  Generate Random String  5
     Set Suite Variable  ${KAFKA_BACKUP_TOPIC}  ${KAFKA_BACKUP_TOPIC}-${postfix}
-    ${KAFKA_BOOTSTRAP_SERVERS}    kafka-1.kafka-broker.cldi-kafka:9093,kafka-2.kafka-broker.cldi-kafka:9093
-    ${admin}=  Create Admin Client  bootstrap_servers=${KAFKA_BOOTSTRAP_SERVERS}
+    ${admin}=  Create Admin Client
     Set Suite Variable  ${admin}
     ${kafka_brokers_count}=  Get Brokers Count  ${admin}
     Set Suite Variable  ${kafka_brokers_count}
