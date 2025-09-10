@@ -206,7 +206,7 @@ Configure Kafka Service deployment names in disaster recovery health check forma
 Resolves Kafka bootstrap servers
 */}}
 {{- define "kafka-service.bootstrapServers" -}}
-  {{- printf "%s:9092" (include "kafka.name" .) -}}
+  {{- printf "%s:9093" (include "kafka.name" .) -}}
 {{- end -}}
 
 {{/*
