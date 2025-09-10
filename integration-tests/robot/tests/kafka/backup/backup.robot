@@ -161,6 +161,9 @@ Create Topic With Custom Configuration
 Check Consumed Message
     [Arguments]  ${consumer}  ${message}
     ${receivedMessage} =  Consume Message  ${consumer}
+    Log To Console    [DEBUG] Raw receivedMessage: ${receivedMessage}
+    Run Keyword If    '${receivedMessage}' == ''    Log To Console    [DEBUG] Poll returned empty string
+    Run Keyword If    '${receivedMessage}' != ''    Log To Console    [DEBUG] Poll returned something
     Log To Console    [ROBOT] Message value received: ${receivedMessage}
     Should Contain  ${receivedMessage}  ${message}
 

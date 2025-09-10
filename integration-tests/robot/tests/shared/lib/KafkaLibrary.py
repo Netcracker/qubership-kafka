@@ -193,13 +193,9 @@ class KafkaLibrary(object):
         *Example:*\n
             | Consume Message | consumer |
         """
-        message = consumer.poll(1000)
+        message = consumer.poll(1.0)
         if message:
-            for tp, records in messages.items():
-                for record in records:
-                    logger.debug(f"Received message from {record.topic}:{record.partition} offset {record.offset}")
-                return record.value.decode("utf-8")
-            #return str(message)
+            return str(message)
         else:
             logger.debug(f'Received message is "{message}".')
             return ""
