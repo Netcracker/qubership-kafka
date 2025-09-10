@@ -232,7 +232,7 @@ Resolves Kafka bootstrap servers
   {{- if .Values.global.externalKafka.enabled -}}
     {{- .Values.global.externalKafka.bootstrapServers -}}
   {{- else -}}
-    {{- printf "%s:9093" (include "kafka.name" .) -}}
+    {{- printf "%s:9092" (include "kafka.name" .) -}}
   {{- end -}}
 {{- end -}}
 

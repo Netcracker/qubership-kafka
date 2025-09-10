@@ -22,7 +22,8 @@ Prepare
     Create Session  backup_daemon_session  ${KAFKA_BACKUP_DAEMON_PROTOCOL}://${KAFKA_BACKUP_DAEMON_HOST}:${KAFKA_BACKUP_DAEMON_PORT}  auth=${auth}  verify=${verify}
     ${postfix}=  Generate Random String  5
     Set Suite Variable  ${KAFKA_BACKUP_TOPIC}  ${KAFKA_BACKUP_TOPIC}-${postfix}
-    ${admin}=  Create Admin Client
+    ${KAFKA_BOOTSTRAP_SERVERS}    kafka-1.kafka-broker.cldi-kafka:9093,kafka-2.kafka-broker.cldi-kafka:9093
+    ${admin}=  Create Admin Client  bootstrap_servers=${KAFKA_BOOTSTRAP_SERVERS}
     Set Suite Variable  ${admin}
     ${kafka_brokers_count}=  Get Brokers Count  ${admin}
     Set Suite Variable  ${kafka_brokers_count}
@@ -161,10 +162,6 @@ Create Topic With Custom Configuration
 Check Consumed Message
     [Arguments]  ${consumer}  ${message}
     ${receivedMessage} =  Consume Message  ${consumer}
-    Log To Console    [DEBUG] Raw receivedMessage: ${receivedMessage}
-    Run Keyword If    '${receivedMessage}' == ''    Log To Console    [DEBUG] Poll returned empty string
-    Run Keyword If    '${receivedMessage}' != ''    Log To Console    [DEBUG] Poll returned something
-    Log To Console    [ROBOT] Message value received: ${receivedMessage}
     Should Contain  ${receivedMessage}  ${message}
 
 Delete Data
