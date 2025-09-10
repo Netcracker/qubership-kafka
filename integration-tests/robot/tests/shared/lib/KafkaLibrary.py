@@ -193,20 +193,13 @@ class KafkaLibrary(object):
         *Example:*\n
             | Consume Message | consumer |
         """
-        message = consumer.poll(5.0)
+        message = consumer.poll(1000)
         if message:
-            log_str = (
-                f"\n--- Kafka ConsumerRecord ---\n"
-                f"Topic: {message.topic()}\n"
-                f"Partition: {message.partition()}\n"
-                f"Offset: {message.offset()}\n"
-                f"Key: {message.key()}\n"
-                f"Value: {message.value()}\n"
-                f"Timestamp: {message.timestamp()}\n"
-                f"-----------------------------"
-            )
-            logger.debug(log_str)
-            return str(message)
+            for tp, records in messages.items():
+                for record in records:
+                    logger.debug(f"Received message from {record.topic}:{record.partition} offset {record.offset}")
+                return record.value.decode("utf-8")
+            #return str(message)
         else:
             logger.debug(f'Received message is "{message}".')
             return ""
