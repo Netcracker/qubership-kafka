@@ -19,16 +19,6 @@ RUN set -x \
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
 
-# Remove old okhttp jars (3.x)
-RUN rm -f /opt/docker/lib/com.squareup.okhttp3.okhttp-3.*.jar \
-    && rm -f /opt/docker/lib/okio-*.jar
-
-# Download replacement jars (okhttp 4.9.2 + okio 2.8.0)
-RUN curl -sSL -o /opt/docker/lib/okhttp-4.9.2.jar \
-      https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.9.2/okhttp-4.9.2.jar \
-    && curl -sSL -o /opt/docker/lib/okio-2.8.0.jar \
-      https://repo1.maven.org/maven2/com/squareup/okio/okio/2.8.0/okio-2.8.0.jar
-
 RUN chmod -R 777 ${LAG_EXPORTER_HOME}
 
 COPY docker/entrypoint.sh /opt/docker/bin/entrypoint.sh
