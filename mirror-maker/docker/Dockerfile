@@ -97,7 +97,17 @@ RUN set -x \
     && tar -xzf ${DISTR_DIR}/plugin.tar.gz -C ${DISTR_DIR} \
     && mkdir -p ${KAFKA_PLUGINS_DIR}/kafka-kubernetes-config-provider \
     && mv ${DISTR_DIR}/kafka-kubernetes-config-provider-${KAFKA_KUBERNETES_CONFIG_PROVIDER_VERSION}/libs/* ${KAFKA_PLUGINS_DIR}/kafka-kubernetes-config-provider \
-    && rm -rf ${DISTR_DIR}
+    && rm -rf ${DISTR_DIR} \
+    \
+    # Remove old okhttp / okio jars
+    && rm -f ${KAFKA_PLUGINS_DIR}/kafka-kubernetes-config-provider/okhttp-*.jar \
+    && rm -f ${KAFKA_PLUGINS_DIR}/kafka-kubernetes-config-provider/okio-*.jar \
+    \
+    # Download okhttp 4.9.2 and okio 2.8.0
+    && curl -sSL -o ${KAFKA_PLUGINS_DIR}/kafka-kubernetes-config-provider/okhttp-4.9.2.jar \
+         https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.9.2/okhttp-4.9.2.jar \
+    && curl -sSL -o ${KAFKA_PLUGINS_DIR}/kafka-kubernetes-config-provider/okio-2.8.0.jar \
+         https://repo1.maven.org/maven2/com/squareup/okio/okio/2.8.0/okio-2.8.0.jar
 
 # Add Mirror Maker extension
 RUN set -x \
