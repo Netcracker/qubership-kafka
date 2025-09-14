@@ -178,8 +178,9 @@ class KafkaLibrary(object):
         """
         try:
             producer.send(topic_name, message.encode('utf-8'))
-            producer.flush()
+            producer.flush(timeout=10)
         except Exception as e:
+            self.builtin.log(traceback.format_exc(), "ERROR")
             self.builtin.fail(f'Failed to produce message: "{message}" to '
                               f'topic: {topic_name} {e}')
 
