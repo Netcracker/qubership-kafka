@@ -177,8 +177,15 @@ class KafkaLibrary(object):
             | Produce Message | producer | consumer-producer-tests-topic | 1541506923 |
         """
         try:
-            producer.send(topic_name, message.encode('utf-8'))
+            # producer.send(topic_name, message.encode('utf-8'))
+            # producer.flush(timeout=10)
+            future = producer.send(topic_name, message.encode("utf-8"))
+            record_metadata = future.get(timeout=10)
             producer.flush(timeout=10)
+            self.builtin.log(
+                f"Produced to {record_metadata.topic} partition {record_metadata.partition} offset {record_metadata.offset}",
+                "INFO"
+            )
         except Exception as e:
             self.builtin.log(traceback.format_exc(), "ERROR")
             self.builtin.fail(f'Failed to produce message: "{message}" to '
