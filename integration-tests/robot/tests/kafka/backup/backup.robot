@@ -160,7 +160,7 @@ Create Topic With Custom Configuration
 
 Check Consumed Message
     [Arguments]  ${consumer}  ${message}
-    ${receivedMessage} =  Consume Message  ${consumer}
+    ${receivedMessage} =  Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${receivedMessage}  ${message}
 
 Delete Data

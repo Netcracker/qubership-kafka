@@ -191,7 +191,7 @@ class KafkaLibrary(object):
             self.builtin.fail(f'Failed to produce message: "{message}" to '
                               f'topic: {topic_name} {e}')
 
-    def consume_message(self, consumer) -> str:
+    def consume_message(self, consumer, topic_name: str) -> str:
         """
         Receives a message from Kafka using Kafka consumer.
         *Args:*\n
@@ -201,6 +201,7 @@ class KafkaLibrary(object):
         *Example:*\n
             | Consume Message | consumer |
         """
+        consumer.subscribe([topic_name])
         message = consumer.poll(1.0)
         if message:
             return str(message)
