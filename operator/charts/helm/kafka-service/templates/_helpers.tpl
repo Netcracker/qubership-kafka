@@ -848,30 +848,30 @@ Configure replicas number for backup-daemon pod
 {{- end }}
 
 {{- define "kafka.monitoredImages" -}}
-  {{- printf "deployment %s-service-operator kafka-service-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-service")) -}}
+  {{- printf "deployment %s-service-operator kafka-service-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-service-operator")) -}}
   {{- if .Values.monitoring.install }}
     {{- printf "deployment %s-monitoring kafka-monitoring %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-monitoring")) -}}
       {{- if .Values.monitoring.lagExporter.enabled }}
-        {{- printf "deployment %s-monitoring kafka-lag-exporter %s, " (include "kafka.name" .) (include "find_image" (list . "prod.platform.streaming_docker-kafka-lag-exporter")) -}}
+        {{- printf "deployment %s-monitoring kafka-lag-exporter %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-lag-exporter")) -}}
       {{- end -}}
   {{- end -}}
   {{- if .Values.backupDaemon.install }}
-    {{- printf "deployment %s-backup-daemon kafka-backup-daemon %s, " (include "kafka.name" .) (include "find_image" (list . "prod.platform.streaming_kafka-backup-daemon")) -}}
+    {{- printf "deployment %s-backup-daemon kafka-backup-daemon %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-backup-daemon")) -}}
   {{- end -}}
   {{- if .Values.integrationTests.install }}
-    {{- printf "deployment %s-integration-tests-runner kafka-integration-tests-runner %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-integration-tests")) -}}
+    {{- printf "deployment %s-integration-tests-runner kafka-integration-tests-runner %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-integration-tests-runner")) -}}
   {{- end -}}
   {{- if and .Values.mirrorMaker.install .Values.mirrorMaker.regionName }}
-    {{- printf "deployment %s-%s-mirror-maker kafka-mirror-maker %s, " (.Values.mirrorMaker.regionName) (include "kafka.name" .) (include "find_image" (list . "docker-kafka-mirror-maker")) -}}
+    {{- printf "deployment %s-%s-mirror-maker kafka-mirror-maker %s, " (.Values.mirrorMaker.regionName) (include "kafka.name" .) (include "find_image" (list . "kafka-mirror-maker")) -}}
   {{- end -}}
   {{- if .Values.mirrorMakerMonitoring.install }}
-    {{- printf "deployment %s-kafka-mirror-maker-monitoring kafka-kafka-mirror-maker-monitoring %s, " (include "kafka.name" .) (include "find_image" (list . "prod.platform.streaming_kafka-kafka-mirror-maker-monitoring")) -}}
+    {{- printf "deployment %s-mirror-maker-monitoring kafka-mirror-maker-monitoring %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-mirror-maker-monitoring")) -}}
   {{- end -}}
   {{- if .Values.akhq.install }}
-    {{- printf "deployment akhq akhq %s, " (include "find_image" (list . "docker-akhq")) -}}
+    {{- printf "deployment akhq akhq %s, " (include "find_image" (list . "akhq")) -}}
   {{- end -}}
   {{- if .Values.cruiseControl.install }}
-    {{- printf "deployment %s-cruise-control kafka-cruise-control %s, " (include "kafka.name" .) (include "find_image" (list . "prod.platform.streaming_docker-cruise-control")) -}}
+    {{- printf "deployment %s-cruise-control kafka-cruise-control %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-cruise-control")) -}}
   {{- end -}}
 {{- end -}}
 

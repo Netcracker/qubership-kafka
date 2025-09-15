@@ -86,7 +86,7 @@ RUN set -x \
         "https://github.com/prometheus/jmx_exporter/releases/download/${PROMETHEUS_JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JMX_EXPORTER_VERSION}.jar"
 
 # Install Kubernetes config provider
-ARG KAFKA_KUBERNETES_CONFIG_PROVIDER_VERSION="1.0.0"
+ARG KAFKA_KUBERNETES_CONFIG_PROVIDER_VERSION="1.2.0"
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
     && wget \
@@ -133,6 +133,12 @@ RUN mkdir -p "${KAFKA_HOME}" \
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
+
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --upgrade --no-cache \
+        pcre2
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}
