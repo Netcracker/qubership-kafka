@@ -149,7 +149,7 @@ Create Topic With Generated Data
     Produce Message  ${producer}  ${topic_name}  ${message}
     ${consumer} =  Create Kafka Consumer  ${topic_name}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${message}
+    ...  Check Consumed Message  ${consumer}  ${topic_name}  ${message}
     Close Kafka Consumer  ${consumer}
 
 Create Topic With Custom Configuration
