@@ -159,7 +159,7 @@ Create Topic With Custom Configuration
     Check Topic Exists  ${topic_name}
 
 Check Consumed Message
-    [Arguments]  ${consumer}  ${message}
+    [Arguments]  ${consumer}  ${topic_name}  ${message}
     ${receivedMessage} =  Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${receivedMessage}  ${message}
 
