@@ -44,7 +44,7 @@ global:
   securityContext: {}
 
   disasterRecovery:
-    siteManagerApiGroup: "qubership.org"
+    siteManagerApiGroup: "netcracker.com"
     image: ghcr.io/netcracker/qubership-disaster-recovery-daemon:main
     tls:
       enabled: true
@@ -128,7 +128,7 @@ global:
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main
   replicas: 1
-  apiGroup: "qubership.org"
+  apiGroup: "netcracker.com"
   secondaryApiGroup: ""
   kmmConfiguratorEnabled: false
   resources:

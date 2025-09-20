@@ -38,7 +38,7 @@ import (
 const (
 	kafkaServiceConditionReason       = "ReconcileCycleStatus"
 	globalHashName                    = "spec.global"
-	autoRestartAnnotation             = "kafkaservice.qubership.org/auto-restart"
+	autoRestartAnnotation             = "kafkaservice.netcracker.com/auto-restart"
 	resourceVersionAnnotationTemplate = "%s/resource-version"
 )
 
@@ -52,9 +52,9 @@ type ReconcileService interface {
 	Status() error
 }
 
-//+kubebuilder:rbac:groups=qubership.org,resources=kafkaservices,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=qubership.org,resources=kafkaservices/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=qubership.org,resources=kafkaservices/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netcracker.com,resources=kafkaservices,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netcracker.com,resources=kafkaservices/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netcracker.com,resources=kafkaservices/finalizers,verbs=update
 
 func (r *KafkaServiceReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
