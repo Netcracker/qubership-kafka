@@ -1,4 +1,4 @@
-domain: qubership.org
+domain: netcracker.com
 layout:
 - go.kubebuilder.io/v3
 plugins:
@@ -11,7 +11,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: qubership.org
+  domain: netcracker.com
   kind: KafkaService
   path: github.com/Netcracker/qubership-kafka/operator/api/v7
   version: v7
@@ -19,7 +19,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: qubership.org
+  domain: netcracker.com
   kind: KmmConfig
   path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1
@@ -27,7 +27,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: qubership.org
+  domain: netcracker.com
   kind: AkhqConfig
   path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1
@@ -35,7 +35,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: qubership.org
+  domain: netcracker.com
   kind: Kafka
   path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1
@@ -43,7 +43,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: qubership.org
+  domain: netcracker.com
   kind: KafkaUser
   path: github.com/Netcracker/qubership-kafka/operator/api/v1
   version: v1

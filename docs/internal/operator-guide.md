@@ -99,7 +99,7 @@ If API model has incompatible changes, new application version should be release
     make manifests
     ```
 
-   Make sure generated CRD `kafka-service-operator/config/crd/bases/qubership.org_kafkaservices.yaml` contains new version.
+   Make sure generated CRD `kafka-service-operator/config/crd/bases/netcracker.com_kafkaservices.yaml` contains new version.
 
 7. Copy content of new generated CRD to `kafka-service-operator/charts/helm/kafka-service/crds/crd.yaml` file.
 
@@ -109,10 +109,10 @@ If API model has incompatible changes, new application version should be release
 
 _operator-sdk_:
 
-* `operator-sdk create api --group qubership.org --version <new_version> --kind=KafkaService --resource`
+* `operator-sdk create api --group netcracker.com --version <new_version> --kind=KafkaService --resource`
   is the command to add a new custom resource definition API called KafkaService, with APIVersion
-  `qubership.org/<new_version>` and Kind `KafkaService`.
-* `operator-sdk create api --group qubership.org --version <new_version> --kind=KafkaService --controller`
+  `netcracker.com/<new_version>` and Kind `KafkaService`.
+* `operator-sdk create api --group netcracker.com --version <new_version> --kind=KafkaService --controller`
   is the command to add a new controller to the project that will watch and reconcile the KafkaService resource.
 * `make generate` is the command to update the generated code for the KafkaService resource.
   You should run this command every time when you change `kafkaservice_types.go`.
