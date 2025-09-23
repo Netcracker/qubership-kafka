@@ -177,13 +177,21 @@ class KafkaLibrary(object):
             | Produce Message | producer | consumer-producer-tests-topic | 1541506923 |
         """
         try:
-            producer.send(topic_name, message.encode('utf-8'))
-            producer.flush()
+            # producer.send(topic_name, message.encode('utf-8'))
+            # producer.flush(timeout=10)
+            future = producer.send(topic_name, message.encode("utf-8"))
+            record_metadata = future.get(timeout=10)
+            producer.flush(timeout=10)
+            self.builtin.log(
+                f"Produced to {record_metadata.topic} partition {record_metadata.partition} offset {record_metadata.offset}",
+                "INFO"
+            )
         except Exception as e:
+            self.builtin.log(traceback.format_exc(), "ERROR")
             self.builtin.fail(f'Failed to produce message: "{message}" to '
                               f'topic: {topic_name} {e}')
 
-    def consume_message(self, consumer) -> str:
+    def consume_message(self, consumer, topic_name: str) -> str:
         """
         Receives a message from Kafka using Kafka consumer.
         *Args:*\n
@@ -193,9 +201,9 @@ class KafkaLibrary(object):
         *Example:*\n
             | Consume Message | consumer |
         """
-        message = consumer.poll(1.0)
+        consumer.subscribe([topic_name])
+        message = consumer.poll(10.0)
         if message:
-            logger.debug(f'Received message is "{message}".')
             return str(message)
         else:
             logger.debug(f'Received message is "{message}".')
