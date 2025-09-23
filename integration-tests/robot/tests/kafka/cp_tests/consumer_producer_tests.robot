@@ -18,8 +18,8 @@ Setup
     Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
 
 Check Consumed Message
-    [Arguments]  ${consumer}  ${message}
-    ${receivedMessage} =  Consume Message  ${consumer}
+    [Arguments]  ${consumer}  ${topic_name}  ${message}
+    ${receivedMessage} =  Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${receivedMessage}  ${message}
 
 Cleanup
@@ -35,7 +35,7 @@ Test Producing And Consuming Data
     Produce Message  ${producer}  ${TOPIC_NAME}  ${message}
     ${consumer} =  Create Kafka Consumer  ${TOPIC_NAME}
     Wait Until Keyword Succeeds  ${CONSUME_MESSAGE_RETRY_COUNT}  ${CONSUME_MESSAGE_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${message}
+    ...  Check Consumed Message  ${consumer}  ${TOPIC_NAME}  ${message}
     ${producer} =  Set Variable  ${None}
     Close Kafka Consumer  ${consumer}
     ${consumer} =  Set Variable  ${None}
