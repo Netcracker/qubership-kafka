@@ -16,7 +16,6 @@ package workers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -100,11 +99,8 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 			jobCtx, cancel := context.WithCancel(wrk.ctx)
 
 			exe, err := job.Build(jobCtx, wrk.opts, apiGroup, log)
-			if err != nil && !errors.Is(err, jobs.UnsupportedError) {
+			if err != nil {
 				log.Error(err, "build failed", "attempt", consecFails)
-				cancel()
-				return
-			} else if errors.Is(err, jobs.UnsupportedError) {
 				cancel()
 				return
 			}
