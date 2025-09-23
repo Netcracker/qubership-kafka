@@ -2,8 +2,8 @@
 
 charts:
   - name: qubership-kafka-service
-    chart_file: operator/charts/helm/kafka/Chart.yaml
-    values_file: operator/charts/helm/kafka/values.yaml
+    chart_file: operator/charts/helm/kafka-service/Chart.yaml
+    values_file: operator/charts/helm/kafka-service/values.yaml
     image:
       - ghcr.io/netcracker/qubership-kafka-integration-tests:${release}
       - ghcr.io/netcracker/qubership-kafka-crd-init:${release}
@@ -15,8 +15,8 @@ charts:
       - ghcr.io/netcracker/qubership-kafka-mirror-maker-monitoring:${release}
       - ghcr.io/netcracker/qubership-disaster-recovery-daemon:#latest
   - name: qubership-kafka
-    chart_file: operator/charts/helm/kafka-service/Chart.yaml
-    values_file: operator/charts/helm/kafka-service/values.yaml
+    chart_file: operator/charts/helm/kafka/Chart.yaml
+    values_file: operator/charts/helm/kafka/values.yaml
     image:
       - ghcr.io/netcracker/qubership-kafka-operator:${release}
       - ghcr.io/netcracker/qubership-docker-kafka:${release}
