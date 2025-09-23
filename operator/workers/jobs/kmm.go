@@ -101,6 +101,8 @@ func (rj KmmJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logge
 	return exec, nil
 }
 
-func (rj KmmJob) IsNotSupported(opts cfg.Cfg) bool {
-	return opts.Mode == cfg.KafkaMode || !opts.KmmEnabled
+func (rj KmmJob) Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool) {
+	runJob = opts.Mode == cfg.KafkaServiceMode || opts.KmmEnabled
+	runDuplicate = true
+	return
 }

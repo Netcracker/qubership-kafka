@@ -51,7 +51,7 @@ type Exec func() error
 
 type Job interface {
 	Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error)
-	IsNotSupported(opts cfg.Cfg) bool
+	Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool)
 }
 
 // getWatchNamespace returns the Namespace the operator should be watching for changes

@@ -16,6 +16,7 @@ package workers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -59,14 +60,16 @@ func (wrk *Pool) Start() error {
 	wrk.log.Info("Starting workers")
 
 	for _, j := range wrk.jbs {
-		if j.IsNotSupported(wrk.opts) {
+		runJob, runDuplicate := j.Enabled(wrk.opts)
+		if !runJob {
 			wrk.log.Error(jobs.UnsupportedError, fmt.Sprintf("Job %T is not supported", j))
 			continue
 		}
 		wrk.launchJob(j, wrk.opts.ApiGroup)
-		if sg := wrk.opts.SecondaryApiGroup; sg != "" {
+		if sg := wrk.opts.SecondaryApiGroup; sg != "" && runDuplicate {
 			wrk.launchJob(j, sg)
 		}
+
 	}
 	return nil
 }
@@ -95,9 +98,13 @@ func (wrk *Pool) launchJob(job jobs.Job, apiGroup string) {
 			}
 
 			jobCtx, cancel := context.WithCancel(wrk.ctx)
+
 			exe, err := job.Build(jobCtx, wrk.opts, apiGroup, log)
-			if err != nil {
+			if err != nil && !errors.Is(err, jobs.UnsupportedError) {
 				log.Error(err, "build failed", "attempt", consecFails)
+				cancel()
+				return
+			} else if errors.Is(err, jobs.UnsupportedError) {
 				cancel()
 				return
 			}

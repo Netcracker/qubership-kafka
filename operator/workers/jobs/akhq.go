@@ -97,6 +97,8 @@ func (rj AkhqJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logg
 	return exec, nil
 }
 
-func (rj AkhqJob) IsNotSupported(opts cfg.Cfg) bool {
-	return opts.Mode == cfg.KafkaMode || opts.WatchAkhqCollectNamespace == nil
+func (rj AkhqJob) Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool) {
+	runJob = opts.Mode != cfg.KafkaMode || opts.WatchAkhqCollectNamespace != nil
+	runDuplicate = true
+	return
 }

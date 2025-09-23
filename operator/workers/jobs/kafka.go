@@ -40,7 +40,7 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 	metricsAddr := opts.MetricsAddr
 	probeAddr := opts.ProbeAddr
 	if mainApiGroup() != apiGroup {
-		return nil, nil
+		return nil, UnsupportedError
 	}
 
 	kafkaOpts := ctrl.Options{
@@ -113,6 +113,8 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 
 }
 
-func (rj KafkaJob) IsNotSupported(opts cfg.Cfg) bool {
-	return len(opts.Mode) == 0
+func (rj KafkaJob) Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool) {
+	runDuplicate = false
+	runJob = len(opts.Mode) == 0
+	return
 }
