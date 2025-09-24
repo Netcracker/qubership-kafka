@@ -115,6 +115,6 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 
 func (rj KafkaJob) Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool) {
 	runDuplicate = false
-	runJob = len(opts.Mode) == 0
+	runJob = len(opts.Mode) > 0
 	return
 }

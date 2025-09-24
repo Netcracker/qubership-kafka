@@ -61,7 +61,7 @@ func (wrk *Pool) Start() error {
 	for _, j := range wrk.jbs {
 		runJob, runDuplicate := j.Enabled(wrk.opts)
 		if !runJob {
-			wrk.log.Error(jobs.UnsupportedError, fmt.Sprintf("Job %T is not supported", j))
+			wrk.log.V(-1).Info(fmt.Sprintf("Job %T is not supported", j))
 			continue
 		}
 		wrk.launchJob(j, wrk.opts.ApiGroup)
