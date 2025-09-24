@@ -202,7 +202,7 @@ class KafkaLibrary(object):
             | Consume Message | consumer |
         """
         consumer.subscribe([topic_name])
-        message = consumer.poll(10.0)
+        message = consumer.poll(5000.0)
         if message:
             return str(message)
         else:
