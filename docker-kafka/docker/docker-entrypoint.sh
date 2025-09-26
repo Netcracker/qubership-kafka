@@ -702,7 +702,7 @@ if [[ ${ENABLE_AUDIT_LOGS} == "true" ]]; then
     cat >> "${KAFKA_HOME}/config/log4j.properties" << EOL
 log4j.appender.AUDIT=org.apache.log4j.ConsoleAppender
 log4j.appender.AUDIT.layout=org.apache.log4j.PatternLayout
-log4j.appender.AUDIT.layout.ConversionPattern = [%d{ISO8601}][%p] [category=kafka.audit] CEF:1|Qubership|Kafka|3.9.1|AUTHENTICATION|%m|1|result=failed type=audit_log_type%n
+log4j.appender.AUDIT.layout.ConversionPattern = [%d{ISO8601}][%p] [category=kafka.audit] CEF:1|Qubership|Kafka|4.1.0|AUTHENTICATION|%m|1|result=failed type=audit_log_type%n
 
 log4j.logger.org.apache.kafka.common.network.Selector=INFO, AUDIT
 log4j.additivity.org.apache.kafka.common.network.Selector=true
