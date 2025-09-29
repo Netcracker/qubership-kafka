@@ -124,6 +124,37 @@ RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
         "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
 
+# --- Temporary Backward compatibility for security filter ---
+
+ENV JAXRS_VER=2.1.1 \
+    JERSEY_VER=2.39.1 \
+    HK2_VER=2.6.1 \
+    OSGI_RES_LOC_VER=1.0.3
+
+RUN set -x \
+ && wget -nv -O ${KAFKA_HOME}/libs/javax.ws.rs-api-${JAXRS_VER}.jar \
+    "https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/${JAXRS_VER}/javax.ws.rs-api-${JAXRS_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/jersey-client-${JERSEY_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-client/${JERSEY_VER}/jersey-client-${JERSEY_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/jersey-common-${JERSEY_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common/${JERSEY_VER}/jersey-common-${JERSEY_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/jersey-hk2-${JERSEY_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/jersey/inject/jersey-hk2/${JERSEY_VER}/jersey-hk2-${JERSEY_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VER}/jersey-media-json-jackson-${JERSEY_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/hk2-api-${HK2_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-api/${HK2_VER}/hk2-api-${HK2_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/hk2-locator-${HK2_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator/${HK2_VER}/hk2-locator-${HK2_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/hk2-utils-${HK2_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils/${HK2_VER}/hk2-utils-${HK2_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/jakarta.inject-${HK2_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/hk2/external/jakarta.inject/${HK2_VER}/jakarta.inject-${HK2_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/aopalliance-repackaged-${HK2_VER}.jar \
+    "https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged/${HK2_VER}/aopalliance-repackaged-${HK2_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/osgi-resource-locator-${OSGI_RES_LOC_VER}.jar \
+    "https://repo1.maven.org/maven2/org/osgi/osgi-resource-locator/${OSGI_RES_LOC_VER}/osgi-resource-locator-${OSGI_RES_LOC_VER}.jar"
+
 RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
