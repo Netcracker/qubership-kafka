@@ -133,10 +133,10 @@ operator:
   kmmConfiguratorEnabled: false
   resources:
     requests:
-      memory: 128Mi
-      cpu: 25m
+      memory: 512Mi
+      cpu: 100m
     limits:
-      memory: 128Mi
+      memory: 512Mi
       cpu: 100m
 #  watchNamespace: ""
 #  serviceAccount: kafka-service-operator

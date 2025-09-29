@@ -102,7 +102,7 @@ func (rj KmmJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logge
 }
 
 func (rj KmmJob) Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool) {
-	runJob = opts.Mode == cfg.KafkaServiceMode || opts.KmmEnabled
+	runJob = opts.Mode == cfg.KafkaServiceMode && opts.KmmEnabled
 	runDuplicate = true
 	return
 }

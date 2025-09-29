@@ -108,7 +108,7 @@ func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string,
 }
 
 func (rj KafkaUserJob) Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool) {
-	runJob = opts.Mode == cfg.KafkaServiceMode || opts.WatchKafkaUsersCollectNamespace != nil
+	runJob = opts.Mode == cfg.KafkaServiceMode && opts.WatchKafkaUsersCollectNamespace != nil
 	runDuplicate = true
 	return
 }
