@@ -190,11 +190,15 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 			step = 0
 		}
 		log.Info("Starting ZooKeeper to Kraft migration")
+		log.Info(fmt.Sprintf("current step is %d", step))
 
 		// ZooKeeper -> Kraft migration initial step, getting ZooKeeper cluster ID
-		zkClusterID, err := r.getZooKeeperClusterID()
-		if err != nil {
-			return err
+		var zkClusterID string
+		if step < 4 {
+			zkClusterID, err = r.getZooKeeperClusterID()
+			if err != nil {
+				return err
+			}
 		}
 
 		if step < 1 {
