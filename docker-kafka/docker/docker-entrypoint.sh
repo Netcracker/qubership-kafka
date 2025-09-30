@@ -530,19 +530,19 @@ EOL
 
 #  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.qubership.kafka.security.authorization.ExtendedKafkaPrincipalBuilder
 #  echo "Using CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=$CONF_KAFKA_PRINCIPAL_BUILDER_CLASS"
-
-  if [[ "$ENABLE_AUTHORIZATION" == true ]]; then
-    if [[ "$KRAFT_ENABLED" != "true" ]]; then
-      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedAclAuthorizer
-    else
-      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedStandardAuthorizer
-    fi
-    echo "Using CONF_KAFKA_AUTHORIZER_CLASS_NAME=$CONF_KAFKA_AUTHORIZER_CLASS_NAME"
-    export CONF_KAFKA_SUPER_USERS="User:$ADMIN_USERNAME;User:$CLIENT_USERNAME"
-    echo "Using CONF_KAFKA_SUPER_USERS=$CONF_KAFKA_SUPER_USERS"
-  else
-    echo "WARNING! Authorization is disabled, its configuration is skipped!"
-  fi
+#
+#  if [[ "$ENABLE_AUTHORIZATION" == true ]]; then
+#    if [[ "$KRAFT_ENABLED" != "true" ]]; then
+#      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedAclAuthorizer
+#    else
+#      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedStandardAuthorizer
+#    fi
+#    echo "Using CONF_KAFKA_AUTHORIZER_CLASS_NAME=$CONF_KAFKA_AUTHORIZER_CLASS_NAME"
+#    export CONF_KAFKA_SUPER_USERS="User:$ADMIN_USERNAME;User:$CLIENT_USERNAME"
+#    echo "Using CONF_KAFKA_SUPER_USERS=$CONF_KAFKA_SUPER_USERS"
+#  else
+#    echo "WARNING! Authorization is disabled, its configuration is skipped!"
+#  fi
 else
   echo "WARNING! Security is disabled, authentication configuration skipped!"
 fi
