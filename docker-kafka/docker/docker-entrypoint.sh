@@ -528,8 +528,8 @@ EOL
     set_security_parameters $(echo "${clients_listeners_names[i]}" | tr '[:upper:]' '[:lower:]')
   done
 
-  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.qubership.kafka.security.authorization.ExtendedKafkaPrincipalBuilder
-  echo "Using CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=$CONF_KAFKA_PRINCIPAL_BUILDER_CLASS"
+#  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.qubership.kafka.security.authorization.ExtendedKafkaPrincipalBuilder
+#  echo "Using CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=$CONF_KAFKA_PRINCIPAL_BUILDER_CLASS"
 
   if [[ "$ENABLE_AUTHORIZATION" == true ]]; then
     if [[ "$KRAFT_ENABLED" != "true" ]]; then
