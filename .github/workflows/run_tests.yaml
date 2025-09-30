@@ -1,0 +1,17 @@
+name: Run Kafka Pipeline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  Kafka-Pipeline:
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@8979a0a2380d9fcf9a5067809a6525f7e98182a6
+    with:
+      service_branch: '${{ github.head_ref || github.ref_name }}'
+      versions_file: '.github/versions.yaml'
+      pipeline_branch: '8979a0a2380d9fcf9a5067809a6525f7e98182a6' #this value must match the value after '@' in 'uses'
+    secrets:
+      AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
+      AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
