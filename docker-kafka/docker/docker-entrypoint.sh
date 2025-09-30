@@ -428,12 +428,12 @@ function set_security_parameters() {
 
   env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS
 #  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerLoginCallbackHandler
-  export ${env_name}=org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+  export ${env_name}=org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler
   echo "Using ${env_name}=${!env_name}"
 
   env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS
 #  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerValidatorCallbackHandler
-  export ${env_name}=org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerValidatorCallbackHandler
+  export ${env_name}=org.apache.kafka.common.security.oauthbearer.OAuthBearerValidatorCallbackHandler
   echo "Using ${env_name}=${!env_name}"
 
   env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_CONNECTIONS_MAX_REAUTH_MS
