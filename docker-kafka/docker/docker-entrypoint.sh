@@ -426,13 +426,15 @@ function set_security_parameters() {
   echo "Adding security for $1 listener"
   configure_sasl_mechanisms_on_listener "${listener_name}"
 
-#  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS
+  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS
 #  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerLoginCallbackHandler
-#  echo "Using ${env_name}=${!env_name}"
+  export ${env_name}=org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+  echo "Using ${env_name}=${!env_name}"
 
-#  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS
+  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS
 #  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerValidatorCallbackHandler
-#  echo "Using ${env_name}=${!env_name}"
+  export ${env_name}=org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerValidatorCallbackHandler
+  echo "Using ${env_name}=${!env_name}"
 
   env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_CONNECTIONS_MAX_REAUTH_MS
   export ${env_name}=${!env_name:=3600000}
@@ -529,20 +531,18 @@ EOL
   done
 
 #  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.qubership.kafka.security.authorization.ExtendedKafkaPrincipalBuilder
-#  echo "Using CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=$CONF_KAFKA_PRINCIPAL_BUILDER_CLASS"
-#
-#  if [[ "$ENABLE_AUTHORIZATION" == true ]]; then
-#    if [[ "$KRAFT_ENABLED" != "true" ]]; then
-#      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedAclAuthorizer
-#    else
-#      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedStandardAuthorizer
-#    fi
-#    echo "Using CONF_KAFKA_AUTHORIZER_CLASS_NAME=$CONF_KAFKA_AUTHORIZER_CLASS_NAME"
-#    export CONF_KAFKA_SUPER_USERS="User:$ADMIN_USERNAME;User:$CLIENT_USERNAME"
-#    echo "Using CONF_KAFKA_SUPER_USERS=$CONF_KAFKA_SUPER_USERS"
-#  else
-#    echo "WARNING! Authorization is disabled, its configuration is skipped!"
-#  fi
+  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.apache.kafka.common.security.authenticator.DefaultKafkaPrincipalBuilder
+  echo "Using CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=$CONF_KAFKA_PRINCIPAL_BUILDER_CLASS"
+
+  if [[ "$ENABLE_AUTHORIZATION" == true ]]; then
+#   export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedStandardAuthorizer
+    export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.apache.kafka.metadata.authorizer.StandardAuthorizer
+    echo "Using CONF_KAFKA_AUTHORIZER_CLASS_NAME=$CONF_KAFKA_AUTHORIZER_CLASS_NAME"
+    export CONF_KAFKA_SUPER_USERS="User:$ADMIN_USERNAME;User:$CLIENT_USERNAME"
+    echo "Using CONF_KAFKA_SUPER_USERS=$CONF_KAFKA_SUPER_USERS"
+  else
+    echo "WARNING! Authorization is disabled, its configuration is skipped!"
+  fi
 else
   echo "WARNING! Security is disabled, authentication configuration skipped!"
 fi
