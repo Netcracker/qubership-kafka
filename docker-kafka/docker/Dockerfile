@@ -97,74 +97,43 @@ RUN set -x \
         -O ${KAFKA_HOME}/libs/jmx_prometheus_javaagent-${PROMETHEUS_JMX_EXPORTER_VERSION}.jar \
         "https://github.com/prometheus/jmx_exporter/releases/download/${PROMETHEUS_JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JMX_EXPORTER_VERSION}.jar"
 
-
-ARG JERSEY_VERSION="2.39.1"
-ARG JAXB_VERSION="2.3.0"
-ARG KAFKA_SECURITY_OAUTH_VERSION="0.11.0-3.9.1"
-# Download OAuth2 dependencies
-RUN set -x \
-    && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VERSION}.jar \
-        "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VERSION}/jersey-media-json-jackson-${JERSEY_VERSION}.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/jersey-entity-filtering-${JERSEY_VERSION}.jar \
-        "https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/${JERSEY_VERSION}/jersey-entity-filtering-${JERSEY_VERSION}.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
-        "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.3/nimbus-jose-jwt-9.37.3.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/jcip-annotations-1.0-1.jar \
-        "https://repo1.maven.org/maven2/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/json-smart-2.4.11.jar \
-        "https://repo1.maven.org/maven2/net/minidev/json-smart/2.4.11/json-smart-2.4.11.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/accessors-smart-2.4.11.jar \
-        "https://repo1.maven.org/maven2/net/minidev/accessors-smart/2.4.11/accessors-smart-2.4.11.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/asm-9.1.jar \
-        "https://repo1.maven.org/maven2/org/ow2/asm/asm/9.1/asm-9.1.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-core-${JAXB_VERSION}.jar \
-        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/${JAXB_VERSION}/jaxb-core-${JAXB_VERSION}.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-impl-${JAXB_VERSION}.jar \
-        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/${JAXB_VERSION}/jaxb-impl-${JAXB_VERSION}.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
-        "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
-
-# --- Temporary Backward compatibility for security filter ---
-
-ENV JAXRS_VER=2.1.1 \
-    JERSEY_VER=2.39.1 \
-    HK2_VER=2.6.1 \
-    OSGI_RES_LOC_VER=1.0.3
-
-RUN set -x \
- && wget -nv -O ${KAFKA_HOME}/libs/javax.ws.rs-api-${JAXRS_VER}.jar \
-    "https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/${JAXRS_VER}/javax.ws.rs-api-${JAXRS_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/jersey-client-${JERSEY_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-client/${JERSEY_VER}/jersey-client-${JERSEY_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/jersey-common-${JERSEY_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common/${JERSEY_VER}/jersey-common-${JERSEY_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/jersey-hk2-${JERSEY_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/jersey/inject/jersey-hk2/${JERSEY_VER}/jersey-hk2-${JERSEY_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VER}/jersey-media-json-jackson-${JERSEY_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/hk2-api-${HK2_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-api/${HK2_VER}/hk2-api-${HK2_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/hk2-locator-${HK2_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator/${HK2_VER}/hk2-locator-${HK2_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/hk2-utils-${HK2_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils/${HK2_VER}/hk2-utils-${HK2_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/jakarta.inject-${HK2_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/hk2/external/jakarta.inject/${HK2_VER}/jakarta.inject-${HK2_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/aopalliance-repackaged-${HK2_VER}.jar \
-    "https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged/${HK2_VER}/aopalliance-repackaged-${HK2_VER}.jar" \
- && wget -nv -O ${KAFKA_HOME}/libs/osgi-resource-locator-${OSGI_RES_LOC_VER}.jar \
-    "https://repo1.maven.org/maven2/org/osgi/osgi-resource-locator/${OSGI_RES_LOC_VER}/osgi-resource-locator-${OSGI_RES_LOC_VER}.jar"
+#
+#ARG JERSEY_VERSION="2.39.1"
+#ARG JAXB_VERSION="2.3.0"
+#ARG KAFKA_SECURITY_OAUTH_VERSION="0.11.0-3.9.1"
+## Download OAuth2 dependencies
+#RUN set -x \
+#    && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VERSION}.jar \
+#        "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VERSION}/jersey-media-json-jackson-${JERSEY_VERSION}.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/jersey-entity-filtering-${JERSEY_VERSION}.jar \
+#        "https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/${JERSEY_VERSION}/jersey-entity-filtering-${JERSEY_VERSION}.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
+#        "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.3/nimbus-jose-jwt-9.37.3.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/jcip-annotations-1.0-1.jar \
+#        "https://repo1.maven.org/maven2/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/json-smart-2.4.11.jar \
+#        "https://repo1.maven.org/maven2/net/minidev/json-smart/2.4.11/json-smart-2.4.11.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/accessors-smart-2.4.11.jar \
+#        "https://repo1.maven.org/maven2/net/minidev/accessors-smart/2.4.11/accessors-smart-2.4.11.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/asm-9.1.jar \
+#        "https://repo1.maven.org/maven2/org/ow2/asm/asm/9.1/asm-9.1.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-core-${JAXB_VERSION}.jar \
+#        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/${JAXB_VERSION}/jaxb-core-${JAXB_VERSION}.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-impl-${JAXB_VERSION}.jar \
+#        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/${JAXB_VERSION}/jaxb-impl-${JAXB_VERSION}.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
+#        "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
 
 RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
 
-# Kafka Security OAuth dependencies
-RUN set -x \
-    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
-        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-server/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
-        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
+## Kafka Security OAuth dependencies
+#RUN set -x \
+#    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
+#        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-server/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
+#        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
 ARG NETTY_VER=4.1.125.Final
 RUN set -eux; \
