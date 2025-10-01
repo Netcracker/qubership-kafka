@@ -6,7 +6,7 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - akhqconfigs
   verbs:
@@ -18,13 +18,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - akhqconfigs/finalizers
   verbs:
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - akhqconfigs/status
   verbs:
@@ -32,7 +32,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkas
   verbs:
@@ -44,13 +44,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkas/finalizers
   verbs:
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkas/status
   verbs:
@@ -58,7 +58,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkaservices
   verbs:
@@ -70,13 +70,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkaservices/finalizers
   verbs:
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkaservices/status
   verbs:
@@ -84,7 +84,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkausers
   verbs:
@@ -96,13 +96,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkausers/finalizers
   verbs:
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkausers/status
   verbs:
@@ -110,7 +110,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kmmconfigs
   verbs:
@@ -122,13 +122,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kmmconfigs/finalizers
   verbs:
   - update
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kmmconfigs/status
   verbs:

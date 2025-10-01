@@ -11,7 +11,7 @@ type Cfg struct {
 	EnableLeaderElection                     bool    `long:"leader-elect" description:"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager."`
 	OwnNamespace                             string  `long:"own-namespace" description:"The own namespace" env:"OWN_NAMESPACE"`
 	Mode                                     OpMode  `long:"mode" description:"The operation mode" env:"OPERATOR_MODE"`
-	ApiGroup                                 string  `long:"api-group" description:"The API group" env:"API_GROUP" default:"qubership.org"`
+	ApiGroup                                 string  `long:"api-group" description:"The API group" env:"API_GROUP" default:"netcracker.com"`
 	SecondaryApiGroup                        string  `long:"secondary-api-group" description:"The additional API group" optional:"true" env:"SECONDARY_API_GROUP"`
 	KmmEnabled                               bool    `long:"kmm-enabled" description:"Enable kmm manager" env:"KMM_ENABLED"`
 	KmmConfigurationReconcilePeriodSecs      int     `long:"kmm-configuration-reconcile-period-seconds" description:"Reconcilation period for Kafka KMM configuration" env:"KMM_CONFIG_RECONCILE_PERIOD_SECONDS" default:"60"`
