@@ -40,7 +40,6 @@ concurrency:
 
 jobs:
   multiplatform_build:
-    if: github.event.pull_request.user.login != 'dependabot[bot]' || github.event_name == 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -69,8 +68,11 @@ jobs:
           - name: qubership-kafka-monitoring
             file: monitoring/docker/Dockerfile
             context: monitoring
-          - name: qubership-docker-kafka
-            file: docker-kafka/docker/Dockerfile
+          - name: qubership-docker-kafka-3
+            file: docker-kafka/docker/3/Dockerfile
+            context: docker-kafka
+          - name: qubership-docker-kafka-4
+            file: docker-kafka/docker/4/Dockerfile
             context: docker-kafka
           - name: qubership-docker-akhq
             file: docker-akhq/docker/Dockerfile
@@ -119,6 +121,6 @@ jobs:
           context: ${{ matrix.component.context }}
           file: ${{ matrix.component.file }}
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/${{ env.GITHUB_GROUP }}/${{ matrix.component.name }}:${{ env.TAG_NAME }}
           provenance: false
