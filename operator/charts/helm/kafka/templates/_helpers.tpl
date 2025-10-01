@@ -378,3 +378,50 @@ Find a kubectl image in various places.
 {{- define "kubectl.image" -}}
     {{- printf "%s" .Values.groupMigration.image -}}
 {{- end -}}
+
+{{- define "kafka.imageVariant" -}}
+  {{- $img := . | default "" -}}
+  {{- if or (empty $img) (not (kindIs "string" $img)) -}}
+    unknown
+  {{- else if contains "qubership-docker-kafka-4" $img -}}
+    4
+  {{- else if contains "qubership-docker-kafka-3" $img -}}
+    3
+  {{- else if and (contains "qubership-docker-kafka" $img) (not (or (contains "qubership-docker-kafka-3" $img) (contains "qubership-docker-kafka-4" $img))) -}}
+    base
+  {{- else -}}
+    unknown
+  {{- end -}}
+{{- end }}
+
+{{- define "kafka.isMigrationFinished" -}}
+    {{- $s := . | default "" | trim | lower -}}
+    {{- eq $s "migration finished succesfully" -}}
+{{- end }}
+
+{{- define "validateKafkaUpgrade" -}}
+    {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
+    {{- $kind := "Kafka" -}}
+    {{- $name := include "kafka.name" . -}}
+    {{- $ns   := .Release.Namespace -}}
+    {{- $desired := .Values.kafka.dockerImage | default "image" -}}
+
+    {{- $desiredVar := include "kafka.imageVariant" $desired -}}
+    {{- if eq $desiredVar "4" -}}
+      {{- $cr := lookup $apiVersion $kind $ns $name -}}
+      {{- if $cr -}}
+        {{- $current := (index $cr "spec" "dockerImage") | default "" -}}
+        {{- $currentVar := include "kafka.imageVariant" $current -}}
+        {{- if or (eq $currentVar "3") (eq $currentVar "base") -}}
+          {{- $zk := (index $cr "spec" "zookeeperConnect") | default "" | trim -}}
+          {{- if ne $zk "" -}}
+            {{- $mig := (index $cr "status" "kraftMigrationStatus" "status") | default "" -}}
+            {{- $ok := include "kafka.isMigrationFinished" $mig -}}
+            {{- if not $ok -}}
+              {{- fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress. You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end }}
+{{- end }}

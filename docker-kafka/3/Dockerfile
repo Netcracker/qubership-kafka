@@ -14,6 +14,7 @@ RUN set -x \
         bash \
         shadow \
         netcat-openbsd \
+        jq \
         tini \
         rsync \
         curl \
@@ -39,14 +40,13 @@ RUN set -x \
 
 ARG KAFKA_VERSION=3.9.1
 ARG DISTRO_NAME=kafka_2.12-${KAFKA_VERSION}
-ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
     && wget \
         -nv \
         -O ${DISTR_DIR}/${DISTRO_NAME}.tgz \
-        "${KAFKA_DISTRO_URL}" \
+        "https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz" \
     && tar -zxf ${DISTR_DIR}/${DISTRO_NAME}.tgz -C ${DISTR_DIR} \
     && mkdir -p ${KAFKA_HOME} \
     && mv ${DISTR_DIR}/${DISTRO_NAME}/* ${KAFKA_HOME} \
@@ -97,64 +97,43 @@ RUN set -x \
         -O ${KAFKA_HOME}/libs/jmx_prometheus_javaagent-${PROMETHEUS_JMX_EXPORTER_VERSION}.jar \
         "https://github.com/prometheus/jmx_exporter/releases/download/${PROMETHEUS_JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JMX_EXPORTER_VERSION}.jar"
 
-#
-#ARG JERSEY_VERSION="2.39.1"
-#ARG JAXB_VERSION="2.3.0"
-#ARG KAFKA_SECURITY_OAUTH_VERSION="0.11.0-3.9.1"
-## Download OAuth2 dependencies
-#RUN set -x \
-#    && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VERSION}.jar \
-#        "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VERSION}/jersey-media-json-jackson-${JERSEY_VERSION}.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/jersey-entity-filtering-${JERSEY_VERSION}.jar \
-#        "https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/${JERSEY_VERSION}/jersey-entity-filtering-${JERSEY_VERSION}.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
-#        "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.3/nimbus-jose-jwt-9.37.3.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/jcip-annotations-1.0-1.jar \
-#        "https://repo1.maven.org/maven2/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/json-smart-2.4.11.jar \
-#        "https://repo1.maven.org/maven2/net/minidev/json-smart/2.4.11/json-smart-2.4.11.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/accessors-smart-2.4.11.jar \
-#        "https://repo1.maven.org/maven2/net/minidev/accessors-smart/2.4.11/accessors-smart-2.4.11.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/asm-9.1.jar \
-#        "https://repo1.maven.org/maven2/org/ow2/asm/asm/9.1/asm-9.1.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-core-${JAXB_VERSION}.jar \
-#        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/${JAXB_VERSION}/jaxb-core-${JAXB_VERSION}.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-impl-${JAXB_VERSION}.jar \
-#        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/${JAXB_VERSION}/jaxb-impl-${JAXB_VERSION}.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
-#        "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
+
+ARG JERSEY_VERSION="2.39.1"
+ARG JAXB_VERSION="2.3.0"
+ARG KAFKA_SECURITY_OAUTH_VERSION="0.11.0-3.9.1"
+# Download OAuth2 dependencies
+RUN set -x \
+    && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VERSION}.jar \
+        "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VERSION}/jersey-media-json-jackson-${JERSEY_VERSION}.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/jersey-entity-filtering-${JERSEY_VERSION}.jar \
+        "https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/${JERSEY_VERSION}/jersey-entity-filtering-${JERSEY_VERSION}.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
+        "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.3/nimbus-jose-jwt-9.37.3.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/jcip-annotations-1.0-1.jar \
+        "https://repo1.maven.org/maven2/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/json-smart-2.4.11.jar \
+        "https://repo1.maven.org/maven2/net/minidev/json-smart/2.4.11/json-smart-2.4.11.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/accessors-smart-2.4.11.jar \
+        "https://repo1.maven.org/maven2/net/minidev/accessors-smart/2.4.11/accessors-smart-2.4.11.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/asm-9.1.jar \
+        "https://repo1.maven.org/maven2/org/ow2/asm/asm/9.1/asm-9.1.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-core-${JAXB_VERSION}.jar \
+        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/${JAXB_VERSION}/jaxb-core-${JAXB_VERSION}.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/jaxb-impl-${JAXB_VERSION}.jar \
+        "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/${JAXB_VERSION}/jaxb-impl-${JAXB_VERSION}.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
+        "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
 
 RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
 
-## Kafka Security OAuth dependencies
-#RUN set -x \
-#    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
-#        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-server/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
-#    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
-#        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
-
-ARG NETTY_VER=4.1.125.Final
-RUN set -eux; \
-  KAFKA_LIB=/opt/kafka/libs; \
-  cd "$KAFKA_LIB"; \
-  for a in \
-    netty-buffer \
-    netty-codec \
-    netty-common \
-    netty-handler \
-    netty-resolver \
-    netty-transport \
-    netty-transport-classes-epoll \
-    netty-transport-native-epoll \
-    netty-transport-native-unix-common \
-  ; do \
-    curl -fL -o "${a}-${NETTY_VER}.jar" \
-      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
-  done; \
-  # 2) удалить старые 4.1.119.Final
-  rm -f netty-*-4.1.119.Final.jar;
+# Kafka Security OAuth dependencies
+RUN set -x \
+    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
+        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-server/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
+        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
 # Copy config and script files
 COPY docker/config/ ${KAFKA_HOME}/config
@@ -164,7 +143,7 @@ COPY docker/get-cluster-id.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-partitions.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-consumer-group-checker.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-partition-logs.sh ${KAFKA_HOME}/bin
-COPY docker/docker-entrypoint.sh /
+COPY docker/3/docker-entrypoint.sh /
 
 # Adapt grants
 RUN mkdir -p "${KAFKA_HOME}" \
@@ -189,7 +168,7 @@ RUN set -x && apk upgrade --no-cache --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq
+        pcre2
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}
