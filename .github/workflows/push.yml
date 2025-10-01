@@ -69,10 +69,10 @@ jobs:
             file: monitoring/docker/Dockerfile
             context: monitoring
           - name: qubership-docker-kafka-3
-            file: docker-kafka/docker/3/Dockerfile
+            file: docker-kafka/3/Dockerfile
             context: docker-kafka
           - name: qubership-docker-kafka-4
-            file: docker-kafka/docker/4/Dockerfile
+            file: docker-kafka/4/Dockerfile
             context: docker-kafka
           - name: qubership-docker-akhq
             file: docker-akhq/docker/Dockerfile
