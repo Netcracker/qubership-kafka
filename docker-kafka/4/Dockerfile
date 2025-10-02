@@ -98,11 +98,14 @@ RUN set -x \
         "https://github.com/prometheus/jmx_exporter/releases/download/${PROMETHEUS_JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JMX_EXPORTER_VERSION}.jar"
 
 ARG JERSEY_VERSION="2.39.1"
+ARG JAXRS_VER="2.1.1"
 ARG JAXB_VERSION="2.3.0"
 ARG JAXB_RUNT_VER="2.3.8"
 ARG KAFKA_SECURITY_OAUTH_VERSION="0.11.0-3.9.1"
 # Download OAuth2 dependencies
 RUN set -x \
+    && wget -nv -O ${KAFKA_HOME}/libs/javax.ws.rs-api-${JAXRS_VER}.jar \
+           "https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/${JAXRS_VER}/javax.ws.rs-api-${JAXRS_VER}.jar" \
     && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VERSION}.jar \
         "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VERSION}/jersey-media-json-jackson-${JERSEY_VERSION}.jar" \
     && wget -nv -O ${KAFKA_HOME}/libs/jersey-entity-filtering-${JERSEY_VERSION}.jar \
@@ -127,10 +130,8 @@ RUN set -x \
           "https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/${JAXB_VERSION}/jaxb-api-${JAXB_VERSION}.jar" \
      && wget -nv -O ${KAFKA_HOME}/libs/jaxb-runtime-${JAXB_RUNT_VER}.jar \
           "https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/${JAXB_RUNT_VER}/jaxb-runtime-${JAXB_RUNT_VER}.jar" \
-            "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar" \
      && wget -nv -O ${KAFKA_HOME}/libs/jaxb-api-${JAXB_VERSION}.jar \
           "https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/${JAXB_VERSION}/jaxb-api-${JAXB_VERSION}.jar" \
-        # Runtime (Glassfish JAXB)
      && wget -nv -O ${KAFKA_HOME}/libs/jaxb-runtime-${JAXB_RUNT_VER}.jar \
           "https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/${JAXB_RUNT_VER}/jaxb-runtime-${JAXB_RUNT_VER}.jar"
 
