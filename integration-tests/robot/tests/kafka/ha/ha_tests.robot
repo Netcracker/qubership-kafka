@@ -34,7 +34,7 @@ Setup
 
 Check Consumed Message
     [Arguments]  ${consumer}  ${topic_name}  ${message}
-    ${received_message} =  Consume Message  ${consumer} ${topic_name}
+    ${received_message} =  Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${received_message}  ${message}
 
 Check Topic Management

@@ -43,7 +43,7 @@ Cleanup
 
 Check Consumed Message
     [Arguments]  ${consumer}  ${topic_name}  ${message}
-    ${receivedMessage} =  Consume Message  ${consumer} ${topic_name}
+    ${receivedMessage} =  Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${receivedMessage}  ${message}
 
 Register New Client
