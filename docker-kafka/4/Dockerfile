@@ -9,13 +9,15 @@ RUN set -eux; \
     openssl-dev zlib-dev zstd-dev lz4-dev \
     cyrus-sasl-dev ca-certificates
 
+ARG LIBRDKAFKA_VERSION=v2.9.2
+
 # build librdkafka
-RUN git clone https://github.com/edenhill/librdkafka.git /tmp/librdkafka \
-  && cd /tmp/librdkafka \
-  && git checkout "${LIBRDKAFKA_VERSION}" \
-  && ./configure --prefix=/usr/local \
-  && make -j"$(nproc)" \
-  && make install
+RUN git clone --depth 1 --branch ${LIBRDKAFKA_VERSION} \
+      https://github.com/confluentinc/librdkafka.git /tmp/librdkafka \
+ && cd /tmp/librdkafka \
+ && ./configure --prefix=/usr/local \
+ && make -j"$(nproc)" \
+ && make install
 
 # build kcat
 RUN git clone https://github.com/edenhill/kcat.git /tmp/kcat \
