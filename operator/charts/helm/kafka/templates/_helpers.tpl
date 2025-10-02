@@ -387,11 +387,6 @@ Find a Kafka image in various places.
   {{- end -}}
 {{- end }}
 
-{{- define "kafka.isMigrationFinished" -}}
-    {{- $s := . | default "" | trim | lower -}}
-    {{- eq $s "migration finished succesfully" -}}
-{{- end }}
-
 {{- define "validateKafkaUpgrade" -}}
     {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
     {{- $kind := "Kafka" -}}
@@ -408,10 +403,10 @@ Find a Kafka image in various places.
         {{- if or (eq $currentVar "3") (eq $currentVar "base") -}}
           {{- $zk := (index $cr "spec" "zookeeperConnect") | default "" | trim -}}
           {{- if ne $zk "" -}}
-            {{- $mig := (index $cr "status" "kraftMigrationStatus" "status") | default "" -}}
-            {{- $ok := include "kafka.isMigrationFinished" $mig -}}
+            {{- $mig := (index $cr "status" "kraftMigrationStatus" "status") | default "" | trim | lower -}}
+            {{- $ok := eq $mig "migration finished succesfully" -}}
             {{- if not $ok -}}
-              {{- fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress. You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
+              {{- fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress.\n You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
             {{- end -}}
           {{- end -}}
         {{- end -}}
