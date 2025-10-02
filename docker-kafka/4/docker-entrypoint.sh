@@ -412,7 +412,7 @@ function configure_sasl_mechanisms_on_listener() {
   \"user_${CLIENT_USERNAME}\"=\"${CLIENT_PASSWORD}\";" \
         >> ${KAFKA_HOME}/config/server.properties
     else
-      echo "listener.name.$listener_name.sasl.enabled.mechanisms=SCRAM-SHA-512" \
+      echo "listener.name.$listener_name.sasl.enabled.mechanisms=SCRAM-SHA-512,OAUTHBEARER" \
         >> ${KAFKA_HOME}/config/server.properties
     fi
   fi
@@ -425,20 +425,18 @@ function set_security_parameters() {
   local listener_name="$1"
   echo "Adding security for $1 listener"
   configure_sasl_mechanisms_on_listener "${listener_name}"
-#
-#  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS
-##  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerLoginCallbackHandler
-#  export ${env_name}=org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler
-#  echo "Using ${env_name}=${!env_name}"
-#
-#  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS
-##  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerValidatorCallbackHandler
-#  export ${env_name}=org.apache.kafka.common.security.oauthbearer.OAuthBearerValidatorCallbackHandler
-#  echo "Using ${env_name}=${!env_name}"
-#
-#  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_CONNECTIONS_MAX_REAUTH_MS
-#  export ${env_name}=${!env_name:=3600000}
-#  echo "Using ${env_name}=${!env_name}"
+
+  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS
+  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerLoginCallbackHandler
+  echo "Using ${env_name}=${!env_name}"
+
+  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS
+  export ${env_name}=org.qubership.kafka.security.oauthbearer.OAuthBearerValidatorCallbackHandler
+  echo "Using ${env_name}=${!env_name}"
+
+  env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_OAUTHBEARER_CONNECTIONS_MAX_REAUTH_MS
+  export ${env_name}=${!env_name:=3600000}
+  echo "Using ${env_name}=${!env_name}"
 
   if [[ "${ENABLE_SSL}" == "true" && "${ENABLE_2WAY_SSL}" == "true" && ${listener_name} != "nonencrypted" ]]; then
     env_name=CONF_KAFKA_LISTENER_NAME_${listener_name}_SSL_CLIENT_AUTH
@@ -516,11 +514,9 @@ EOL
   if [[ "$KRAFT_ENABLED" == "true" || "$MIGRATION_BROKER" == "true" ]]; then
     export CONF_KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL=PLAIN
     echo "Using CONF_KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL=$CONF_KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL"
-#    SASL_ENABLED_MECHANISMS="PLAIN,SCRAM-SHA-512,OAUTHBEARER"
-    SASL_ENABLED_MECHANISMS="PLAIN,SCRAM-SHA-512"
+    SASL_ENABLED_MECHANISMS="PLAIN,SCRAM-SHA-512,OAUTHBEARER"
   else
-#    SASL_ENABLED_MECHANISMS="SCRAM-SHA-512,OAUTHBEARER"
-    SASL_ENABLED_MECHANISMS="SCRAM-SHA-512"
+    SASL_ENABLED_MECHANISMS="SCRAM-SHA-512,OAUTHBEARER"
   fi
   if [[ "${ENABLE_SSL}" == "true" ]]; then
     SASL_ENABLED_MECHANISMS="PLAIN,${SASL_ENABLED_MECHANISMS}"
@@ -532,13 +528,15 @@ EOL
     set_security_parameters $(echo "${clients_listeners_names[i]}" | tr '[:upper:]' '[:lower:]')
   done
 
-#  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.qubership.kafka.security.authorization.ExtendedKafkaPrincipalBuilder
-#  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.apache.kafka.common.security.authenticator.DefaultKafkaPrincipalBuilder
-#  echo "Using CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=$CONF_KAFKA_PRINCIPAL_BUILDER_CLASS"
+  export CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=org.qubership.kafka.security.authorization.ExtendedKafkaPrincipalBuilder
+  echo "Using CONF_KAFKA_PRINCIPAL_BUILDER_CLASS=$CONF_KAFKA_PRINCIPAL_BUILDER_CLASS"
 
   if [[ "$ENABLE_AUTHORIZATION" == true ]]; then
-#   export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedStandardAuthorizer
-    export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.apache.kafka.metadata.authorizer.StandardAuthorizer
+    if [[ "$KRAFT_ENABLED" != "true" ]]; then
+      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedAclAuthorizer
+    else
+      export CONF_KAFKA_AUTHORIZER_CLASS_NAME=org.qubership.kafka.security.authorization.ExtendedStandardAuthorizer
+    fi
     echo "Using CONF_KAFKA_AUTHORIZER_CLASS_NAME=$CONF_KAFKA_AUTHORIZER_CLASS_NAME"
     export CONF_KAFKA_SUPER_USERS="User:$ADMIN_USERNAME;User:$CLIENT_USERNAME"
     echo "Using CONF_KAFKA_SUPER_USERS=$CONF_KAFKA_SUPER_USERS"
@@ -704,7 +702,7 @@ if [[ ${ENABLE_AUDIT_LOGS} == "true" ]]; then
     cat >> "${KAFKA_HOME}/config/log4j.properties" << EOL
 log4j.appender.AUDIT=org.apache.log4j.ConsoleAppender
 log4j.appender.AUDIT.layout=org.apache.log4j.PatternLayout
-log4j.appender.AUDIT.layout.ConversionPattern = [%d{ISO8601}][%p] [category=kafka.audit] CEF:1|Qubership|Kafka|4.1.0|AUTHENTICATION|%m|1|result=failed type=audit_log_type%n
+log4j.appender.AUDIT.layout.ConversionPattern = [%d{ISO8601}][%p] [category=kafka.audit] CEF:1|Qubership|Kafka|3.9.1|AUTHENTICATION|%m|1|result=failed type=audit_log_type%n
 
 log4j.logger.org.apache.kafka.common.network.Selector=INFO, AUDIT
 log4j.additivity.org.apache.kafka.common.network.Selector=true
