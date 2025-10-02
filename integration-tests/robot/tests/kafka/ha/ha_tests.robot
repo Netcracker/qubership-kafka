@@ -148,7 +148,7 @@ Test Producing And Consuming Data Without Zookeeper
 
     Check Topic Management
 
-    [Teardown]  Run Keywords  Cleanup  AND  Scale Up Full Service  %{ZOOKEEPER_HOST}  %{ZOOKEEPER_OS_PROJECT}
+    [Teardown]  Scale Up Full Service  %{ZOOKEEPER_HOST}  %{ZOOKEEPER_OS_PROJECT}
 
 Test Producing And Consuming Data Without Kafka Master
     [Tags]  kafka_ha  kafka_ha_without_kafka_master  kafka
