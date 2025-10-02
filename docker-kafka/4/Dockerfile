@@ -104,8 +104,8 @@ ARG JAXB_RUNT_VER="2.3.8"
 ARG KAFKA_SECURITY_OAUTH_VERSION="0.11.0-3.9.1"
 # Download OAuth2 dependencies
 RUN set -x \
-    && wget -nv -O ${KAFKA_HOME}/libs/javax.ws.rs-api-${JAXRS_VER}.jar \
-           "https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/${JAXRS_VER}/javax.ws.rs-api-${JAXRS_VER}.jar" \
+#    && wget -nv -O ${KAFKA_HOME}/libs/javax.ws.rs-api-${JAXRS_VER}.jar \
+#           "https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/${JAXRS_VER}/javax.ws.rs-api-${JAXRS_VER}.jar" \
     && wget -nv -O ${KAFKA_HOME}/libs/jersey-media-json-jackson-${JERSEY_VERSION}.jar \
         "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/${JERSEY_VERSION}/jersey-media-json-jackson-${JERSEY_VERSION}.jar" \
     && wget -nv -O ${KAFKA_HOME}/libs/jersey-entity-filtering-${JERSEY_VERSION}.jar \
@@ -126,8 +126,8 @@ RUN set -x \
         "https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/${JAXB_VERSION}/jaxb-impl-${JAXB_VERSION}.jar" \
     && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
         "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar" \
-     && wget -nv -O ${KAFKA_HOME}/libs/jaxb-api-${JAXB_VERSION}.jar \
-          "https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/${JAXB_VERSION}/jaxb-api-${JAXB_VERSION}.jar" \
+#     && wget -nv -O ${KAFKA_HOME}/libs/jaxb-api-${JAXB_VERSION}.jar \
+#          "https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/${JAXB_VERSION}/jaxb-api-${JAXB_VERSION}.jar" \
      && wget -nv -O ${KAFKA_HOME}/libs/jaxb-runtime-${JAXB_RUNT_VER}.jar \
           "https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/${JAXB_RUNT_VER}/jaxb-runtime-${JAXB_RUNT_VER}.jar" \
      && wget -nv -O ${KAFKA_HOME}/libs/jaxb-api-${JAXB_VERSION}.jar \
@@ -147,8 +147,8 @@ RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
 #    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
 #        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
-COPY 4/kafka-security-oauth-client-0.12.0-4.1.0.1.jar ${KAFKA_HOME}/libs/kafka-security-oauth-client-0.12.0-4.1.0.1.jar
-COPY 4/kafka-security-oauth-server-0.12.0-4.1.0.1.jar ${KAFKA_HOME}/libs/kafka-security-oauth-server-0.12.0-4.1.0.1.jar
+COPY 4/kafka-security-oauth-client-0.12.0-4.1.0.2.jar ${KAFKA_HOME}/libs/kafka-security-oauth-client-0.12.0-4.1.0.2.jar
+COPY 4/kafka-security-oauth-server-0.12.0-4.1.0.2.jar ${KAFKA_HOME}/libs/kafka-security-oauth-server-0.12.0-4.1.0.2.jar
 
 ARG NETTY_VER=4.1.125.Final
 RUN set -eux; \
