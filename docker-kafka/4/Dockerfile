@@ -1,31 +1,3 @@
-FROM alpine:3.22 AS kcat-builder
-
-ARG LIBRDKAFKA_VERSION=v2.9.2
-ARG KCAT_VERSION=v1.7.1
-
-RUN set -eux; \
-  apk add --no-cache \
-    git build-base cmake \
-    openssl-dev zlib-dev zstd-dev lz4-dev \
-    cyrus-sasl-dev ca-certificates
-
-ARG LIBRDKAFKA_VERSION=v2.9.2
-
-# build librdkafka
-RUN git clone --depth 1 --branch ${LIBRDKAFKA_VERSION} \
-      https://github.com/confluentinc/librdkafka.git /tmp/librdkafka \
- && cd /tmp/librdkafka \
- && ./configure --prefix=/usr/local \
- && make -j"$(nproc)" \
- && make install
-
-# build kcat
-RUN git clone https://github.com/edenhill/kcat.git /tmp/kcat \
-  && cd /tmp/kcat \
-  && git checkout "${KCAT_VERSION}" \
-  && make -j"$(nproc)" \
-  && make install PREFIX=/usr/local
-
 FROM eclipse-temurin:21-jdk-alpine-3.22
 
 ENV KAFKA_HOME=/opt/kafka \
@@ -50,6 +22,7 @@ RUN set -x \
         ca-certificates \
         wget \
         jattach \
+        kcat \
         iputils \
         util-linux \
         apk-tools \
@@ -58,11 +31,6 @@ RUN set -x \
         openssl \
     && ln -sf /usr/bin/kcat /usr/bin/kafkacat \
     && rm -rf /var/cache/apk/*
-
-COPY --from=kcat-builder /usr/local/bin/kcat /usr/local/bin/kcat
-COPY --from=kcat-builder /usr/local/lib/ /usr/local/lib/
-
-RUN ln -sf /usr/local/bin/kcat /usr/local/bin/kafkacat
 
 # Add unpriviliged user
 RUN set -x \
