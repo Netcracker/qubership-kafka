@@ -147,8 +147,8 @@ RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
 #    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
 #        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
-COPY 4/kafka-security-oauth-client-0.12.0-4.1.0.jar ${KAFKA_HOME}/libs/kafka-security-oauth-client-0.12.0-4.1.0.jar
-COPY 4/kafka-security-oauth-server-0.12.0-4.1.0.jar ${KAFKA_HOME}/libs/kafka-security-oauth-server-0.12.0-4.1.0.jar
+COPY 4/kafka-security-oauth-client-0.12.0-4.1.0.1.jar ${KAFKA_HOME}/libs/kafka-security-oauth-client-0.12.0-4.1.0.1.jar
+COPY 4/kafka-security-oauth-server-0.12.0-4.1.0.1.jar ${KAFKA_HOME}/libs/kafka-security-oauth-server-0.12.0-4.1.0.1.jar
 
 # Copy config and script files
 COPY docker/config/ ${KAFKA_HOME}/config
