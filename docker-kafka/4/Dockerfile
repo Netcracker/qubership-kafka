@@ -137,6 +137,22 @@ RUN set -eux \
   && wget -nv -O ${KAFKA_HOME}/libs/jakarta.activation-${ACT_VER}.jar \
        "https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation/${ACT_VER}/jakarta.activation-${ACT_VER}.jar"
 
+ARG NIMBUS_VER=9.37.3
+ARG JSON_SMART_VER=2.4.11
+ARG ACCESSORS_SMART_VER=2.4.11
+ARG JCIP_VER=1.0
+
+RUN set -eux \
+ && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-${NIMBUS_VER}.jar \
+      "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/${NIMBUS_VER}/nimbus-jose-jwt-${NIMBUS_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/json-smart-${JSON_SMART_VER}.jar \
+      "https://repo1.maven.org/maven2/net/minidev/json-smart/${JSON_SMART_VER}/json-smart-${JSON_SMART_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/accessors-smart-${ACCESSORS_SMART_VER}.jar \
+      "https://repo1.maven.org/maven2/net/minidev/accessors-smart/${ACCESSORS_SMART_VER}/accessors-smart-${ACCESSORS_SMART_VER}.jar" \
+ && wget -nv -O ${KAFKA_HOME}/libs/jcip-annotations-${JCIP_VER}-1.jar \
+      "https://repo1.maven.org/maven2/net/jcip/jcip-annotations/${JCIP_VER}/jcip-annotations-${JCIP_VER}.jar"
+
+
 
 RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
