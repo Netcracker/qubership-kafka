@@ -48,7 +48,7 @@ crd_api = client.resources.get(
     api_version="apiextensions.k8s.io/v1", kind="CustomResourceDefinition"
 )
 
-api_group = os.getenv("API_GROUP", "qubership.org")
+api_group = os.getenv("API_GROUP", "netcracker.com")
 
 """
 ########################################################################################################################
@@ -218,7 +218,7 @@ def run():
             path = root + "/" + file
             try:
                 if file in crds_to_create:
-                    replace_api_version_in_crd(path, "qubership.org", api_group)
+                    replace_api_version_in_crd(path, "netcracker.com", api_group)
                     if _process_crd(path):
                         print(f"Waiting {crd_upgrade_waiting_time} second after CRD upgrade")
                         sleep(crd_upgrade_waiting_time)

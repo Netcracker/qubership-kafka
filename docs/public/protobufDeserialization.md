@@ -18,7 +18,7 @@ To create AKHQ deserialization config using `AKHQ Deserialization Configurator` 
 `AkhqConfig` Kubernetes Custom Resource. This is a common example:
 
 ```yaml
-apiVersion: qubership.org/v1
+apiVersion: netcracker.com/v1
 kind: AkhqConfig
 metadata:
   name: example-akhq-config
