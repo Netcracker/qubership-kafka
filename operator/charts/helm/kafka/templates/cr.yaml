@@ -14,6 +14,7 @@
 {{ fail "\nError: You cannot upgrade Kraft to Kafka with ZooKeeper.\nFind more information in corresponding release documentation." }}
 {{- end }}
 {{- end }}
+{{- include "validateKafkaUpgrade" . -}}
 apiVersion: {{ .Values.operator.apiGroup }}/v1
 kind: Kafka
 metadata:
