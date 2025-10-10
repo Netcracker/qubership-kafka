@@ -3,7 +3,7 @@ ${KAFKA_SERVICE_NAME}               %{KAFKA_HOST}
 ${KAFKA_OS_PROJECT}                 %{KAFKA_OS_PROJECT}
 ${KAFKA_IS_DEGRADED_ALERT_NAME}     KafkaIsDegradedAlert
 ${KAFKA_IS_DOWN_ALERT_NAME}         KafkaIsDownAlert
-${ALERT_RETRY_TIME}                 5min
+${ALERT_RETRY_TIME}                 10min
 ${ALERT_RETRY_INTERVAL}             10s
 
 *** Settings ***
