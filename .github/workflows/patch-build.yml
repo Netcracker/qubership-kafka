@@ -1,0 +1,98 @@
+name: Build patched Kafka Images
+permissions:
+  contents: read
+  packages: write
+  actions: read
+on:
+  repository_dispatch:
+    types: [kafka-patched-build]
+
+concurrency:
+  group: ${{ github.ref_type == 'branch' && format('build-branch-{0}', github.ref_name) || format('build-{0}', github.sha) }}
+  cancel-in-progress: true
+
+jobs:
+  prepare-inputs:
+    runs-on: ubuntu-latest
+    outputs:
+      build_args: ${{ steps.set-vars.outputs.build_args }}
+    steps:
+      - name: Set Variables
+        if: github.event_name == 'repository_dispatch' && github.event.action == 'kafka-patched-build'
+        id: set-vars
+        run: |
+          kafka_distro_tgz="${KAFKA_DISTRO_URL##*/}"
+          echo 'build_args<<EOF' >> $GITHUB_OUTPUT
+          echo "KAFKA_DISTRO_URL=${KAFKA_DISTRO_URL}" >> $GITHUB_OUTPUT
+          echo "DISTRO_NAME=${kafka_distro_tgz%.*}" >> $GITHUB_OUTPUT
+          echo "KAFKA_VERSION=${KAFKA_VERSION}" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+        env:
+          KAFKA_DISTRO_URL: ${{ github.event.client_payload.kafka-distro-url }}
+          KAFKA_VERSION: ${{ github.event.client_payload.kafka-version }}
+      - name: Debug
+        run: |
+          echo "build_args: ${{ steps.set-vars.outputs.build_args }}"
+
+  prepare:
+    name: "Prepare Images and Metadata"
+    runs-on: ubuntu-latest
+    outputs:
+      components: ${{ steps.load.outputs.components }}
+      platforms: ${{ steps.load.outputs.platforms }}
+      tags: "${{ steps.meta.outputs.result }}"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - id: load
+        run: |
+          echo "components=$(jq -c '.components' .github/docker-build-config.json)" >> "$GITHUB_OUTPUT"
+          echo "platforms=$(jq -c '.platforms' .github/docker-build-config.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Create tags for images
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@0f2be042d7c833c6bf60df85732609b7991fb821 #2.0.0
+        id: meta
+        with:
+          default-template: "{{ref-name}}"
+          extra-tags: ${{ github.event.inputs.tags }}
+          replace-symbol: ${{ github.event.inputs.replace-symbol }}
+          dry-run: ${{ inputs.dry-run }}
+
+  build:
+    name: Build Docker Images
+    needs: [prepare-inputs, prepare]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ${{ fromJson(needs.prepare.outputs.components) }}
+    steps:
+      - name: Docker
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@0f2be042d7c833c6bf60df85732609b7991fb821 #2.0.0
+        with:
+          ref: ${{ github.ref }}
+          dry-run: ${{ inputs.dry-run }}
+          download-artifact: false
+          component: ${{ toJson(matrix.component) }}
+          platforms: ${{ needs.prepare.outputs.platforms }}
+          tags: ${{ needs.prepare.outputs.tags }}
+          build-args: ${{ needs.prepare-inputs.outputs.build_args }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Kafka-Pipeline:
+    needs: build
+    if: ${{ needs.Wait-for-images.outputs.conclusion }} == 'success'
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@78f8a355bf7b5b5b88a3339fa0a35c22645bef68
+    with:
+      service_branch: '${{ github.head_ref || github.ref_name }}'
+      versions_file: '.github/versions.yaml'
+      pipeline_branch: '78f8a355bf7b5b5b88a3339fa0a35c22645bef68' #this value must match the value after '@' in 'uses'
+    secrets:
+      AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
+      AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
