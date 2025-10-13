@@ -93,11 +93,11 @@ jobs:
 
   Kafka-Pipeline:
     needs: build
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@78f8a355bf7b5b5b88a3339fa0a35c22645bef68
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@ad32edfdc745328e61b9b0eca992a68b91e96e20
     with:
       service_branch: '${{ github.event.client_payload.target-ref || github.head_ref || github.ref }}'
       versions_file: '.github/versions.yaml'
-      pipeline_branch: '78f8a355bf7b5b5b88a3339fa0a35c22645bef68' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'ad32edfdc745328e61b9b0eca992a68b91e96e20' #this value must match the value after '@' in 'uses'
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
