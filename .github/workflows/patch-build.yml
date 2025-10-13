@@ -16,11 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_args: ${{ steps.set-vars.outputs.build_args }}
+      replace_symbol: ${{ steps.set-vars.outputs.replace_symbol }}
     steps:
       - name: Set Variables
         if: github.event_name == 'repository_dispatch' && github.event.action == 'kafka-patched-build'
         id: set-vars
         run: |
+          echo "replace_symbol=${REPLACE_SYMBOL}" >> $GITHUB_OUTPUT 
           kafka_distro_tgz="${KAFKA_DISTRO_URL##*/}"
           echo 'build_args<<EOF' >> $GITHUB_OUTPUT
           echo "KAFKA_DISTRO_URL=${KAFKA_DISTRO_URL}" >> $GITHUB_OUTPUT
@@ -30,12 +32,14 @@ jobs:
         env:
           KAFKA_DISTRO_URL: ${{ github.event.client_payload.kafka-distro-url }}
           KAFKA_VERSION: ${{ github.event.client_payload.kafka-version }}
+          REPLACE_SYMBOL: ${{ github.event.client_payload.replace-symbol }}
       - name: Debug
         run: |
           echo "build_args: ${{ steps.set-vars.outputs.build_args }}"
 
   prepare:
     name: "Prepare Images and Metadata"
+    needs: [prepare-inputs]
     runs-on: ubuntu-latest
     env:
       TARGET_REF: ${{ github.event.client_payload.target-ref || github.ref }}
@@ -59,9 +63,7 @@ jobs:
         id: meta
         with:
           default-template: "{{ref-name}}"
-          extra-tags: ${{ github.event.inputs.tags }}
-          replace-symbol: ${{ github.event.inputs.replace-symbol }}
-          dry-run: ${{ inputs.dry-run }}
+          replace-symbol: ${{ needs.prepare-inputs.outputs.replace_symbol }}
           ref: ${{ env.TARGET_REF }}
 
   build:
@@ -82,7 +84,6 @@ jobs:
         uses: netcracker/qubership-workflow-hub/actions/docker-action@0f2be042d7c833c6bf60df85732609b7991fb821 #2.0.0
         with:
           ref: ${{ env.TARGET_REF }}
-          dry-run: ${{ inputs.dry-run }}
           download-artifact: false
           component: ${{ toJson(matrix.component) }}
           platforms: ${{ needs.prepare.outputs.platforms }}
