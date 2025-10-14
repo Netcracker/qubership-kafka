@@ -35,7 +35,7 @@ global:
   externalKafka:
     enabled: false
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:2.2.8
   replicas: 1
   apiGroup: "qubership.org"
   resources:
@@ -135,7 +135,7 @@ kafka:
   disruptionBudget:
     enabled: false
     maxUnavailable: 0
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:2.2.8
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
