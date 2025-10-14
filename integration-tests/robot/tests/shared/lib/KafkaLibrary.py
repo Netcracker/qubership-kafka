@@ -21,6 +21,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
 from kafka.sasl.oauth import AbstractTokenProvider
+from kafka.errors import UnknownTopicOrPartitionError
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -380,6 +381,9 @@ class KafkaLibrary(object):
         try:
             admin.delete_topics(topics)
             logger.debug(f'Topic "{topics}" is deleted.')
+        except UnknownTopicOrPartitionError:
+            BuiltIn().log_to_console(f'Topic "{topics}" has already been deleted or does not exist.')
+            logger.debug(f'Topic "{topics}" has already been deleted or does not exist.')
         except Exception as e:
             self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
 
