@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/processed-by-operator: {{ template "kafka.name" . }}-service-operator
   annotations:
-    qubership.org/reconcile-trigger: "{{ randAlphaNum 10 }}"
+    netcracker.com/reconcile-trigger: "{{ randAlphaNum 10 }}"
 spec:
   global:
     waitForPodsReady: {{ .Values.global.waitForPodsReady }}

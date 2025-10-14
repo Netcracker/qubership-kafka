@@ -13,13 +13,13 @@ To create Kafka user declaratively using `Kafka Users Configurator` client servi
 `KafkaUser` Kubernetes Custom Resource. This is a common example:
 
 ```yaml
-apiVersion: qubership.org/v1
+apiVersion: netcracker.com/v1
 kind: KafkaUser
 metadata:
   name: kafka-user
   namespace: kafka-service
   annotations:
-    kafka.qubership.org/bootstrap.servers: kafka.kafka-service:9092
+    kafka.netcracker.com/bootstrap.servers: kafka.kafka-service:9092
 spec:
   authentication:
     type: scram-sha-512
@@ -81,7 +81,7 @@ data:
 
 Kafka Service Operator processes all caught `KafkaUser` Custom Resources that are placed in namespaces
 specified in `operator.kafkaUserConfigurator.watchNamespace` parameter and have the same Kafka address 
-specified in `kafka.qubership.org/bootstrap.servers` annotation as that Kafka Service Operator uses.
+specified in `kafka.netcracker.com/bootstrap.servers` annotation as that Kafka Service Operator uses.
 
 ## KafkaUser custom resource validation
 

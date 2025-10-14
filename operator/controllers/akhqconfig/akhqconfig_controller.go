@@ -72,9 +72,9 @@ type AkhqConfigReconciler struct {
 	ApiGroup  string
 }
 
-//+kubebuilder:rbac:groups=qubership.org,resources=akhqconfigs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=qubership.org,resources=akhqconfigs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=qubership.org,resources=akhqconfigs/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netcracker.com,resources=akhqconfigs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netcracker.com,resources=akhqconfigs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netcracker.com,resources=akhqconfigs/finalizers,verbs=update
 
 func (r *AkhqConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", req.Namespace, "Request.Name", req.Name)

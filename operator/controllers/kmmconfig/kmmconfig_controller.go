@@ -56,9 +56,9 @@ type KmmConfigReconciler struct {
 	ApiGroup string
 }
 
-//+kubebuilder:rbac:groups=qubership.org,resources=kmmconfigs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=qubership.org,resources=kmmconfigs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=qubership.org,resources=kmmconfigs/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netcracker.com,resources=kmmconfigs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netcracker.com,resources=kmmconfigs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netcracker.com,resources=kmmconfigs/finalizers,verbs=update
 
 func (r *KmmConfigReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
