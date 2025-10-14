@@ -50,8 +50,8 @@ if __name__ == '__main__':
             print(f"DEBUG bool(backup_daemon): {bool(backup_daemon)}")
             if backup_daemon:
                 print(f'Adding Kafka Backup Daemon to check')
-                deployments += k8s_lib.get_deployment_entities_count_for_service(namespace, backup_daemon)
-                ready_deployments += k8s_lib.get_active_deployment_entities_count_for_service(namespace, backup_daemon)
+                deployments += k8s_lib.get_deployment_entities_count_for_service(namespace, backup_daemon, 'component')
+                ready_deployments += k8s_lib.get_active_deployment_entities_count_for_service(namespace, backup_daemon, 'component')
             print(f'[Check status] deployments: {deployments}, ready deployments: {ready_deployments}')
         except Exception as e:
             print(e)
