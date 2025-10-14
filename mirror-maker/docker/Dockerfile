@@ -47,6 +47,7 @@ RUN set -x \
 
 ARG KAFKA_VERSION=3.9.1
 ARG DISTRO_NAME=kafka_2.12-${KAFKA_VERSION}
+ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
@@ -54,7 +55,7 @@ RUN set -x \
         --no-check-certificate \
         -nv \
         -O ${DISTR_DIR}/${DISTRO_NAME}.tgz \
-        "https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz" \
+        "${KAFKA_DISTRO_URL}" \
     && tar -zxf ${DISTR_DIR}/${DISTRO_NAME}.tgz -C ${DISTR_DIR} \
     && mkdir -p ${KAFKA_HOME} \
     && mv ${DISTR_DIR}/${DISTRO_NAME}/* ${KAFKA_HOME} \
