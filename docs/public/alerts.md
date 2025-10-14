@@ -255,7 +255,7 @@ For more information refer to [Lag Limit Reached](./troubleshooting.md#lag-limit
 
 ### Recommended Actions to Resolve Issue
 
-1. Сonsider the possibility of increasing the number of topic partitions.
+1. Consider the possibility of increasing the number of topic partitions.
 2. Increase the number of consumers.
 
 ## KafkaMirrorMakerIsDegradedAlarm
