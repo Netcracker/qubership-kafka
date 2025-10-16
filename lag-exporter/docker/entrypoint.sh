@@ -5,14 +5,13 @@ set +x
 : "${KAFKA_EXPORTER_HOME:=/bin}"
 export LOG_DIR="${KAFKA_EXPORTER_HOME}"
 
-mapfile -t parsed_flags < <(python3 /opt/kafka-exporter-conf-parser.py \
+mapfile -t flags < <(python3 /opt/config_parser.py \
   --conf "${LEGACY_CONF_PATH}" \
   --block kafka_exporter \
   --mode lines \
   --quote none)
 
-args=()
-args+=("${parsed_flags[@]}")
+args=("${flags[@]}")
 
 if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
   args+=("--tls.enabled")
