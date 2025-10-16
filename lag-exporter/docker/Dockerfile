@@ -14,6 +14,4 @@ RUN chmod +x /entrypoint.sh
 RUN adduser -D -u 1001 appuser
 USER 1001
 
-ENV LEGACY_CONF_PATH=/etc/kafka-exporter/legacy.conf
-
 ENTRYPOINT ["/entrypoint.sh"]
