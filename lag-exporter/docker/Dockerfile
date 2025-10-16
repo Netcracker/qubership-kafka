@@ -1,53 +1,31 @@
-FROM seglo/kafka-lag-exporter:0.8.2 as builder
+FROM danielqsj/kafka-exporter:latest
 
-FROM eclipse-temurin:21-jdk-alpine-3.22
-
-COPY --from=builder /opt/docker/bin /opt/docker/bin
-COPY --from=builder /opt/docker/lib /opt/docker/lib
-
-ENV LAG_EXPORTER_HOME=/opt/docker
-
-COPY docker/logback.xml /opt/docker/conf/logback.xml
-
-USER 0
-
-RUN set -x \
-    && apk add --update --no-cache \
-        bash openssl \
-    && rm -rf /var/cache/apk/*
-
-# Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
-
-# Download new jars
-
-RUN wget -O /tmp/okhttp-4.9.2.jar https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.9.2/okhttp-4.9.2.jar && \
-    wget -O /tmp/okio-2.8.0.jar https://repo1.maven.org/maven2/com/squareup/okio/okio/2.8.0/okio-2.8.0.jar && \
-    wget -O /tmp/logging-interceptor-4.9.2.jar https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor/4.9.2/logging-interceptor-4.9.2.jar && \
-    wget -O /tmp/zookeeper-3.9.1.jar https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper/3.9.1/zookeeper-3.9.1.jar && \
-    wget -O /tmp/zookeeper-jute-3.9.1.jar https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper-jute/3.9.1/zookeeper-jute-3.9.1.jar && \
-    wget -O /tmp/snakeyaml-2.0.jar https://repo1.maven.org/maven2/org/yaml/snakeyaml/2.0/snakeyaml-2.0.jar
+## PROBABLY WE SHOULD IMPLEMENT HEALTH CHECKS VIA CONTAINER, NOT THE DOCKERFILE
+#HEALTHCHECK --interval=30s --timeout=3s --start-period=20s \
+#  CMD wget -qO- http://127.0.0.1:9308/metrics >/dev/null || exit 1
 
 
-# Replace old with new versions
-RUN rm -f /opt/docker/lib/com.squareup.okhttp3.okhttp-3.*.jar \
-    && rm -f /opt/docker/lib/com.squareup.okhttp3.logging-interceptor-3.*.jar \
-    && rm -f /opt/docker/lib/org.apache.zookeeper.zookeeper-3.*.jar \
-    && rm -f /opt/docker/lib/org.apache.zookeeper.zookeeper-jute-3.*.jar \
-    && rm -f /opt/docker/lib/org.yaml.snakeyaml-*.jar \
-    && mv /tmp/okhttp-4.9.2.jar /opt/docker/lib/ \
-    && mv /tmp/okio-2.8.0.jar /opt/docker/lib/ \
-    && mv /tmp/logging-interceptor-4.9.2.jar /opt/docker/lib/ \
-    && mv /tmp/zookeeper-3.9.1.jar /opt/docker/lib/ \
-    && mv /tmp/zookeeper-jute-3.9.1.jar /opt/docker/lib/ \
-    && mv /tmp/snakeyaml-2.0.jar /opt/docker/lib/
+#####
 
-RUN chmod -R 777 ${LAG_EXPORTER_HOME}
+ENV TINI_VERSION=v0.19.0
+ENV TINI_SHA256_AMD64=93dcc18adc78c65a028a84799ecf8ad40c936fdfc5f2a57b1acda5a8117fa82c
+ENV TINI_SHA256_ARM64=07952557df20bfd2a95f9bef198b445e006171969499a1d361bd9e6f8e5e0e81
 
-COPY docker/entrypoint.sh /opt/docker/bin/entrypoint.sh
+RUN set -ex; \
+    if [[ "${TARGETOS}/${TARGETARCH}" = "linux/arm64" ]]; then \
+        curl -s -L https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-arm64 -o /usr/bin/tini; \
+        echo "${TINI_SHA256_ARM64} */usr/bin/tini" | sha256sum -c; \
+        chmod +x /usr/bin/tini; \
+    else \
+        curl -s -L https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini -o /usr/bin/tini; \
+        echo "${TINI_SHA256_AMD64} */usr/bin/tini" | sha256sum -c; \
+        chmod +x /usr/bin/tini; \
+    fi \
 
-RUN chmod +x /opt/docker/bin/entrypoint.sh && chmod +x /opt/docker/bin/kafka-lag-exporter
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 USER 1001
 
-ENTRYPOINT ["/opt/docker/bin/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
