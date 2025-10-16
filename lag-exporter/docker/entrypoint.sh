@@ -6,10 +6,7 @@ set +x
 export LOG_DIR="${KAFKA_EXPORTER_HOME}"
 
 mapfile -t flags < <(python3 /opt/config_parser.py \
-  --conf "${LEGACY_CONF_PATH}" \
-  --block kafka_exporter \
-  --mode lines \
-  --quote none)
+  --conf "${LEGACY_CONF_PATH}")
 
 args=("${flags[@]}")
 
