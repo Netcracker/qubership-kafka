@@ -30,4 +30,4 @@ fi
 
 set -x
 
-exec tini -w -e 143 -- "$KAFKA_EXPORTER_HOME/kafka_exporter" "${args[@]}"
+exec /sbin/tini -w -e 143 -- "$KAFKA_EXPORTER_HOME/kafka_exporter" "${args[@]}"
