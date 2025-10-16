@@ -52,32 +52,33 @@ def needs_quotes(val: str) -> bool:
     return bool(_rx_needs_q.search(val))
 
 
-def format_flag(flag_name: str, value) -> list[str]:
+def format_flag(flag_name: str, value):
+    name = flag_name if flag_name.startswith("--") else f"--{flag_name}"
     out = []
     if value is None:
-        out.append(flag_name)
+        out.append(name)
     elif isinstance(value, list):
         for item in value:
-            out.append(format_flag(flag_name, item)[0])
+            out.extend(format_flag(name, item))
     else:
         v = str(value)
-        out.append(f'{flag_name}="{v}"' if needs_quotes(v) else f"{flag_name}={v}")
+        out.append(f'{name}="{v}"' if needs_quotes(v) else f"{name}={v}")
     return out
 
 
-def parse_block(block_text: str) -> list[tuple[str, object]]:
+def parse_block(block_text: str):
     lines = block_text.splitlines()
     i, res = 0, []
     while i < len(lines):
         raw = lines[i];
         i += 1
         line = strip_inline_comment(raw).strip()
-        if not line: continue
+        if not line:
+            continue
 
         m_bare = re.match(r'^([A-Za-z0-9._-]+|--[A-Za-z0-9._-]+)$', line)
         if m_bare:
-            key = m_bare.group(1).strip()
-            res.append((key, None))
+            res.append((m_bare.group(1).strip(), None))
             continue
 
         m = re.match(r'^([A-Za-z0-9._-]+|--[A-Za-z0-9._-]+)\s*=\s*(.+)$', line)
@@ -120,7 +121,7 @@ def parse_block(block_text: str) -> list[tuple[str, object]]:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--conf", default="/config/application.conf")
+    ap.add_argument("--conf", required=True)
     ap.add_argument("--block", default="kafka_exporter")
     args = ap.parse_args()
 
@@ -130,12 +131,9 @@ def main():
         print(f'block "{args.block}" not found', file=sys.stderr)
         sys.exit(2)
 
-    assignments = parse_block(blk)
-    flags = []
-    for key, val in assignments:
-        flags.extend(format_flag(key, val))
-
-    print(" ".join(flags))
+    for key, val in parse_block(blk):
+        for f in format_flag(key, val):
+            print(f)
 
 
 if __name__ == "__main__":

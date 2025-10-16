@@ -12,7 +12,7 @@ data:
       --web.listen-address = {{ default ":9308" (printf ":%s" (toString .Values.monitoring.lagExporter.service.port)) }}
       --web.telemetry-path = {{ .Values.monitoring.lagExporter.path | default "/metrics" }}
       --refresh.metadata = {{ .Values.monitoring.lagExporter.refreshMetadata }}
-      --concurrent.enable = {{ toString .Values.monitoring.lagExporter.concurrentEnable }}
+      --concurrent.enable = {{ .Values.monitoring.lagExporter.concurrentEnable }}
       --kafka.version = {{ .Values.monitoring.lagExporter.kafkaVersion | default "" | quote }}
       --kafka.server = {{ include "lag-exporter.bootstrapServers" . }}
       --kafka.labels = {{ .Values.monitoring.lagExporter.customLabels | default "" | quote }}

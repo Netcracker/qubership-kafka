@@ -8,6 +8,7 @@ export LOG_DIR="${KAFKA_EXPORTER_HOME}"
 mapfile -t flags < <(python3 /opt/config_parser.py \
   --conf "/opt/docker/src/application.conf")
 
+args=()
 args=("${flags[@]}")
 
 if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
