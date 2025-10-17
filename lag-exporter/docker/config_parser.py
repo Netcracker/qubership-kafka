@@ -59,10 +59,9 @@ def format_flag(flag_name: str, value):
         out.append(name)
     elif isinstance(value, list):
         for item in value:
-            out.extend(format_flag(name, item))
+            out.append(f"{name}={item}")
     else:
-        v = str(value)
-        out.append(f'{name}="{v}"' if needs_quotes(v) else f"{name}={v}")
+        out.append(f"{name}={value}")
     return out
 
 
