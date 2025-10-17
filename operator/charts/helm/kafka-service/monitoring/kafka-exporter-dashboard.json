@@ -10,241 +10,326 @@
     }
   ],
   "__requires": [
-    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "8.0.0" },
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "9.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" },
     { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" },
-    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" }
   ],
-  "title": "Kafka Exporter (Lag compatible)",
-  "uid": "kexp-lag-compat",
-  "timezone": "",
-  "schemaVersion": 38,
-  "version": 1,
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "datasource", "uid": "grafana" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
-  "style": "dark",
-  "refresh": "30s",
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "iteration": 1,
+  "links": [],
   "panels": [
     {
       "type": "row",
-      "title": "All Consumer Group Lag",
-      "collapsed": false,
+      "title": "Throughput & Lag",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
       "id": 1,
-      "panels": []
+      "collapsed": false
     },
     {
-      "type": "timeseries",
-      "title": "Consumer Group Max Lag Seconds",
       "id": 2,
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "type": "timeseries",
+      "title": "Message in per second",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
       "targets": [
         {
-          "refId": "A",
-          "expr": "topk(50, max by (consumergroup) ( sum by (consumergroup, topic, partition) (kafka_consumergroup_lag{namespace=\"$namespace\",consumergroup=~\"$consumer_group\"}) / clamp_min(rate(kafka_topic_partition_current_offset{namespace=\"$namespace\"}[5m]), 1) ))",
-          "legendFormat": "{{consumergroup}}"
+          "expr": "sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[1m])) by (topic)",
+          "legendFormat": "{{topic}}",
+          "refId": "A"
         }
       ],
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "ops",
           "min": 0,
-          "custom": { "drawStyle": "line", "lineWidth": 1, "showPoints": "never", "spanNulls": false }
+          "custom": { "drawStyle": "line", "showPoints": "never", "lineWidth": 1 }
         },
         "overrides": []
       }
     },
     {
-      "type": "timeseries",
-      "title": "Consumer Group Lag Partition Seconds",
       "id": 3,
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "type": "timeseries",
+      "title": "Lag by Consumer Group (offsets)",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
       "targets": [
         {
-          "refId": "A",
-          "expr": "topk(25, (kafka_consumergroup_lag{namespace=\"$namespace\",consumergroup=~\"$consumer_group\"}) / clamp_min(rate(kafka_topic_partition_current_offset{namespace=\"$namespace\"}[5m]), 1))",
-          "legendFormat": "{{consumergroup}},{{topic}},{{partition}}"
+          "expr": "sum(kafka_consumergroup_lag{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}) by (consumergroup, topic)",
+          "legendFormat": "{{consumergroup}} (topic: {{topic}})",
+          "refId": "A"
         }
       ],
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "current" }
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "short",
           "min": 0,
-          "custom": { "drawStyle": "line", "lineWidth": 1, "showPoints": "never", "spanNulls": false }
+          "custom": { "drawStyle": "line", "showPoints": "never", "lineWidth": 1 }
         },
         "overrides": []
       }
     },
     {
-      "type": "timeseries",
-      "title": "Consumer Group Max Lag Offsets",
       "id": 4,
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 11 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "type": "timeseries",
+      "title": "Message in per minute",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
       "targets": [
         {
-          "refId": "A",
-          "expr": "topk(50, max by (consumergroup) (kafka_consumergroup_lag{namespace=\"$namespace\",consumergroup=~\"$consumer_group\"}))",
-          "legendFormat": "{{consumergroup}}"
+          "expr": "sum(delta(kafka_topic_partition_current_offset{job=~\"$job\",instance=~\"$instance\", topic=~\"$topic\"}[5m])/5) by (topic)",
+          "legendFormat": "{{topic}}",
+          "refId": "A"
         }
       ],
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "ops",
           "min": 0,
-          "custom": { "drawStyle": "line", "lineWidth": 1, "showPoints": "never", "spanNulls": false }
+          "custom": { "drawStyle": "line", "showPoints": "never", "lineWidth": 1 }
         },
         "overrides": []
       }
     },
     {
-      "type": "timeseries",
-      "title": "Consumer Group Lag Partition Offsets",
       "id": 5,
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 11 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "type": "timeseries",
+      "title": "Message consume per minute",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
       "targets": [
         {
-          "refId": "A",
-          "expr": "topk(25, kafka_consumergroup_lag{namespace=\"$namespace\",consumergroup=~\"$consumer_group\"})",
-          "legendFormat": "{{consumergroup}},{{topic}},{{partition}}"
+          "expr": "sum(delta(kafka_consumergroup_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[5m])/5) by (consumergroup, topic)",
+          "legendFormat": "{{consumergroup}} (topic: {{topic}})",
+          "refId": "A"
         }
       ],
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "ops",
           "min": 0,
-          "custom": { "drawStyle": "line", "lineWidth": 1, "showPoints": "never", "spanNulls": false }
+          "custom": { "drawStyle": "line", "showPoints": "never", "lineWidth": 1 }
         },
         "overrides": []
       }
     },
     {
       "type": "row",
-      "title": "Throughput",
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+      "title": "Lag (seconds) — estimated",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
       "id": 6,
-      "panels": []
+      "collapsed": false
     },
     {
-      "type": "timeseries",
-      "title": "Message in per second",
       "id": 7,
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 22 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "type": "timeseries",
+      "title": "Estimated lag seconds per consumer group",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 18 },
       "targets": [
         {
-          "refId": "A",
-          "expr": "sum(rate(kafka_topic_partition_current_offset{namespace=\"$namespace\",instance=\"$instance\",topic=~\"$topic\"}[1m])) by (topic)",
-          "legendFormat": "{{topic}}"
+          "expr": "sum by (consumergroup) (kafka_consumergroup_lag{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}) / clamp_min(sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[5m])), 1)",
+          "legendFormat": "{{consumergroup}}",
+          "refId": "A"
         }
       ],
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "ops",
+          "unit": "s",
           "min": 0,
-          "custom": { "drawStyle": "line", "lineWidth": 1, "showPoints": "never", "spanNulls": false }
+          "custom": { "drawStyle": "line", "showPoints": "never", "lineWidth": 2 }
+        },
+        "overrides": []
+      },
+      "description": "Приблизительная оценка: (offset lag) / (ingest rate). Делитель — суммарный rate по выбранным топикам."
+    },
+    {
+      "type": "row",
+      "title": "Brokers & Topics",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "id": 8,
+      "collapsed": false
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Brokers in cluster",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 5, "w": 4, "x": 0, "y": 27 },
+      "targets": [
+        {
+          "expr": "kafka_brokers",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Partitions per Topic",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 20, "x": 4, "y": 27 },
+      "targets": [
+        {
+          "expr": "sum by(topic) (kafka_topic_partitions{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"})",
+          "legendFormat": "{{topic}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": { "drawStyle": "bars", "showPoints": "never", "lineWidth": 1 }
         },
         "overrides": []
       }
     },
     {
+      "id": 11,
       "type": "timeseries",
-      "title": "Message consume per minute",
-      "id": 8,
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 22 },
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "title": "Under-replicated partitions (by topic/partition)",
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 35 },
       "targets": [
         {
-          "refId": "A",
-          "expr": "sum(delta(kafka_consumergroup_current_offset{namespace=\"$namespace\",instance=~\"$instance\",topic=~\"$topic\"}[5m])/5) by (consumergroup, topic)",
-          "legendFormat": "{{consumergroup}} (topic: {{topic}})"
+          "expr": "kafka_topic_partition_under_replicated_partition{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}",
+          "legendFormat": "{{topic}} p{{partition}}",
+          "refId": "A"
         }
       ],
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "ops",
+          "unit": "short",
           "min": 0,
-          "custom": { "drawStyle": "line", "lineWidth": 1, "showPoints": "never", "spanNulls": false }
+          "max": 1,
+          "custom": { "drawStyle": "line", "showPoints": "never", "lineWidth": 1 }
         },
         "overrides": []
       }
     }
   ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["Kafka", "kafka_exporter"],
   "templating": {
     "list": [
       {
-        "type": "datasource",
         "name": "DS_PROMETHEUS",
+        "type": "datasource",
         "label": "Prometheus",
         "query": "prometheus",
+        "refresh": 1,
         "hide": 0
       },
       {
+        "name": "job",
         "type": "query",
-        "name": "namespace",
-        "label": "Namespace",
-        "hide": 0,
+        "label": "Job",
         "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(kafka_consumergroup_current_offset, job)",
         "refresh": 1,
-        "query": "label_values(kafka_consumergroup_lag, namespace)"
+        "hide": 0,
+        "includeAll": false
       },
       {
-        "type": "query",
         "name": "instance",
+        "type": "query",
         "label": "Instance",
-        "hide": 0,
         "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(kafka_consumergroup_current_offset{job=~\"$job\"}, instance)",
         "refresh": 1,
-        "query": "label_values(kafka_consumergroup_lag{namespace=\"$namespace\"}, instance)"
-      },
-      {
-        "type": "query",
-        "name": "consumer_group",
-        "label": "Consumer Group",
         "hide": 0,
         "includeAll": true,
-        "multi": true,
-        "datasource": "${DS_PROMETHEUS}",
-        "refresh": 1,
-        "query": "label_values(kafka_consumergroup_lag{namespace=\"$namespace\"}, consumergroup)"
+        "allValue": ".*"
       },
       {
-        "type": "query",
         "name": "topic",
+        "type": "query",
         "label": "Topic",
-        "hide": 0,
-        "includeAll": true,
         "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
         "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(kafka_topic_partition_current_offset{instance=~\"$instance\",topic!=\"__consumer_offsets\"}, topic)",
         "refresh": 1,
-        "query": "label_values(kafka_topic_partition_current_offset{namespace=\"$namespace\",instance=\"$instance\"}, topic)"
+        "hide": 0
+      },
+      {
+        "name": "consumergroup",
+        "type": "query",
+        "label": "Consumer Group",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(kafka_consumergroup_current_offset{instance=~\"$instance\"}, consumergroup)",
+        "refresh": 1,
+        "hide": 0
       }
     ]
   },
   "time": { "from": "now-30m", "to": "now" },
   "timepicker": {
-    "refresh_intervals": ["10s","30s","1m","5m","15m","30m","1h"],
-    "time_options": ["5m","15m","1h","6h","12h","24h","7d","30d"]
+    "refresh_intervals": ["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],
+    "time_options": ["5m","15m","1h","6h","12h","24h","2d","7d","30d"]
   },
-  "annotations": {
-    "list": [
-      {
-        "type": "dashboard",
-        "builtIn": 1,
-        "name": "Annotations & Alerts",
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "datasource": { "type": "datasource", "uid": "grafana" }
-      }
-    ]
-  }
+  "timezone": "",
+  "title": "Kafka Exporter — Lag & Throughput",
+  "uid": null,
+  "version": 1
 }
