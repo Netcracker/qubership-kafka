@@ -14,9 +14,11 @@ charts:
       - ghcr.io/netcracker/qubership-docker-cruise-control:${release}
       - ghcr.io/netcracker/qubership-kafka-mirror-maker-monitoring:${release}
       - ghcr.io/netcracker/qubership-disaster-recovery-daemon:#latest
+      - ghcr.io/netcracker/qubership-docker-kubectl:#latest
   - name: qubership-kafka
     chart_file: operator/charts/helm/kafka-service/Chart.yaml
     values_file: operator/charts/helm/kafka-service/values.yaml
     image:
       - ghcr.io/netcracker/qubership-kafka-operator:${release}
       - ghcr.io/netcracker/qubership-docker-kafka:${release}
+      - ghcr.io/netcracker/qubership-docker-kubectl:#latest
