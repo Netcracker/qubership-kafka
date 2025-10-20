@@ -1,7 +1,22 @@
+// Copyright 2024-2025 NetCracker Technology Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package jobs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	qubershiporgv1 "github.com/Netcracker/qubership-kafka/operator/api/v1"
 	qubershiporgv7 "github.com/Netcracker/qubership-kafka/operator/api/v7"
@@ -29,10 +44,14 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
+var UnsupportedError = errors.New("unsupported service invocation")
+var UnexpectedError = errors.New("unexpected behavior")
+
 type Exec func() error
 
 type Job interface {
 	Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error)
+	Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool)
 }
 
 // getWatchNamespace returns the Namespace the operator should be watching for changes
