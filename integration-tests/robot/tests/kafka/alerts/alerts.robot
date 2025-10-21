@@ -34,7 +34,8 @@ Check That Kafka Broker Is Up
 *** Test Cases ***
 Kafka Is Degraded Alert
     [Tags]  kafka  prometheus  kafka_prometheus_alert  kafka_is_degraded_alert
-    Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DEGRADED_ALERT_NAME}
+    Wait Until Keyword Succeeds  ${ALERT_RETRY_TIME}  ${ALERT_RETRY_INTERVAL}
+    ...  Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DEGRADED_ALERT_NAME}
     ${replicas}=  Get Active Deployment Entities Count For Service  ${KAFKA_OS_PROJECT}  ${KAFKA_SERVICE_NAME}
     Pass Execution If  ${replicas} < 3  Kafka cluster has less than 3 brokers
     Scale Down Deployment Entities By Service Name  ${KAFKA_SERVICE_NAME}-1  ${KAFKA_OS_PROJECT}
@@ -47,7 +48,8 @@ Kafka Is Degraded Alert
 
 Kafka Is Down Alert
     [Tags]  kafka  prometheus  kafka_prometheus_alert  kafka_is_down_alert
-    Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DOWN_ALERT_NAME}
+    Wait Until Keyword Succeeds  ${ALERT_RETRY_TIME}  ${ALERT_RETRY_INTERVAL}
+    ...  Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DOWN_ALERT_NAME}
     ${replicas}=  Get Active Deployment Entities Count For Service  ${KAFKA_OS_PROJECT}  ${KAFKA_SERVICE_NAME}
     Pass Execution If  ${replicas} < 3  Kafka cluster has less than 3 brokers
     Scale Down Deployment Entities By Service Name  ${KAFKA_SERVICE_NAME}  ${KAFKA_OS_PROJECT}
@@ -57,4 +59,3 @@ Kafka Is Down Alert
     Wait Until Keyword Succeeds  ${ALERT_RETRY_TIME}  ${ALERT_RETRY_INTERVAL}
     ...  Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DOWN_ALERT_NAME}
     [Teardown]  Check That Kafka Broker Is Up  ${KAFKA_SERVICE_NAME}
-
