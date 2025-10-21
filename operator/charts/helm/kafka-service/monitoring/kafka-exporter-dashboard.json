@@ -46,7 +46,7 @@
       "id": 2,
       "type": "timeseries",
       "title": "Message in per second",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
       "targets": [
         {
@@ -72,7 +72,7 @@
       "id": 3,
       "type": "timeseries",
       "title": "Lag by Consumer Group (offsets)",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
       "targets": [
         {
@@ -98,7 +98,7 @@
       "id": 4,
       "type": "timeseries",
       "title": "Message in per minute",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
       "targets": [
         {
@@ -124,7 +124,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "Message consume per minute",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
       "targets": [
         {
@@ -157,7 +157,7 @@
       "id": 7,
       "type": "timeseries",
       "title": "Estimated lag seconds per consumer group",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 18 },
       "targets": [
         {
@@ -191,7 +191,7 @@
       "id": 9,
       "type": "stat",
       "title": "Brokers in cluster",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 5, "w": 4, "x": 0, "y": 27 },
       "targets": [
         {
@@ -212,7 +212,7 @@
       "id": 10,
       "type": "timeseries",
       "title": "Partitions per Topic",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 8, "w": 20, "x": 4, "y": 27 },
       "targets": [
         {
@@ -238,7 +238,7 @@
       "id": 11,
       "type": "timeseries",
       "title": "Under-replicated partitions (by topic/partition)",
-      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "uid": "$datasource" },
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 35 },
       "targets": [
         {
@@ -280,7 +280,7 @@
         "name": "job",
         "type": "query",
         "label": "Job",
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "$datasource",
         "query": "label_values(kafka_consumergroup_current_offset, job)",
         "refresh": 1,
         "hide": 0,
@@ -290,7 +290,7 @@
         "name": "instance",
         "type": "query",
         "label": "Instance",
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "$datasource",
         "query": "label_values(kafka_consumergroup_current_offset{job=~\"$job\"}, instance)",
         "refresh": 1,
         "hide": 0,
@@ -304,7 +304,7 @@
         "multi": true,
         "includeAll": true,
         "allValue": ".*",
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "$datasource",
         "query": "label_values(kafka_topic_partition_current_offset{instance=~\"$instance\",topic!=\"__consumer_offsets\"}, topic)",
         "refresh": 1,
         "hide": 0
@@ -316,7 +316,7 @@
         "multi": true,
         "includeAll": true,
         "allValue": ".*",
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "$datasource",
         "query": "label_values(kafka_consumergroup_current_offset{instance=~\"$instance\"}, consumergroup)",
         "refresh": 1,
         "hide": 0

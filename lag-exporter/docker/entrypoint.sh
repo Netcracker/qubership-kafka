@@ -11,6 +11,15 @@ mapfile -t flags < <(python3 /opt/config_parser.py \
 args=()
 args=("${flags[@]}")
 
+normalize_mechanism() {
+  local mech=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  case "$mech" in
+    scram-sha-512) echo "scram-sha512" ;;
+    scram-sha-256) echo "scram-sha256" ;;
+    *) echo "$mech" ;;
+  esac
+}
+
 if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
   args+=("--tls.enabled")
   [[ -f /tls/ca.crt ]] && args+=("--tls.ca-file=/tls/ca.crt")
@@ -21,7 +30,7 @@ fi
 
 if [[ -n "${KAFKA_USER}" && -n "${KAFKA_PASSWORD}" ]]; then
   args+=("--sasl.enabled")
-  args+=("--sasl.mechanism=${KAFKA_SASL_MECHANISM}")
+  args+=("--sasl.mechanism=$(normalize_mechanism "$KAFKA_SASL_MECHANISM")")
   args+=("--sasl.username=${KAFKA_USER}")
   args+=("--sasl.password=${KAFKA_PASSWORD}")
 fi
