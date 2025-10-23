@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.11-alpine
 
 ENV CRD_INIT_HOME=/opt/crd-init
 USER 0
