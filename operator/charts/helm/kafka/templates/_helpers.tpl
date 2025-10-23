@@ -371,3 +371,10 @@ Find a Kafka image in various places.
 {{- define "kafka.image" -}}
     {{- printf "%s" .Values.kafka.dockerImage -}}
 {{- end -}}
+
+{{/*
+Find a kubectl image in various places.
+*/}}
+{{- define "kubectl.image" -}}
+    {{- printf "%s" .Values.groupMigration.image -}}
+{{- end -}}
