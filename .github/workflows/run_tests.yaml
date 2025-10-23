@@ -1,0 +1,31 @@
+name: Run Kafka Pipeline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  Wait-for-images:
+    runs-on: ubuntu-latest
+    outputs:
+      conclusion: ${{ steps.wait.outputs.conclusion }}
+    steps:
+      - name: Wait for push.yml to complete
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@main
+        id: wait
+        with:
+          workflow: push.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          poll-interval: 20      
+  Kafka-Pipeline:
+    needs: Wait-for-images
+    if: ${{ needs.Wait-for-images.outputs.conclusion }} == 'success'  
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@ad32edfdc745328e61b9b0eca992a68b91e96e20
+    with:
+      service_branch: '${{ github.head_ref || github.ref_name }}'
+      versions_file: '.github/versions.yaml'
+      pipeline_branch: 'ad32edfdc745328e61b9b0eca992a68b91e96e20' #this value must match the value after '@' in 'uses'
+    secrets:
+      AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
+      AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}   

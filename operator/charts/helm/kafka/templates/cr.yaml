@@ -24,7 +24,7 @@ metadata:
     app.kubernetes.io/processed-by-operator: {{ template "kafka.name" . }}-operator
     {{- include "kafka.defaultLabels" . | nindent 4 }}
   annotations:
-    qubership.org/reconcile-trigger: "{{ randAlphaNum 10 }}"
+    netcracker.com/reconcile-trigger: "{{ randAlphaNum 10 }}"
 spec:
   waitForPodsReady: {{ .Values.global.waitForPodsReady }}
   podReadinessTimeout: {{ .Values.global.podReadinessTimeout | default 600 }}

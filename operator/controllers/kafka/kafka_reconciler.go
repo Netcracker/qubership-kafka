@@ -40,7 +40,7 @@ import (
 const (
 	kafkaConditionReason              = "KafkaReadinessStatus"
 	kafkaHashName                     = "spec"
-	autoRestartAnnotation             = "kafkaservice.qubership.org/auto-restart"
+	autoRestartAnnotation             = "kafkaservice.netcracker.com/auto-restart"
 	resourceVersionAnnotationTemplate = "%s/resource-version"
 )
 
