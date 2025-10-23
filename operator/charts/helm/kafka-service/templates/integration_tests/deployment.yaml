@@ -189,6 +189,14 @@ spec:
           imagePullPolicy: Always
           securityContext:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 20
+            timeoutSeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 5
           readinessProbe:
             exec:
               command:
