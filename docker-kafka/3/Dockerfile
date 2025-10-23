@@ -144,7 +144,7 @@ COPY docker/get-cluster-id.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-partitions.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-consumer-group-checker.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-partition-logs.sh ${KAFKA_HOME}/bin
-COPY docker/docker-entrypoint.sh /
+COPY 3/docker-entrypoint.sh /
 
 # Adapt grants
 RUN mkdir -p "${KAFKA_HOME}" \
