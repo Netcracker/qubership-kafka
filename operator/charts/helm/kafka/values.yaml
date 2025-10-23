@@ -37,7 +37,7 @@ global:
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
   replicas: 1
-  apiGroup: "qubership.org"
+  apiGroup: "netcracker.com"
   resources:
     requests:
       memory: 128Mi
@@ -246,6 +246,22 @@ kafka:
     storage:
       size: 1Gi
   autoRestartOnSecretChange: true
+
+groupMigration:
+  enabled: true
+  oldGroupPrefix: "qubership.org/"
+  # labelSelector: "app.kubernetes.io/part-of=app-name"
+  labelSelector: ""
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 20m
+    limits:
+      memory: 256Mi
+      cpu: 100m
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:main"
+  imagePullPolicy: Always
+  runAsNonRoot: true
 
 # Cloud Release Integration
 # The name of the Service exposed for the database.
