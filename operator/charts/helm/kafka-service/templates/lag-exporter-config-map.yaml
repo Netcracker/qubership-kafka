@@ -8,105 +8,35 @@ metadata:
     app.kubernetes.io/name: {{ template "kafka.name" . }}-lag-exporter-configmap
 data:
   application.conf: |
-    kafka-lag-exporter {
-      port = {{ .Values.monitoring.lagExporter.service.port }}
-      poll-interval = {{ .Values.monitoring.lagExporter.pollIntervalSeconds }} seconds
-      lookup-table-size = {{ .Values.monitoring.lagExporter.lookupTableSize }}
-      client-group-id = "{{ .Values.monitoring.lagExporter.clientGroupId }}"
-      kafka-client-timeout = {{ .Values.monitoring.lagExporter.kafkaClientTimeoutSeconds }} seconds
-      kafka-retries = {{ .Values.monitoring.lagExporter.kafkaRetries }}
-      clusters = [
-        {
-          name = "{{ .Values.monitoring.lagExporter.cluster.name }}"
-          {{- if .Values.monitoring.lagExporter.cluster.bootstrapBrokers }}
-          bootstrap-brokers = "{{ .Values.monitoring.lagExporter.cluster.bootstrapBrokers }}"
-          {{- else }}
-          bootstrap-brokers = {{ include "kafka-service.brokersList" . | quote }}
-          {{- end }}
-          {{- if .Values.monitoring.lagExporter.cluster.groupWhitelist }}
-          group-whitelist = [
-            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.groupWhitelist) 1}}
-            {{- range $i, $whitelist := .Values.monitoring.lagExporter.cluster.groupWhitelist }}
-            {{ quote $whitelist }}{{- if ne $i $lastIndex -}}, {{ end }}
-            {{- end }}
-          ]
-          {{- end }}
-          {{- if .Values.monitoring.lagExporter.cluster.groupBlacklist }}
-          group-blacklist = [
-            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.groupBlacklist) 1}}
-            {{- range $i, $blacklist := .Values.monitoring.lagExporter.cluster.groupBlacklist }}
-            {{ quote $blacklist }}{{- if ne $i $lastIndex -}}, {{ end }}
-            {{- end }}
-          ]
-          {{- end }}
-          {{- if .Values.monitoring.lagExporter.cluster.topicWhitelist }}
-          topic-whitelist = [
-            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.topicWhitelist) 1}}
-            {{- range $i, $whitelist := .Values.monitoring.lagExporter.cluster.topicWhitelist }}
-            {{ quote $whitelist }}{{- if ne $i $lastIndex -}}, {{ end }}
-            {{- end }}
-          ]
-          {{- end }}
-          {{- if .Values.monitoring.lagExporter.cluster.topicBlacklist }}
-          topic-blacklist = [
-            {{- $lastIndex := sub (len .Values.monitoring.lagExporter.cluster.topicBlacklist) 1}}
-            {{- range $i, $blacklist := .Values.monitoring.lagExporter.cluster.topicBlacklist }}
-            {{ quote $blacklist }}{{- if ne $i $lastIndex -}}, {{ end }}
-            {{- end }}
-          ]
-          {{- end }}
-          consumer-properties = {
-          {{- if and .Values.monitoring.lagExporter.cluster.consumerProperties }}
-            {{- range $key, $val := .Values.monitoring.lagExporter.cluster.consumerProperties }}
-            {{ $key }} = {{ quote $val }}
-            {{- end }}
-          {{- end }}
-            ${CONFIGURATION}
-          }
-          admin-client-properties = {
-          {{- if and .Values.monitoring.lagExporter.cluster.adminClientProperties }}
-            {{- range $key, $val := .Values.monitoring.lagExporter.cluster.adminClientProperties }}
-            {{ $key }} = {{ quote $val }}
-            {{- end }}
-          {{- end }}
-            ${CONFIGURATION}
-          }
-          {{- if eq (include "lagExporter.clusterLabelsDefined" .) "true" }}
-          labels = {
-            {{- range $key, $val := .Values.monitoring.lagExporter.cluster.labels }}
-            {{ $key }} = {{ quote $val }}
-            {{- end }}
-          }
-          {{- end }}
-        }
-      ]
-      metric-whitelist = [
-        {{- $lastIndex := sub (len .Values.monitoring.lagExporter.metricWhitelist) 1}}
-        {{- range $i, $whitelist := .Values.monitoring.lagExporter.metricWhitelist }}
-        {{ quote $whitelist }}{{- if ne $i $lastIndex -}}, {{ end }}
-        {{- end }}
-      ]
+    kafka_exporter {
+      --web.listen-address = {{ default ":9308" (printf ":%s" (toString .Values.monitoring.lagExporter.service.port)) }}
+      --web.telemetry-path = {{ .Values.monitoring.lagExporter.path | default "/metrics" }}
+      --refresh.metadata = {{ .Values.monitoring.lagExporter.refreshMetadata }}
+      --concurrent.enable = {{ .Values.monitoring.lagExporter.concurrentEnable }}
+      --kafka.version = {{ .Values.monitoring.lagExporter.kafkaVersion | default "" | quote }}
+      --kafka.server = {{ include "lag-exporter.bootstrapServers" . }}
+      --kafka.labels = {{ .Values.monitoring.lagExporter.customLabels | default "" | quote }}
+      --group.filter = {{ (include "kafka-services.regexJoin" (dict "list" .Values.monitoring.lagExporter.cluster.groupWhitelist)) | default "" | quote }}
+      --group.exclude = {{ (include "kafka-services.regexJoin" (dict "list" .Values.monitoring.lagExporter.cluster.groupBlacklist)) | default "" | quote }}
+      --topic.filter = {{ (include "kafka-services.regexJoin" (dict "list" .Values.monitoring.lagExporter.cluster.topicWhitelist)) | default "" | quote }}
+      --topic.exclude = {{ (include "kafka-services.regexJoin" (dict "list" .Values.monitoring.lagExporter.cluster.topicBlacklist)) | default "" | quote }}
+      {{- if .Values.monitoring.lagExporter.offsetShowAll }}
+      --no-offset.show-all
+      {{- end -}}
+      {{- if .Values.monitoring.lagExporter.logEnableSarama }}
+      --log.enable-sarama
+      {{- end -}}
+      {{- if not .Values.monitoring.lagExporter.offsetShowAll }}
+      --no-offset.show-all
+      {{- end }}
+      {{- if .Values.monitoring.lagExporter.verbosity }}
+      --verbosity = {{ .Values.monitoring.lagExporter.verbosity }}
+      {{- end }}
+      {{- if .Values.global.tls.serverName }}
+      --tls.server-name = {{ .Values.global.tls.serverName }}
+      {{- end }}
+      {{- if .Values.global.tls.insecureSkipTlsVerify }}
+      --tls.insecure-skip-tls-verify
+      {{- end }}
     }
-
-    akka {
-      loggers = ["akka.event.slf4j.Slf4jLogger"]
-      loglevel = "{{ .Values.monitoring.lagExporter.akkaLogLevel }}"
-      logging-filter = "akka.event.slf4j.Slf4jLoggingFilter"
-    }
-  logback.xml: |
-    <configuration>
-        <variable name="ROOT_LOG_LEVEL" value="{{ .Values.monitoring.lagExporter.rootLogLevel }}" />
-        <variable name="KAFKA_LAG_EXPORTER_LOG_LEVEL" value="{{ .Values.monitoring.lagExporter.kafkaLagExporterLogLevel }}" />
-        <variable name="KAFKA_LAG_EXPORTER_KAFKA_LOG_LEVEL" value="{{ .Values.monitoring.lagExporter.kafkaLogLevel }}" />
-        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder>
-                <pattern>%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg %ex%n</pattern>
-            </encoder>
-        </appender>
-        <logger name="org.apache.kafka" level="${KAFKA_LAG_EXPORTER_KAFKA_LOG_LEVEL}"/>
-        <logger name="com.lightbend.kafkalagexporter" level="${KAFKA_LAG_EXPORTER_LOG_LEVEL}"/>
-        <root level="${ROOT_LOG_LEVEL}">
-            <appender-ref ref="STDOUT" />
-        </root>
-    </configuration>
 {{- end }}

@@ -73,10 +73,6 @@ func (lep LagExporterResourceProvider) getEnvs(cmVersion string) []corev1.EnvVar
 			Name:  "KAFKA_ENABLE_SSL",
 			Value: strconv.FormatBool(lep.cr.Spec.Global.KafkaSsl.Enabled),
 		},
-		{
-			Name:  "LAG_EXPORTER_CM_VERSION",
-			Value: cmVersion,
-		},
 	}
 }
 
