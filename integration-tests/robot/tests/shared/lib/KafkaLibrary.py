@@ -21,6 +21,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
 from kafka.sasl.oauth import AbstractTokenProvider
+from kafka.errors import UnknownTopicOrPartitionError
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -78,7 +79,7 @@ class KafkaLibrary(object):
             configs = dict(self._common_configs.items())
             configs['retries'] = 10000000
             configs['max_in_flight_requests_per_connection'] = 1
-            configs['request_timeout_ms'] = 900000
+            configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
@@ -106,7 +107,7 @@ class KafkaLibrary(object):
             configs['auto_offset_reset'] = 'earliest'
             configs['enable_auto_commit'] = False
             configs['group_id'] = f'{topic_name}-group-{time.time()}'
-            configs['request_timeout_ms'] = 900000
+            configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
@@ -135,6 +136,7 @@ class KafkaLibrary(object):
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
                 configs['sasl_plain_username'] = self._kafka_username
                 configs['sasl_plain_password'] = self._kafka_password
+                configs['request_timeout_ms'] = 90000
             admin = KafkaAdminClient(**configs)
             logger.debug("Kafka admin client is created.")
         except Exception as e:
@@ -176,13 +178,21 @@ class KafkaLibrary(object):
             | Produce Message | producer | consumer-producer-tests-topic | 1541506923 |
         """
         try:
-            producer.send(topic_name, message.encode('utf-8'))
-            producer.flush()
+            # producer.send(topic_name, message.encode('utf-8'))
+            # producer.flush(timeout=10)
+            future = producer.send(topic_name, message.encode("utf-8"))
+            record_metadata = future.get(timeout=10)
+            producer.flush(timeout=10)
+            self.builtin.log(
+                f"Produced to {record_metadata.topic} partition {record_metadata.partition} offset {record_metadata.offset}",
+                "INFO"
+            )
         except Exception as e:
+            self.builtin.log(traceback.format_exc(), "ERROR")
             self.builtin.fail(f'Failed to produce message: "{message}" to '
                               f'topic: {topic_name} {e}')
 
-    def consume_message(self, consumer) -> str:
+    def consume_message(self, consumer, topic_name: str) -> str:
         """
         Receives a message from Kafka using Kafka consumer.
         *Args:*\n
@@ -192,9 +202,9 @@ class KafkaLibrary(object):
         *Example:*\n
             | Consume Message | consumer |
         """
-        message = consumer.poll(1.0)
+        consumer.subscribe([topic_name])
+        message = consumer.poll(5000.0)
         if message:
-            logger.debug(f'Received message is "{message}".')
             return str(message)
         else:
             logger.debug(f'Received message is "{message}".')
@@ -371,6 +381,9 @@ class KafkaLibrary(object):
         try:
             admin.delete_topics(topics)
             logger.debug(f'Topic "{topics}" is deleted.')
+        except UnknownTopicOrPartitionError:
+            BuiltIn().log_to_console(f'Topic "{topics}" has already been deleted or does not exist.')
+            logger.debug(f'Topic "{topics}" has already been deleted or does not exist.')
         except Exception as e:
             self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
 

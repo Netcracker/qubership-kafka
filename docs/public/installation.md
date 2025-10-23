@@ -2144,7 +2144,7 @@ In this case, you need to:
 
 1. Deploy the previous version.
 2. Restore the data from backup. For more information, refer to the
-   [Restore from Backup](https://git.netcracker.com/PROD.Platform.Streaming/kafka-backup-daemon/-/blob/master/documentation/maintenance-guide/development-guide/README.md#recovery)
+   [Restore from Backup](./backup-daemon.md#recovery)
    guide.
 
 # Additional Features
