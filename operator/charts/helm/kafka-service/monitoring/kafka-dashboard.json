@@ -2180,7 +2180,7 @@
           "datasource": {
             "uid": "$datasource"
           },
-          "expr": "sum(rate(kafka_network_RequestMetrics_Count{name=\"ErrorsPerSec\",error!=\"NONE\",namespace=\"$namespace\",cluster=\"$cluster\",broker=~\"$broker\"}[5m])) by (broker, error)",
+          "expr": "sum(rate(kafka_network_RequestMetrics_Count_total{name=\"ErrorsPerSec\",error!=\"NONE\",namespace=\"$namespace\",cluster=\"$cluster\",broker=~\"$broker\"}[5m])) by (broker, error)",
           "legendFormat": "{{ broker }}: {{error}}",
           "range": true,
           "refId": "A"
@@ -3483,7 +3483,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(java_GarbageCollector_CollectionTime{name=\"G1 Young Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
+              "expr": "max(rate(java_GarbageCollector_CollectionTime_total{name=\"G1 Young Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
               "interval": "",
               "legendFormat": "{{broker}}: young",
               "refId": "A"
@@ -3492,7 +3492,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(java_GarbageCollector_CollectionTime{name=\"G1 Old Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
+              "expr": "max(rate(java_GarbageCollector_CollectionTime_total{name=\"G1 Old Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
               "interval": "",
               "legendFormat": "{{broker}}: old",
               "refId": "B"
@@ -3592,7 +3592,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(java_GarbageCollector_CollectionCount{name=\"G1 Young Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >=0",
+              "expr": "max(rate(java_GarbageCollector_CollectionCount_total{name=\"G1 Young Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >=0",
               "interval": "",
               "legendFormat": "{{broker}}: young",
               "refId": "A"
@@ -3601,7 +3601,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(java_GarbageCollector_CollectionCount{name=\"G1 Old Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >=0",
+              "expr": "max(rate(java_GarbageCollector_CollectionCount_total{name=\"G1 Old Generation\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >=0",
               "interval": "",
               "legendFormat": "{{broker}}: old",
               "refId": "B"
@@ -4606,7 +4606,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(idelta(kafka_controller_ControllerEventManager_Count{name=\"EventQueueTimeMs\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval]))",
+              "expr": "max(idelta(kafka_controller_ControllerEventManager_Count_total{name=\"EventQueueTimeMs\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval]))",
               "interval": "",
               "legendFormat": "event_queue_time_rate",
               "refId": "A"
@@ -4767,7 +4767,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesInPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker) >= 0",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesInPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker) >= 0",
               "interval": "",
               "legendFormat": "{{broker}}: in",
               "refId": "A"
@@ -4776,7 +4776,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesOutPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker) >= 0",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesOutPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker) >= 0",
               "interval": "",
               "legendFormat": "{{broker}}: out",
               "refId": "B"
@@ -4876,7 +4876,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesRejectedPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker) >= 0",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesRejectedPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker) >= 0",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"
@@ -5122,7 +5122,7 @@
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "expr": "rate(kafka_server_ZooKeeperClientMetrics_Count{name=\"ZooKeeperRequestLatencyMs\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])",
+              "expr": "rate(kafka_server_ZooKeeperClientMetrics_Count_total{name=\"ZooKeeperRequestLatencyMs\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])",
               "interval": "",
               "legendFormat": "{{broker}}",
               "range": true,
@@ -5352,7 +5352,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(idelta(kafka_server_ReplicaManager_Count{name=\"IsrExpandsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
+              "expr": "max(idelta(kafka_server_ReplicaManager_Count_total{name=\"IsrExpandsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"
@@ -5452,7 +5452,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(idelta(kafka_server_ReplicaManager_Count{name=\"IsrShrinksPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
+              "expr": "max(idelta(kafka_server_ReplicaManager_Count_total{name=\"IsrShrinksPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[$__interval])) by (broker) >= 0",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"
@@ -5581,7 +5581,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"MessagesInPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker)",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"
@@ -5709,7 +5709,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(abs(rate(kafka_server_BrokerTopicMetrics_Count{name=\"TotalFetchRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m]))) by (broker)",
+              "expr": "max(abs(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"TotalFetchRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m]))) by (broker)",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"
@@ -5809,7 +5809,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(abs(rate(kafka_server_BrokerTopicMetrics_Count{name=\"TotalProduceRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\",}[5m]))) by (broker)",
+              "expr": "max(abs(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"TotalProduceRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\",}[5m]))) by (broker)",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"
@@ -5910,7 +5910,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"FailedFetchRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"FailedFetchRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker)",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"
@@ -6011,7 +6011,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"FailedProduceRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"FailedProduceRequestsPerSec\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"}[5m])) by (broker)",
               "interval": "",
               "legendFormat": "{{broker}}",
               "refId": "A"

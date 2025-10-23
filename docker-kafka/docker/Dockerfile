@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.7_6-jdk-alpine-3.21
+FROM eclipse-temurin:21-jdk-alpine-3.22
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -40,13 +40,14 @@ RUN set -x \
 
 ARG KAFKA_VERSION=3.9.1
 ARG DISTRO_NAME=kafka_2.12-${KAFKA_VERSION}
+ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
     && wget \
         -nv \
         -O ${DISTR_DIR}/${DISTRO_NAME}.tgz \
-        "https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz" \
+        "${KAFKA_DISTRO_URL}" \
     && tar -zxf ${DISTR_DIR}/${DISTRO_NAME}.tgz -C ${DISTR_DIR} \
     && mkdir -p ${KAFKA_HOME} \
     && mv ${DISTR_DIR}/${DISTRO_NAME}/* ${KAFKA_HOME} \
@@ -69,7 +70,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="3.5.1"
+ARG KAFKACTL_VERSION="5.12.1"
 
 RUN set -x \
     && wget \
@@ -124,6 +125,10 @@ RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/guava-32.0.1-jre.jar \
         "https://repo1.maven.org/maven2/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"
 
+RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
+       "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
+
 # Kafka Security OAuth dependencies
 RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
@@ -159,6 +164,12 @@ RUN mkdir -p "${KAFKA_HOME}" \
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
+
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --upgrade --no-cache \
+        pcre2
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}

@@ -850,7 +850,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"MessagesInPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
               "format": "time_series",
               "legendFormat": "{{ topic }} - {{ broker }}",
               "range": true,
@@ -950,7 +950,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesInPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesInPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
               "format": "time_series",
               "legendFormat": "{{ topic }} - {{ broker }}",
               "refId": "A"
@@ -1049,7 +1049,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesOutPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesOutPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
               "format": "time_series",
               "legendFormat": "{{ topic }} - {{ broker }}",
               "refId": "A"
