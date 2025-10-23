@@ -1,3 +1,17 @@
+// Copyright 2024-2025 NetCracker Technology Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package jobs
 
 import (
@@ -6,7 +20,6 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/cfg"
 	"github.com/Netcracker/qubership-kafka/operator/controllers/kafkauser"
 	"github.com/go-logr/logr"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 )
@@ -16,9 +29,6 @@ type KafkaUserJob struct {
 
 func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logger logr.Logger) (Exec, error) {
 	var err error
-	if opts.Mode == cfg.KafkaMode || opts.WatchKafkaUsersCollectNamespace == nil {
-		return nil, nil
-	}
 
 	namespace := *opts.WatchKafkaUsersCollectNamespace
 
@@ -71,7 +81,7 @@ func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string,
 		ApiGroup:              apiGroup,
 	}).SetupWithManager(kafkaUserMgr); err != nil {
 		logger.Error(err, "unable to create controller", "controller", "KafkaUsers")
-		os.Exit(1)
+		return nil, err
 	}
 
 	if err = kafkaUserMgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
@@ -95,4 +105,10 @@ func (rj KafkaUserJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string,
 		return nil
 	}
 	return exec, nil
+}
+
+func (rj KafkaUserJob) Enabled(opts cfg.Cfg) (runJob bool, runDuplicate bool) {
+	runJob = opts.Mode == cfg.KafkaServiceMode && opts.WatchKafkaUsersCollectNamespace != nil
+	runDuplicate = true
+	return
 }
