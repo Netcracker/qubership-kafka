@@ -30,8 +30,8 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # This variable is used to construct full image tags for bundle and catalog images.
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# qubership.org/kafka-service-operator-bundle:$VERSION and qubership.org/kafka-service-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= qubership.org/kafka-service-operator
+# netcracker.com/kafka-service-operator-bundle:$VERSION and netcracker.com/kafka-service-operator-catalog:$VERSION.
+IMAGE_TAG_BASE ?= netcracker.com/kafka-service-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -80,11 +80,11 @@ help: ## Display this help.
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:maxDescLen=0 webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_akhqconfigs.yaml
-	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kafkaservices.yaml
-	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kmmconfigs.yaml
-	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kafka.yaml
-	sed -i "/annotations:/a\    crd.qubership.org\/version: $(CRD_VERSION)" config/crd/bases/qubership.org_kafkausers.yaml
+	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_akhqconfigs.yaml
+	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kafkaservices.yaml
+	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kmmconfigs.yaml
+	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kafka.yaml
+	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kafkausers.yaml
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.

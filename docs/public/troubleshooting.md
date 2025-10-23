@@ -1537,7 +1537,7 @@ If Helm deployment or manual application of CRD failed with the following error,
 it depicts that the Kubernetes version is 1.11 (or less) and it is not compatible with the new format of CRD:
 
 ```text
-The CustomResourceDefinition "kmmconfigs.qubership.org" is invalid: spec.validation.openAPIV3Schema: Invalid value:....
+The CustomResourceDefinition "kmmconfigs.netcracker.com" is invalid: spec.validation.openAPIV3Schema: Invalid value:....
 : must only have "properties", "required" or "description" at the root if the status subresource is enabled
 ```
 
@@ -1553,7 +1553,7 @@ Not applicable
 
 ### How to solve
 
-To fix the issue, you need to find the following section in the CRD (`config/crd/old/qubership.org_kmmconfigs.yaml`):
+To fix the issue, you need to find the following section in the CRD (`config/crd/old/netcracker.com_kmmconfigs.yaml`):
 
 ```yaml
 # Comment it if you deploy to Kubernetes 1.11 (e.g OpenShift 3.11)
