@@ -42,8 +42,8 @@ Cleanup
     ${oauth_consumer} =  Set Variable  ${None}
 
 Check Consumed Message
-    [Arguments]  ${consumer}  ${message}
-    ${receivedMessage} =  Consume Message  ${consumer}
+    [Arguments]  ${consumer}  ${topic_name}  ${message}
+    ${receivedMessage} =  Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${receivedMessage}  ${message}
 
 Register New Client
@@ -71,7 +71,7 @@ Test Producing And Consuming Data With Allow Type Of ACL
     ...  Produce Message  ${oauth_producer}  ${TOPIC_NAME}  ${message}
     ${oauth_consumer} =  Create Kafka Oauth Consumer  ${TOPIC_NAME}  ${token_endpoint}  ${client_id}  ${client_secret}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${oauth_consumer}  ${message}
+    ...  Check Consumed Message  ${oauth_consumer}  ${TOPIC_NAME}  ${message}
     Close Kafka Consumer  ${oauth_consumer}
 
 Test Producing And Consuming Data With Deny Type Of ACL
@@ -91,7 +91,7 @@ Test Producing And Consuming Data With Deny Type Of ACL
     ${oauth_consumer} =  Create Kafka Oauth Consumer  ${TOPIC_NAME}  ${token_endpoint}  ${client_id}  ${client_secret}
     Sleep  15s
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${oauth_consumer}  ${EMPTY}
+    ...  Check Consumed Message  ${oauth_consumer}  ${TOPIC_NAME}  ${EMPTY}
     Close Kafka Consumer  ${oauth_consumer}
 
 Test Producing And Consuming Data With Deny Type Of ACL By IP
@@ -113,10 +113,10 @@ Test Producing And Consuming Data With Deny Type Of ACL By IP
     ...  Produce Message  ${oauth_producer}  ${TOPIC_NAME}  ${message}
     ${consumer}=  Create Kafka Consumer  ${TOPIC_NAME}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${message}
+    ...  Check Consumed Message  ${consumer}  ${TOPIC_NAME}  ${message}
     Close Kafka Consumer  ${consumer}
     ${oauth_consumer} =  Create Kafka Oauth Consumer  ${TOPIC_NAME}  ${token_endpoint}  ${client_id}  ${client_secret}
     Sleep  20s
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${oauth_consumer}  ${EMPTY}
+    ...  Check Consumed Message  ${oauth_consumer}  ${TOPIC_NAME}  ${EMPTY}
     Close Kafka Consumer  ${oauth_consumer}

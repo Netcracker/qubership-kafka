@@ -60,8 +60,8 @@ Scale Up Kafka If It Is Down
     ${is_up}=  Check Service Is Scaled  ${all_deployments}  %{KAFKA_OS_PROJECT}  direction=up  timeout=30
     Run Keyword If  ${is_up} == ${TRUE}  Pass Execution  Kafka service is full up
 
-    ${inaсtive_deployments}=  Get Inactive Deployment Entities Names For Service  %{KAFKA_OS_PROJECT}  %{KAFKA_HOST}
-    FOR  ${deployment}  IN  @{inaсtive_deployments}
+    ${inactive_deployments}=  Get Inactive Deployment Entities Names For Service  %{KAFKA_OS_PROJECT}  %{KAFKA_HOST}
+    FOR  ${deployment}  IN  @{inactive_deployments}
       Set Replicas For Deployment Entity  ${deployment}  %{KAFKA_OS_PROJECT}  ${1}
     END
 
