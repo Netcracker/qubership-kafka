@@ -20,18 +20,14 @@ RUN set -x \
 RUN set -x && apk upgrade --no-cache --available
 
 # Download new jars
-ADD https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.9.2/okhttp-4.9.2.jar \
-    /tmp/okhttp-4.9.2.jar
-ADD https://repo1.maven.org/maven2/com/squareup/okio/okio/2.8.0/okio-2.8.0.jar \
-    /tmp/okio-2.8.0.jar
-ADD https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor/4.9.2/logging-interceptor-4.9.2.jar \
-    /tmp/logging-interceptor-4.9.2.jar
-ADD https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper/3.9.1/zookeeper-3.9.1.jar \
-    /tmp/zookeeper-3.9.1.jar
-ADD https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper-jute/3.9.1/zookeeper-jute-3.9.1.jar \
-    /tmp/zookeeper-jute-3.9.1.jar
-ADD https://repo1.maven.org/maven2/org/yaml/snakeyaml/2.0/snakeyaml-2.0.jar \
-    /tmp/snakeyaml-2.0.jar
+
+RUN wget -O /tmp/okhttp-4.9.2.jar https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.9.2/okhttp-4.9.2.jar && \
+    wget -O /tmp/okio-2.8.0.jar https://repo1.maven.org/maven2/com/squareup/okio/okio/2.8.0/okio-2.8.0.jar && \
+    wget -O /tmp/logging-interceptor-4.9.2.jar https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor/4.9.2/logging-interceptor-4.9.2.jar && \
+    wget -O /tmp/zookeeper-3.9.1.jar https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper/3.9.1/zookeeper-3.9.1.jar && \
+    wget -O /tmp/zookeeper-jute-3.9.1.jar https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper-jute/3.9.1/zookeeper-jute-3.9.1.jar && \
+    wget -O /tmp/snakeyaml-2.0.jar https://repo1.maven.org/maven2/org/yaml/snakeyaml/2.0/snakeyaml-2.0.jar
+
 
 # Replace old with new versions
 RUN rm -f /opt/docker/lib/com.squareup.okhttp3.okhttp-3.*.jar \

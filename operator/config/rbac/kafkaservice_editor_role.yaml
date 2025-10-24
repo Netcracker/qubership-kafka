@@ -5,7 +5,7 @@ metadata:
   name: kafkaservice-editor-role
 rules:
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkaservices
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkaservices/status
   verbs:

@@ -48,7 +48,7 @@ const (
 	specName               = "spec"
 	labelsName             = "labels"
 	annotationsName        = "annotations"
-	bootstrapServersLabel  = "kafka.qubership.org/bootstrap.servers"
+	bootstrapServersLabel  = "kafka.netcracker.com/bootstrap.servers"
 	authorizationDisabled  = "Security features are disabled"
 	kafkaScheme            = "kafka"
 	saslPlaintextProtocol  = "sasl_plaintext"
@@ -70,9 +70,9 @@ type KafkaUserReconciler struct {
 	ApiGroup              string
 }
 
-//+kubebuilder:rbac:groups=qubership.org,resources=kafkausers,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=qubership.org,resources=kafkausers/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=qubership.org,resources=kafkausers/finalizers,verbs=update
+//+kubebuilder:rbac:groups=netcracker.com,resources=kafkausers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=netcracker.com,resources=kafkausers/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=netcracker.com,resources=kafkausers/finalizers,verbs=update
 
 func (r *KafkaUserReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	logger := logf.Log.WithName("controller_kafka_user").
