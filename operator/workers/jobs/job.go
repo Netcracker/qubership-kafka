@@ -96,7 +96,7 @@ func mainApiGroup() string {
 	if value, ok := os.LookupEnv("API_GROUP"); ok {
 		return value
 	}
-	return "qubership.org"
+	return "netcracker.com"
 }
 
 func duplicateScheme(apiGroup string) (*runtime.Scheme, error) {

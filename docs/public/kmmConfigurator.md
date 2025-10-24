@@ -20,7 +20,7 @@ The `KafkaService` Custom Resources from other namespaces are not processed.
 The following is an example of `KmmConfig` Custom Resource:
 
 ```yaml
-apiVersion: qubership.org/v1
+apiVersion: netcracker.com/v1
 kind: KmmConfig
 metadata:
   name: example-kmm-config

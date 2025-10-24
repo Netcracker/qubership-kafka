@@ -61,6 +61,26 @@ spec:
             limits:
               memory: {{ default "128Mi" .Values.operator.resources.limits.memory }}
               cpu: {{ default "100m" .Values.operator.resources.limits.cpu }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 40
+            timeoutSeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
       {{- if .Values.operator.affinity }}
       affinity:
         {{ .Values.operator.affinity | toJson }}
