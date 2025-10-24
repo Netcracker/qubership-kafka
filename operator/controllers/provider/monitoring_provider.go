@@ -22,6 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strconv"
 )
 
@@ -163,6 +164,26 @@ func (mrp MonitoringResourceProvider) getMonitoringContainers(cmVersion string) 
 			Command:         mrp.getCommand(),
 			Args:            mrp.getArgs(),
 			SecurityContext: getDefaultContainerSecurityContext(),
+			LivenessProbe: &corev1.Probe{
+				Handler: corev1.Handler{
+					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
+				},
+				InitialDelaySeconds: 30,
+				TimeoutSeconds:      5,
+				PeriodSeconds:       15,
+				SuccessThreshold:    1,
+				FailureThreshold:    20,
+			},
+			ReadinessProbe: &corev1.Probe{
+				Handler: corev1.Handler{
+					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
+				},
+				InitialDelaySeconds: 30,
+				TimeoutSeconds:      5,
+				PeriodSeconds:       15,
+				SuccessThreshold:    1,
+				FailureThreshold:    20,
+			},
 		},
 	}
 	if mrp.spec.LagExporter != nil {
