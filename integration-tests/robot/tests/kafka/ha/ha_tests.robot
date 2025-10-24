@@ -33,8 +33,8 @@ Setup
     Delete Topics
 
 Check Consumed Message
-    [Arguments]  ${consumer}  ${message}
-    ${received_message} =  Consume Message  ${consumer}
+    [Arguments]  ${consumer}  ${topic_name}  ${message}
+    ${received_message} =  Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${received_message}  ${message}
 
 Check Topic Management
@@ -135,11 +135,11 @@ Test Producing And Consuming Data Without Zookeeper
 
     ${consumer} =  Create Kafka Consumer  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${message}
+    ...  Check Consumed Message  ${consumer}  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}  ${message}
     ${message_without_zookeeper} =  Create Test Message
     Produce Message  ${producer}  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}  ${message_without_zookeeper}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${message_without_zookeeper}
+    ...  Check Consumed Message  ${consumer}  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}  ${message_without_zookeeper}
     Close Kafka Consumer  ${consumer}
     ${consumer} =  Set Variable  ${None}
 
@@ -148,7 +148,7 @@ Test Producing And Consuming Data Without Zookeeper
 
     Check Topic Management
 
-    [Teardown]  Run Keywords  Cleanup  AND  Scale Up Full Service  %{ZOOKEEPER_HOST}  %{ZOOKEEPER_OS_PROJECT}
+    [Teardown]  Scale Up Full Service  %{ZOOKEEPER_HOST}  %{ZOOKEEPER_OS_PROJECT}
 
 Test Producing And Consuming Data Without Kafka Master
     [Tags]  kafka_ha  kafka_ha_without_kafka_master  kafka
@@ -175,7 +175,7 @@ Test Producing And Consuming Data Without Kafka Master
     ...  Find Out Leader Among Brokers  ${broker_envs}  ${PARTITION_LEADER_CRASH_TOPIC_NAME}
     ${consumer} =  Create Kafka Consumer  ${PARTITION_LEADER_CRASH_TOPIC_NAME}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${message}
+    ...  Check Consumed Message  ${consumer}  ${PARTITION_LEADER_CRASH_TOPIC_NAME}  ${message}
     Close Kafka Consumer  ${consumer}
     ${consumer} =  Set Variable  ${None}
 

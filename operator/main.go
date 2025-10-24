@@ -30,23 +30,17 @@ import (
 	"github.com/jessevdk/go-flags"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	//+kubebuilder:scaffold:imports
 )
 
-var (
-	setupLog = ctrl.Log.WithName("setup")
-)
+var setupLog = ctrl.Log.WithName("setup")
 
 func main() {
-	opts := zap.Options{
-		Development: true,
-	}
+	opts := zap.Options{Development: true}
 	opts.BindFlags(flag.CommandLine)
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	var appOpts cfg.Cfg
-	_, err := flags.Parse(&appOpts)
-	if err != nil {
+	if _, err := flags.Parse(&appOpts); err != nil {
 		setupLog.Error(err, "unable to parse config")
 		os.Exit(1)
 	}
@@ -54,20 +48,26 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	pool := workers.NewPool(ctx, appOpts, setupLog)
+	pool := workers.NewPool(ctx, stop, appOpts, setupLog)
+
+	if err := pool.Start(); err != nil {
+		setupLog.Error(err, "failed to start worker pool")
+		return
+	}
+
+	done := make(chan struct{})
 	go func() {
-		err = pool.Start()
-		if err != nil {
-			setupLog.Error(err, "failed to start worker pool")
-			stop()
-			return
-		}
+		defer close(done)
+		_ = pool.Wait()
 	}()
 
-	<-ctx.Done()
-	err = pool.Wait()
-	if err != nil {
-		setupLog.Error(err, "worker pool encountered an error with waiting jobs")
+	select {
+	case <-ctx.Done():
+		setupLog.Info("signal received; shutting down...")
+	case <-done:
+		setupLog.Info("all workers finished")
 	}
-	setupLog.Info("shutting down operator")
+
+	<-done
+	setupLog.Info("operator exited")
 }
