@@ -42,8 +42,8 @@ func TestKmmConfigHandler_GetKafkaUsernamePasswords(t *testing.T) {
 	kmmSecretContent["dc1-kafka-username"] = "client"
 	kmmSecretContent["dc2-kafka-username"] = "client1"
 	kmmSecretContent["dc1-kafka-password"] = "password"
-	kmmSecretContent["dc2-kafka-password"] = "password1"
-	expectedTarget := []string{"client1", "password1"}
+	kmmSecretContent["dc2-kafka-password"] = "password"
+	expectedTarget := []string{"client1", "password"}
 	expectedSource := []string{"client", "password"}
 	client := TestClient{
 		ConfigMapContent: cmContent,

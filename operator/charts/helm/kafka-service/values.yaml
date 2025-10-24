@@ -44,7 +44,7 @@ global:
   securityContext: {}
 
   disasterRecovery:
-    siteManagerApiGroup: "qubership.org"
+    siteManagerApiGroup: "netcracker.com"
     image: ghcr.io/netcracker/qubership-disaster-recovery-daemon:main
     tls:
       enabled: true
@@ -128,7 +128,7 @@ global:
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main
   replicas: 1
-  apiGroup: "qubership.org"
+  apiGroup: "netcracker.com"
   secondaryApiGroup: ""
   kmmConfiguratorEnabled: false
   resources:
@@ -746,6 +746,23 @@ cruiseControl:
     limits:
       memory: "1024Mi"
       cpu: "400m"
+
+groupMigration:
+  enabled: true
+  oldGroupPrefix: "qubership.org/"
+  # labelSelector: "app.kubernetes.io/part-of=app-name"
+  labelSelector: ""
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 20m
+    limits:
+      memory: 256Mi
+      cpu: 100m
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:main"
+  imagePullPolicy: Always
+  runAsNonRoot: true
+
 # Cloud Release Integration
 # The name of the Service exposed for the database.
 SERVICE_NAME: "kafka-services"
