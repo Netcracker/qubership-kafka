@@ -10,7 +10,8 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sethvargo/go-password v0.3.1
 	github.com/stretchr/testify v1.10.0
-	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
+	github.com/xdg/scram v1.0.5
+	golang.org/x/sync v0.15.0
 	k8s.io/api v0.22.1
 	k8s.io/apimachinery v0.22.1
 	k8s.io/client-go v0.22.1
