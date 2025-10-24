@@ -69,7 +69,7 @@ RUN set -x \
     && rm -rf /var/cache/apk/*
 
 ARG TMP_DIR="/tmp"
-ARG KAFKACTL_VERSION="3.5.1"
+ARG KAFKACTL_VERSION="5.12.1"
 RUN set -x \
     && wget \
         -nv \
