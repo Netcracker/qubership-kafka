@@ -65,7 +65,7 @@ RUN chmod a+rw -R .
 ARG TMP_DIR="/tmp"
 
 # Download kafkactl
-ARG KAFKACTL_VERSION=3.5.1
+ARG KAFKACTL_VERSION=5.12.1
 ARG TARGETARCH
 
 RUN set -x \
