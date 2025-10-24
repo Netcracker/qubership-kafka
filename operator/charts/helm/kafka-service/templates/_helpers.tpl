@@ -935,3 +935,10 @@ Find an CRD Init job Docker image in various places.
   {{- end -}}
   {{- printf "%s" $names | trimPrefix "," -}}
 {{- end -}}
+
+{{/*
+Find a kubectl image in various places.
+*/}}
+{{- define "kubectl.image" -}}
+    {{- printf "%s" .Values.groupMigration.image -}}
+{{- end -}}

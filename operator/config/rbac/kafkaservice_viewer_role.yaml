@@ -5,7 +5,7 @@ metadata:
   name: kafkaservice-viewer-role
 rules:
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkaservices
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - qubership.org
+  - netcracker.com
   resources:
   - kafkaservices/status
   verbs:
