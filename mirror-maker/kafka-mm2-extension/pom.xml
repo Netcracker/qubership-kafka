@@ -15,7 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.deploy.skip>true</maven.deploy.skip>
-    <kafka.version>3.9.1</kafka.version>
+    <kafka.version>4.1.0</kafka.version>
   </properties>
 
   <dependencies>
