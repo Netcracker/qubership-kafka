@@ -191,7 +191,7 @@ kafka:
     enabled: true
     secretName: ""
   kraft:
-    enabled: false
+    enabled: true
   autoRestartOnSecretChange: true
 
 monitoring:

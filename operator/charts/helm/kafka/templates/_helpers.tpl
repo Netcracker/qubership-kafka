@@ -408,15 +408,24 @@ Find a kubectl image in various places.
         {{- $current := (index $cr "spec" "dockerImage") | default "" -}}
         {{- $currentVar := include "kafka.imageVariant" $current -}}
         {{- if or (eq $currentVar "3") (eq $currentVar "base") -}}
-          {{- $zk := (index $cr "spec" "zookeeperConnect") | default "" | trim -}}
-          {{- if ne $zk "" -}}
-            {{- $mig := (index $cr "status" "kraftMigrationStatus" "status") | default "" | trim | lower -}}
-            {{- $ok := eq $mig "migration finished succesfully" -}}
-            {{- if not $ok -}}
+          {{- $depName := printf "%s-1" $name -}}
+          {{- $dep := lookup "apps/v1" "Deployment" $ns $depName -}}
+          {{- if $dep -}}
+            {{- $found := dict "ok" false -}}
+            {{- range $c := (index $dep "spec" "template" "spec" "containers") -}}
+              {{- range $e := (index $c "env" | default (list)) -}}
+                {{- $n := (index $e "name" | default "" | trim) -}}
+                {{- $v := (index $e "value" | default "" | trim | lower) -}}
+                {{- if and (eq $n "KAFKA_KRAFT") (eq $v "true") -}}
+                  {{- $_ := set $found "ok" true -}}
+                {{- end -}}
+              {{- end -}}
+            {{- end -}}
+            {{- if not (index $found "ok") -}}
               {{- fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress.\n You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
             {{- end -}}
           {{- end -}}
         {{- end -}}
       {{- end -}}
-    {{- end }}
+    {{- end -}}
 {{- end }}
