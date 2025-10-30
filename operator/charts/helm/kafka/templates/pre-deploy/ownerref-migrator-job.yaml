@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-ownerref-migrator
+  name: {{ template "kafka.name" . }}-ownerref-migrator
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
@@ -15,7 +15,7 @@ spec:
       labels:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ .Release.Name }}-ownerref-migrator
+      serviceAccountName: {{ template "kafka.name" . }}-ownerref-migrator
       restartPolicy: OnFailure
       {{- if .Values.groupMigration.runAsNonRoot }}
       securityContext:
@@ -92,8 +92,8 @@ spec:
               cpu: {{ .Values.groupMigration.resources.limits.cpu  }}
               memory: {{ .Values.groupMigration.resources.limits.memory }}
             requests:
-              cpu: {{ .Values.operator.resources.requests.cpu }}
-              memory: {{ .Values.operator.resources.requests.memory }}
+              cpu: {{ .Values.groupMigration.resources.requests.cpu }}
+              memory: {{ .Values.groupMigration.resources.requests.memory }}
           {{- if .Values.groupMigration.runAsNonRoot }}
           securityContext:
             allowPrivilegeEscalation: false

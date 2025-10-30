@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ .Release.Name }}-ownerref-migrator
+  name: {{ template "kafka.name" . }}-services-ownerref-migrator
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
@@ -20,7 +20,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ .Release.Name }}-ownerref-migrator
+  name: {{ template "kafka.name" . }}-services-ownerref-migrator
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
@@ -31,10 +31,10 @@ metadata:
     "argocd.argoproj.io/hook-delete-policy": HookSucceeded
 subjects:
   - kind: ServiceAccount
-    name: {{ .Release.Name }}-ownerref-migrator
+    name: {{ template "kafka.name" . }}-services-ownerref-migrator
     namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ .Release.Name }}-ownerref-migrator
+  name: {{ template "kafka.name" . }}-services-ownerref-migrator
 {{- end }}

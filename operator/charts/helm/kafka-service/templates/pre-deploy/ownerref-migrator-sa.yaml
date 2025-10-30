@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ .Release.Name }}-ownerref-migrator
+  name: {{ template "kafka.name" . }}-services-ownerref-migrator
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
