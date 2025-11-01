@@ -16,6 +16,7 @@ import logging
 import os
 import re
 import time
+import json
 from logging.handlers import RotatingFileHandler
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -158,6 +159,8 @@ def _get_broker_metrics_simple(broker_id, admin_client):
     logger.info(f'Broker id={broker_id}.')
     try:
         broker_configs = _get_broker_configs(admin_client, str(broker_id))
+        logger.info(f"Full broker_configs for broker {broker_id}:\n{json.dumps(broker_configs, indent=2, ensure_ascii=False)}")
+        print(f"DEBUG broker_configs[{broker_id}]:", broker_configs)
         kafka_version = _get_kafka_version(broker_configs)
 
     except Exception:
@@ -212,6 +215,7 @@ def _collect_compatibility_metric(admin_client: KafkaAdminClient):
               f' version_compatible={version_compatible}i'
     return message
 
+
 def _is_kraft(admin_client, broker_id):
     config_resource = ConfigResource(ConfigResourceType.BROKER, str(broker_id))
     configs = admin_client.describe_configs([config_resource])
@@ -227,6 +231,7 @@ def _is_kraft(admin_client, broker_id):
     else:
         return False
 
+
 def _collect_metrics():
     admin_client = _create_admin_client()
     is_kraft_enabled = KRAFT_ENABLED
@@ -237,7 +242,8 @@ def _collect_metrics():
                       in admin_client.describe_cluster()['brokers']]
         is_kraft_enabled = _is_kraft(admin_client, broker_ids[0])
         if KRAFT_ENABLED != is_kraft_enabled:
-            logger.warning(f'KRAFT_ENABLED environment variable value is %s, but value returned from broker is %s', KRAFT_ENABLED, is_kraft_enabled)
+            logger.warning(f'KRAFT_ENABLED environment variable value is %s, but value returned from broker is %s',
+                           KRAFT_ENABLED, is_kraft_enabled)
     args = [(idx, admin_client) for idx in broker_ids]
     metrics_func = _get_broker_metrics_simple
     collect_func = _concatenate_all_brokers_metrics_simple
