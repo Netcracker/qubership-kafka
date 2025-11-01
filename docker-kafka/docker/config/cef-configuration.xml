@@ -2,7 +2,7 @@
   <CEFVersion>1</CEFVersion>
   <DeviceVendor>Qubership</DeviceVendor>
   <DeviceProduct>Kafka</DeviceProduct>
-  <DeviceVersion>3.9.1</DeviceVersion>
+  <DeviceVersion>4.1.0</DeviceVersion>
   <SeverityMap>
     <SeverityNode eventSignature="AUTHENTICATION_EVENT" severity="2"/>
     <SeverityNode eventSignature="AUTHENTICATION_FAILED" severity="6"/>
