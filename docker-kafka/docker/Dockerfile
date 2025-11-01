@@ -14,7 +14,6 @@ RUN set -x \
         bash \
         shadow \
         netcat-openbsd \
-        jq \
         tini \
         rsync \
         curl \
@@ -136,6 +135,27 @@ RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
         "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
+ARG NETTY_VER=4.1.125.Final
+RUN set -eux; \
+  KAFKA_LIB=/opt/kafka/libs; \
+  cd "$KAFKA_LIB"; \
+  for a in \
+    netty-buffer \
+    netty-codec \
+    netty-common \
+    netty-handler \
+    netty-resolver \
+    netty-transport \
+    netty-transport-classes-epoll \
+    netty-transport-native-epoll \
+    netty-transport-native-unix-common \
+  ; do \
+    curl -fL -o "${a}-${NETTY_VER}.jar" \
+      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
+  done; \
+  # 2) удалить старые 4.1.119.Final
+  rm -f netty-*-4.1.119.Final.jar;
+
 # Copy config and script files
 COPY docker/config/ ${KAFKA_HOME}/config
 COPY docker/kafka-health.sh ${KAFKA_HOME}/bin
@@ -169,7 +189,7 @@ RUN set -x && apk upgrade --no-cache --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2
+        pcre2 curl gnutls libcurl jq
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}
