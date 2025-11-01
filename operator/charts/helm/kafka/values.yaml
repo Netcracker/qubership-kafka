@@ -29,13 +29,13 @@ global:
       adminPassword: ""
       clientUsername: ""
       clientPassword: ""
-      zookeeperClientUsername: ""
-      zookeeperClientPassword: ""
+      zookeeperClientUsername: "client"
+      zookeeperClientPassword: "client"
   # For backward compatibility
   externalKafka:
     enabled: false
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:feature_kafka_base_version_upgrade
   replicas: 1
   apiGroup: "netcracker.com"
   resources:
@@ -135,7 +135,7 @@ kafka:
   disruptionBudget:
     enabled: false
     maxUnavailable: 0
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:feature_kafka_base_version_upgrade
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
@@ -158,7 +158,10 @@ kafka:
     limits:
       cpu: 400m
       memory: 800Mi
-  securityContext: {}
+  securityContext: {
+    "fsGroup": 1000,
+    "runAsUser": 1000
+  }
   storage:
     size: 1Gi
 #    volumes:
@@ -169,8 +172,8 @@ kafka:
 #      - key1=value1
 #      - key2=value2
 #      - key3=value3
-#    className:
-#      - hostpath
+    className:
+      - gp2
 #    nodes:
 #      - node-1
 #      - node-2
@@ -184,7 +187,7 @@ kafka:
   terminationGracePeriod: 1800
   rollbackTimeout: 3600
   healthCheckTimeout: 30
-  zookeeperConnect: zookeeper:2181
+  zookeeperConnect: ""
   zookeeperEnableSsl: false
   zookeeperSslSecretName: ""
   zookeeperSetACL: false
@@ -212,7 +215,7 @@ kafka:
 #    jwksSizeLimit: 51200
   oauth: {}
   tls:
-    enabled: true
+    enabled: false
     certificates:
       crt: ""
       key: ""
@@ -224,13 +227,13 @@ kafka:
       additionalDnsNames: []
       additionalIpAddresses: []
   environmentVariables:
-    - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+    - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
   rollingUpdate: false
   customLabels: {}
-  debugContainer: false
+  debugContainer: true
   ccMetricReporterEnabled: false
   kraft:
-    enabled: false
+    enabled: true
     migration: false
     migrationTimeout: 600
   migrationController:
@@ -242,7 +245,6 @@ kafka:
       limits:
         cpu: 400m
         memory: 800Mi
-    securityContext: {}
     storage:
       size: 1Gi
   autoRestartOnSecretChange: true

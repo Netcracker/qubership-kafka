@@ -140,6 +140,12 @@ def _check_config_consistency(broker_configs_list: list) -> str:
 
 # Return Kafka version in [major version].x format (e.x. 2.7.x)
 def _get_kafka_version(broker_configs: dict) -> str:
+    # KRaft / Kafka 4.x
+    v = broker_configs.get("metadata.version")
+    if v:
+        return broker_configs["metadata.version"].split('-')[0] + '.x'
+
+    # ZK and old releases
     return broker_configs["inter.broker.protocol.version"].split('-')[0] + '.x'
 
 
@@ -287,7 +293,7 @@ def run():
         MIN_VERSION = os.getenv('MIN_VERSION', MIN_VERSION)
         MAX_VERSION = os.getenv('MAX_VERSION', MAX_VERSION)
         timeout = os.getenv('KAFKA_EXEC_PLUGIN_TIMEOUT', "60s")
-        KAFKA_TIMEOUT = int(re.compile("(\d+)").match(timeout).group(1))
+        KAFKA_TIMEOUT = int(re.compile(r"(\d+)").match(timeout).group(1))
         message = _collect_metrics()
         logger.debug('Message to send:\n%s', message)
         logger.info('End script execution!\n')
