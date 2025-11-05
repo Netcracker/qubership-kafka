@@ -35,7 +35,7 @@ global:
   externalKafka:
     enabled: false
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:2.3.1
   replicas: 1
   apiGroup: "netcracker.com"
   resources:
@@ -135,7 +135,7 @@ kafka:
   disruptionBudget:
     enabled: false
     maxUnavailable: 0
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:2.3.1
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
@@ -259,7 +259,7 @@ groupMigration:
     limits:
       memory: 256Mi
       cpu: 100m
-  image: "ghcr.io/netcracker/qubership-docker-kubectl:main"
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:0.0.4"
   imagePullPolicy: Always
   runAsNonRoot: true
 
