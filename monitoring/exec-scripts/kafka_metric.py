@@ -17,6 +17,8 @@ import os
 import re
 import time
 import json
+import urllib.request
+import urllib.error
 from logging.handlers import RotatingFileHandler
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -139,15 +141,24 @@ def _check_config_consistency(broker_configs_list: list) -> str:
     return "Yes"
 
 
-# Return Kafka version in [major version].x format (e.x. 2.7.x)
-def _get_kafka_version(broker_configs: dict) -> str:
-    # KRaft / Kafka 4.x
-    v = broker_configs.get("metadata.version")
-    if v:
-        return broker_configs["metadata.version"].split('-')[0] + '.x'
+# # Return Kafka version in [major version].x format (e.x. 2.7.x)
+# def _get_kafka_version(broker_configs: dict, admin_client: KafkaAdminClient | None = None) -> str:
+#     if admin_client is not None:
+#         try:
+#             ver = admin_client._client.check_version(timeout=KAFKA_TIMEOUT)
+#             try:
+#                 with open("/opt/kafka-monitoring/exec-scripts/kafka_version_debug.txt", "a", encoding="utf-8") as f:
+#                     f.write(f"Detected Kafka version via ApiVersions: {ver}\n")
+#             except Exception as log_err:
+#                 logger.warning(f"Failed to write debug version file: {log_err}")
+#             parts = (ver or "").split(".")
+#             if len(parts) >= 2:
+#                 return f"{parts[0]}.{parts[1]}.x"
+#         except Exception as e:
+#             logger.warning(f"ApiVersions detection failed: {e}")
 
     # ZK and old releases
-    return broker_configs["inter.broker.protocol.version"].split('-')[0] + '.x'
+    # return broker_configs["inter.broker.protocol.version"].split('-')[0] + '.x'
 
 
 # Collects metrics for each broker in a separate thread
@@ -159,9 +170,7 @@ def _get_broker_metrics_simple(broker_id, admin_client):
     logger.info(f'Broker id={broker_id}.')
     try:
         broker_configs = _get_broker_configs(admin_client, str(broker_id))
-        logger.info(f"Full broker_configs for broker {broker_id}:\n{json.dumps(broker_configs, indent=2, ensure_ascii=False)}")
-        print(f"DEBUG broker_configs[{broker_id}]:", broker_configs)
-        kafka_version = _get_kafka_version(broker_configs)
+        kafka_version = _get_kafka_version(broker_configs, admin_client)
 
     except Exception:
         logger.exception('Exception occurred working with broker id: %s', broker_id)
@@ -200,7 +209,7 @@ def _collect_compatibility_metric(admin_client: KafkaAdminClient):
     min_broker_version = None
     for broker_id in broker_ids:
         broker_configs = _get_broker_configs(admin_client, str(broker_id))
-        kafka_version = _get_kafka_version(broker_configs)
+        kafka_version = _get_kafka_version(broker_configs, admin_client)
         if min_broker_version is None or _parse_version(kafka_version) < _parse_version(min_broker_version):
             min_broker_version = kafka_version
 
@@ -281,6 +290,34 @@ def _collect_metrics():
 
 def _str2bool(v: str):
     return v.lower() in ("yes", "true", "t", "1")
+
+
+def _normalize_version_family(v: str) -> str:
+    parts = v.split(".")
+    if len(parts) >= 2:
+        return f"{parts[0]}.{parts[1]}.x"
+    if len(parts) == 1:
+        return f"{parts[0]}.0.x"
+    return "unknown"
+
+
+def _get_kafka_version(broker_configs: dict,
+                       admin_client: KafkaAdminClient | None = None) -> str:
+    if broker_configs.get("inter.broker.protocol.version"):
+        return broker_configs["inter.broker.protocol.version"].split('-')[0] + '.x'
+
+    if admin_client is not None:
+        try:
+            ver = admin_client._client.check_version(timeout=KAFKA_TIMEOUT)
+            if isinstance(ver, tuple):
+                major = ver[0]
+                minor = ver[1] if len(ver) > 1 else 0
+                return f"{major}.{minor}.x"
+            if isinstance(ver, str) and ver:
+                return _normalize_version_family(ver)
+        except Exception as e:
+            logger.warning(f"ApiVersions detection failed: {e}")
+    return "4.x"
 
 
 def run():
