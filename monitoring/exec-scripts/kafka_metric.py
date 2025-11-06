@@ -221,7 +221,7 @@ def _collect_metrics():
               f'size={len(active_brokers)}i,' \
               f'status={cluster_status},' \
               f'quorum_mode={quorum_mode}i,' \
-              f'same_configs=\"{same_configs}\",'
+              f'same_configs=\"{same_configs}\"'
     return message
 
 
