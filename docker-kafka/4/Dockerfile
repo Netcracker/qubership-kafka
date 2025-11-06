@@ -167,6 +167,16 @@ RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
 COPY 4/kafka-security-oauth-client-0.12.0-4.1.0.3.jar ${KAFKA_HOME}/libs/kafka-security-oauth-client-0.12.0-4.1.0.3.jar
 COPY 4/kafka-security-oauth-server-0.12.0-4.1.0.3.jar ${KAFKA_HOME}/libs/kafka-security-oauth-server-0.12.0-4.1.0.3.jar
 
+
+# Upgrade all tools to avoid vulnerabilities
+RUN set -x && apk upgrade --no-cache --available
+
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --upgrade --no-cache \
+        pcre2 curl gnutls libcurl jq
+
 ARG NETTY_VER=4.1.125.Final
 RUN set -eux; \
   KAFKA_LIB=/opt/kafka/libs; \
@@ -212,15 +222,6 @@ RUN mkdir -p "${KAFKA_HOME}" \
     && find "${KAFKA_LOG_DIRS}" -type d -exec chmod g+x {} + \
     && chmod +x ${KAFKA_HOME}/bin/*.sh \
     && chmod +x /docker-entrypoint.sh
-
-# Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
-
-# Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}
