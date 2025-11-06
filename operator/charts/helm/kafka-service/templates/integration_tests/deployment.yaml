@@ -190,9 +190,13 @@ spec:
           securityContext:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
           livenessProbe:
-            tcpSocket:
-              port: 8080
-            initialDelaySeconds: 20
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  pgrep -f "docker-entrypoint.sh run-robot" >/dev/null
+            initialDelaySeconds: 60
             timeoutSeconds: 5
             periodSeconds: 20
             successThreshold: 1
