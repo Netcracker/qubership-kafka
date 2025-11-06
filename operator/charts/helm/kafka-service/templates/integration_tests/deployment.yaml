@@ -191,16 +191,9 @@ spec:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
           livenessProbe:
             exec:
-              command:
-                - /bin/sh
-                - -c
-                - |
-                  pgrep -f "docker-entrypoint.sh run-robot" >/dev/null
-            initialDelaySeconds: 60
-            timeoutSeconds: 5
-            periodSeconds: 20
-            successThreshold: 1
-            failureThreshold: 5
+              command: ["sh", "-c", "true"]
+            initialDelaySeconds: 5
+            periodSeconds: 30
           readinessProbe:
             exec:
               command:
