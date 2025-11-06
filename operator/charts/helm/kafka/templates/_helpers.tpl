@@ -372,41 +372,6 @@ Find a Kafka image in various places.
     {{- printf "%s" .Values.kafka.dockerImage -}}
 {{- end -}}
 
-{{- define "validateKafkaUpgrade" -}}
-    {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
-    {{- $kind := "Kafka" -}}
-    {{- $name := include "kafka.name" . -}}
-    {{- $ns   := .Release.Namespace -}}
-    {{- $desired := .Values.kafka.dockerImage | default "image" -}}
-
-    {{- $desiredVar := include "kafka.imageVariant" $desired -}}
-    {{- if eq $desiredVar "4" -}}
-      {{- $cr := lookup $apiVersion $kind $ns $name -}}
-      {{- if $cr -}}
-        {{- $current := (index $cr "spec" "dockerImage") | default "" -}}
-        {{- $currentVar := include "kafka.imageVariant" $current -}}
-        {{- if or (eq $currentVar "3") (eq $currentVar "base") -}}
-          {{- $depName := printf "%s-1" $name -}}
-          {{- $dep := lookup "apps/v1" "Deployment" $ns $depName -}}
-          {{- if $dep -}}
-            {{- $found := dict "ok" false -}}
-            {{- range $c := (index $dep "spec" "template" "spec" "containers") -}}
-              {{- range $e := (index $c "env" | default (list)) -}}
-                {{- $n := (index $e "name" | default "" | trim) -}}
-                {{- $v := (index $e "value" | default "" | trim | lower) -}}
-                {{- if and (eq $n "KAFKA_KRAFT") (eq $v "true") -}}
-                  {{- $_ := set $found "ok" true -}}
-                {{- end -}}
-              {{- end -}}
-            {{- end -}}
-            {{- if not (index $found "ok") -}}
-              {{- fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress.\n You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
-            {{- end -}}
-          {{- end -}}
-        {{- end -}}
-      {{- end -}}
-    {{- end -}}
-{{- end }}
 
 {{/*
 Find a kubectl image in various places.
