@@ -16,9 +16,6 @@ import logging
 import os
 import re
 import time
-import json
-import urllib.request
-import urllib.error
 from logging.handlers import RotatingFileHandler
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -49,8 +46,6 @@ ALLOWED_DIFFERENT_CONFIGS = ["listeners", "zookeeper.connect", "node.id"]
 CA_CERT_PATH = '/tls/ca.crt'
 TLS_CERT_PATH = '/tls/tls.crt'
 TLS_KEY_PATH = '/tls/tls.key'
-MIN_VERSION = "0.0.0"
-MAX_VERSION = "x.x.x"
 
 
 def __configure_logging(log):
@@ -141,26 +136,6 @@ def _check_config_consistency(broker_configs_list: list) -> str:
     return "Yes"
 
 
-# # Return Kafka version in [major version].x format (e.x. 2.7.x)
-# def _get_kafka_version(broker_configs: dict, admin_client: KafkaAdminClient | None = None) -> str:
-#     if admin_client is not None:
-#         try:
-#             ver = admin_client._client.check_version(timeout=KAFKA_TIMEOUT)
-#             try:
-#                 with open("/opt/kafka-monitoring/exec-scripts/kafka_version_debug.txt", "a", encoding="utf-8") as f:
-#                     f.write(f"Detected Kafka version via ApiVersions: {ver}\n")
-#             except Exception as log_err:
-#                 logger.warning(f"Failed to write debug version file: {log_err}")
-#             parts = (ver or "").split(".")
-#             if len(parts) >= 2:
-#                 return f"{parts[0]}.{parts[1]}.x"
-#         except Exception as e:
-#             logger.warning(f"ApiVersions detection failed: {e}")
-
-    # ZK and old releases
-    # return broker_configs["inter.broker.protocol.version"].split('-')[0] + '.x'
-
-
 # Collects metrics for each broker in a separate thread
 def _get_broker_metrics_simple(broker_id, admin_client):
     if not admin_client:
@@ -170,12 +145,11 @@ def _get_broker_metrics_simple(broker_id, admin_client):
     logger.info(f'Broker id={broker_id}.')
     try:
         broker_configs = _get_broker_configs(admin_client, str(broker_id))
-        kafka_version = _get_kafka_version(broker_configs, admin_client)
 
     except Exception:
         logger.exception('Exception occurred working with broker id: %s', broker_id)
         return -1
-    return broker_id, broker_configs, special_broker_metrics, kafka_version
+    return broker_id, broker_configs, special_broker_metrics
 
 
 # Concatenates metrics received for each broker for further processing
@@ -193,36 +167,6 @@ def _concatenate_all_brokers_metrics_simple(brokers_metrics):
 def _parse_version(v):
     v = v.replace("x", "99")
     return tuple(map(int, v.split('.')))
-
-
-def _is_version_compatible(version, min_version, max_version):
-    version_parts = _parse_version(version)
-    min_version_parts = _parse_version(min_version)
-    max_version_parts = _parse_version(max_version)
-
-    return min_version_parts <= version_parts <= max_version_parts
-
-
-def _collect_compatibility_metric(admin_client: KafkaAdminClient):
-    broker_ids = [broker['node_id'] for broker
-                  in admin_client.describe_cluster()['brokers']]
-    min_broker_version = None
-    for broker_id in broker_ids:
-        broker_configs = _get_broker_configs(admin_client, str(broker_id))
-        kafka_version = _get_kafka_version(broker_configs, admin_client)
-        if min_broker_version is None or _parse_version(kafka_version) < _parse_version(min_broker_version):
-            min_broker_version = kafka_version
-
-    version_compatible = 1 if _is_version_compatible(min_broker_version, MIN_VERSION, MAX_VERSION) else 0
-
-    message = f'supplementary_services,' \
-              f'application=kafka,' \
-              f'namespace={OS_PROJECT},' \
-              f'application_version={min_broker_version},' \
-              f'min_version={MIN_VERSION},' \
-              f'max_version={MAX_VERSION}' \
-              f' version_compatible={version_compatible}i'
-    return message
 
 
 def _is_kraft(admin_client, broker_id):
@@ -282,9 +226,6 @@ def _collect_metrics():
               f'quorum_mode={quorum_mode}i,' \
               f'same_configs=\"{same_configs}\",' \
               f'kafka_version=\"{kafka_version}\"'
-    if admin_client is not None:
-        compatibility_message = _collect_compatibility_metric(admin_client)
-        message = f'{message}\n{compatibility_message}'
     return message
 
 
@@ -292,38 +233,10 @@ def _str2bool(v: str):
     return v.lower() in ("yes", "true", "t", "1")
 
 
-def _normalize_version_family(v: str) -> str:
-    parts = v.split(".")
-    if len(parts) >= 2:
-        return f"{parts[0]}.{parts[1]}.x"
-    if len(parts) == 1:
-        return f"{parts[0]}.0.x"
-    return "unknown"
-
-
-def _get_kafka_version(broker_configs: dict,
-                       admin_client: KafkaAdminClient | None = None) -> str:
-    if broker_configs.get("inter.broker.protocol.version"):
-        return broker_configs["inter.broker.protocol.version"].split('-')[0] + '.x'
-
-    if admin_client is not None:
-        try:
-            ver = admin_client._client.check_version(timeout=KAFKA_TIMEOUT)
-            if isinstance(ver, tuple):
-                major = ver[0]
-                minor = ver[1] if len(ver) > 1 else 0
-                return f"{major}.{minor}.x"
-            if isinstance(ver, str) and ver:
-                return _normalize_version_family(ver)
-        except Exception as e:
-            logger.warning(f"ApiVersions detection failed: {e}")
-    return "4.x"
-
-
 def run():
     try:
         logger.info('Start script execution...')
-        global KAFKA_SERVICE_NAME, KAFKA_TOTAL_BROKERS_COUNT, OS_PROJECT, KAFKA_USER, KAFKA_PASSWORD, KAFKA_TIMEOUT, KAFKA_ADDRESSES, KRAFT_ENABLED, KAFKA_SASL_MECHANISM, KAFKA_ENABLE_SSL, MIN_VERSION, MAX_VERSION
+        global KAFKA_SERVICE_NAME, KAFKA_TOTAL_BROKERS_COUNT, OS_PROJECT, KAFKA_USER, KAFKA_PASSWORD, KAFKA_TIMEOUT, KAFKA_ADDRESSES, KRAFT_ENABLED, KAFKA_SASL_MECHANISM, KAFKA_ENABLE_SSL
         KAFKA_SERVICE_NAME = os.getenv('KAFKA_SERVICE_NAME')
         KAFKA_ADDRESSES = os.getenv('KAFKA_ADDRESSES')
         KRAFT_ENABLED = _str2bool(os.getenv("KRAFT_ENABLED", "false"))
@@ -333,8 +246,6 @@ def run():
         OS_PROJECT = os.getenv('OS_PROJECT')
         KAFKA_USER = os.getenv('KAFKA_USER')
         KAFKA_PASSWORD = os.getenv('KAFKA_PASSWORD')
-        MIN_VERSION = os.getenv('MIN_VERSION', MIN_VERSION)
-        MAX_VERSION = os.getenv('MAX_VERSION', MAX_VERSION)
         timeout = os.getenv('KAFKA_EXEC_PLUGIN_TIMEOUT', "60s")
         KAFKA_TIMEOUT = int(re.compile(r"(\d+)").match(timeout).group(1))
         message = _collect_metrics()
