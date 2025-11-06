@@ -154,13 +154,11 @@ def _get_broker_metrics_simple(broker_id, admin_client):
 
 # Concatenates metrics received for each broker for further processing
 def _concatenate_all_brokers_metrics_simple(brokers_metrics):
-    all_brokers_metrics = {'active_brokers': list(),
-                           'kafka_version': ""}
+    all_brokers_metrics = {'active_brokers': list()}
     broker_configs_list = list()
-    for broker_id, broker_configs, special_broker_metrics, kafka_version in brokers_metrics:
+    for broker_id, broker_configs, special_broker_metrics in brokers_metrics:
         all_brokers_metrics['active_brokers'].append(broker_id)
         broker_configs_list.append(broker_configs)
-        all_brokers_metrics['kafka_version'] = kafka_version
     return all_brokers_metrics, None, broker_configs_list, None
 
 
@@ -216,7 +214,6 @@ def _collect_metrics():
     active_brokers = all_brokers_metrics["active_brokers"]
     logger.info('Active brokers: %s', active_brokers)
     same_configs = _check_config_consistency(broker_configs_list)
-    kafka_version = all_brokers_metrics['kafka_version']
     cluster_status = _determine_cluster_status_simple(active_brokers)
     quorum_mode = 101 if is_kraft_enabled else 100
     logger.info('Cluster status: %s', cluster_status)
@@ -224,8 +221,7 @@ def _collect_metrics():
               f'size={len(active_brokers)}i,' \
               f'status={cluster_status},' \
               f'quorum_mode={quorum_mode}i,' \
-              f'same_configs=\"{same_configs}\",' \
-              f'kafka_version=\"{kafka_version}\"'
+              f'same_configs=\"{same_configs}\",'
     return message
 
 
