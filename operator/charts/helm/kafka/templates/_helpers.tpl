@@ -372,21 +372,6 @@ Find a Kafka image in various places.
     {{- printf "%s" .Values.kafka.dockerImage -}}
 {{- end -}}
 
-{{- define "kafka.imageVariant" -}}
-  {{- $img := . | default "" -}}
-  {{- if or (empty $img) (not (kindIs "string" $img)) -}}
-    unknown
-  {{- else if contains "qubership-docker-kafka-4" $img -}}
-    4
-  {{- else if contains "qubership-docker-kafka-3" $img -}}
-    3
-  {{- else if and (contains "qubership-docker-kafka" $img) (not (or (contains "qubership-docker-kafka-3" $img) (contains "qubership-docker-kafka-4" $img))) -}}
-    base
-  {{- else -}}
-    unknown
-  {{- end -}}
-{{- end }}
-
 {{- define "validateKafkaUpgrade" -}}
     {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
     {{- $kind := "Kafka" -}}
