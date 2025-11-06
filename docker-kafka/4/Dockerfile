@@ -16,7 +16,6 @@ RUN set -x \
         netcat-openbsd \
         tini \
         rsync \
-        curl \
         grep \
         ca-certificates \
         wget \
@@ -186,7 +185,6 @@ RUN set -eux; \
     curl -fL -o "${a}-${NETTY_VER}.jar" \
       "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
   done; \
-  # 2) удалить старые 4.1.119.Final
   rm -f netty-*-4.1.119.Final.jar;
 
 # Copy config and script files

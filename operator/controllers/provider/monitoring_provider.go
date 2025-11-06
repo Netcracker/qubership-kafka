@@ -336,14 +336,6 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvironmentVariables() []core
 			Name:  "DATA_COLLECTION_INTERVAL",
 			Value: util.DefaultIfEmpty(mrp.spec.DataCollectionInterval, "10s"),
 		},
-		{
-			Name:  "MIN_VERSION",
-			Value: mrp.spec.MinVersion,
-		},
-		{
-			Name:  "MAX_VERSION",
-			Value: mrp.spec.MaxVersion,
-		},
 	}
 	if mrp.cr.Spec.Global.Kraft.Enabled {
 		envs = append(envs, []corev1.EnvVar{
