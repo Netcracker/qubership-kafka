@@ -417,7 +417,7 @@ Find a kubectl image in various places.
               {{- range $e := (index $c "env" | default (list)) -}}
                 {{- $n := (index $e "name" | default "" | trim) -}}
                 {{- $v := (index $e "value" | default "" | trim | lower) -}}
-                {{- if and (eq $n "KAFKA_KRAFT") (eq $v "true") -}}
+                {{- if and (eq $n "KRAFT_ENABLED") (eq $v "true") -}}
                   {{- $_ := set $found "ok" true -}}
                 {{- end -}}
               {{- end -}}

@@ -169,7 +169,7 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 	r.logger.Info(fmt.Sprintf("Update brokers set: current replicas count is [%d], new replicas count is [%d].", currentReplicas, kafkaSpec.Replicas))
 	kraft := r.cr.Spec.Kraft.Enabled
 
-	if r.cr.Spec.Kraft.Migration || (kraft && r.cr.Spec.ZookeeperConnect != "") {
+	if r.cr.Spec.Kraft.Migration {
 		var status *kafka.KafkaStatus
 		status, err = r.reconciler.StatusUpdater.GetStatus()
 		if err != nil {
