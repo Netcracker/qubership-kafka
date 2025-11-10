@@ -233,6 +233,7 @@ kafka:
     enabled: true
     migration: false
     migrationTimeout: 600
+    skipUpgradeCheck: false
   migrationController:
     heapSize: 256
     resources:
