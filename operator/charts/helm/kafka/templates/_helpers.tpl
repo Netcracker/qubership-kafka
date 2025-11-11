@@ -402,6 +402,7 @@ Find a kubectl image in various places.
   {{- $name := include "kafka.name" . -}}
   {{- $ns   := .Release.Namespace -}}
   {{- $desired := include "kafka.image" . -}}
+  {{- $upgradeAllowed := true -}}
 
   {{- $desiredVar := include "kafka.imageVariant" $desired -}}
   {{- if eq $desiredVar "4" -}}
@@ -419,13 +420,18 @@ Find a kubectl image in various places.
               {{- $n := (index $e "name" | default "" | trim) -}}
               {{- $v := (index $e "value" | default "" | trim | lower) -}}
               {{- if and (eq $n "KRAFT_ENABLED") (eq $v "true") -}}
-                {{- printf "true" }}
+                {{- $_ := set $found "ok" true -}}
               {{- end -}}
             {{- end -}}
           {{- end -}}
+          {{- if not (index $found "ok") -}}
+            {{- $upgradeAllowed = false -}}
+          {{- end -}}
+        {{- else -}}
+           {{- $upgradeAllowed = false -}}
         {{- end -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}
-  {{- printf "false" }}
+  {{- printf "%t" $upgradeAllowed -}}
 {{- end }}
