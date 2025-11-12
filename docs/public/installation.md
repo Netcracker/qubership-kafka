@@ -1877,7 +1877,7 @@ You need to follow `Release Notes` and `Breaking Changes` in the version you ins
 If you upgrade to a version which has several major diff changes from the installed version (e.g. 0.3.1 over 0.1.1), you need to
 check `Release Notes` and `Breaking Changes` sections for `0.2.0` and `0.3.0` versions.
 
-**Important**: Upgrade to Kafka 4.x from previous major versions like 3.x require migration from Zookeeper to Kraft mode, see [guide](kraft-migration.md)
+**Important**: You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide, please refer to our migration [guide](kraft-migration.md)
 
 ## Scale-In Cluster
 
