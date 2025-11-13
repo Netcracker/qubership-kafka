@@ -1145,6 +1145,39 @@ The recommended procedure for executing this restoration process encompasses the
 
 Not applicable
 
+### Updating partition.metadata on Kafka side
+
+If ZooKeeper contains correct topic configuration, `topicId` can be synchronized by manual deletion of `partition.metadata` for affected topics and `__consumer.offsets` on all brokers. To remove `partition.metadata` for all topics use next command:
+
+```
+cd /var/opt/kafka/data/$BROKER_ID
+find . -regex ".*partition.metadata" -delete
+```
+
+To delete `partition.metadata` for `__consumer.offsets` use the command:
+
+```
+cd /var/opt/kafka/data/$BROKER_ID
+find . -regex ".*__consumer_offsets.*partition.metadata" -delete
+```
+
+After that you need to restart all Kafka brokers. All necessary `partion.metadata` for topics are recreated with new `topicId` once brokers are restarted.
+
+Check topic configuration again with command:
+
+```
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --command-config bin/adminclient.properties --topic test
+
+Topic: test     TopicId: nI-JQtPwQwGiylMfm8k13w PartitionCount: 10      ReplicationFactor: 3    Configs: min.insync.replicas=2,segment.bytes=1073
+741824
+        Topic: test     Partition: 0    Leader: 3       Replicas: 1,2,3 Isr: 3,2,1
+        Topic: test     Partition: 1    Leader: 1       Replicas: 2,3,1 Isr: 1,2,3
+        Topic: test     Partition: 2    Leader: 3       Replicas: 3,1,2 Isr: 1,2,3
+        ...
+```
+
+If some partitions are out of balance after update, refer to [Topics with Insufficient Replication Factor](#topics-with-insufficient-replication-factor) guide.
+
 ## Dealing with Kafka's Under-replicated Partitions or Heaviest Partitions in Topics Due to Data Sync Issues
 
 ### Description
