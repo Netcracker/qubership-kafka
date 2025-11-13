@@ -165,7 +165,7 @@ RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
         "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-server/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
     && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
-        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
+        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
