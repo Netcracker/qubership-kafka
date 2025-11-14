@@ -360,7 +360,7 @@
         "type": "prometheus",
         "uid": "${DS_PLATFORM_MONITORING}"
       },
-      "description": "Приблизительная оценка: (offset lag) / (ingest rate). Делитель — суммарный rate по выбранным топикам.",
+      "description": "Approximate estimation: (offset lag) / (ingest rate). The divisor represents the total rate across the selected topics.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -757,7 +757,7 @@
             "type": "prometheus",
             "uid": "${DS_PLATFORM_MONITORING}"
           },
-          "description": "Приблизительная оценка: (offset lag) / (ingest rate). Делитель — суммарный rate по выбранным топикам.",
+          "description": "Approximate estimation: (offset lag) / (ingest rate). The divisor represents the total rate across the selected topics.",
           "fieldConfig": {
             "defaults": {
               "color": {
