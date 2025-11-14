@@ -22,7 +22,7 @@ jobs:
         if: github.event_name == 'repository_dispatch' && github.event.action == 'kafka-patched-build'
         id: set-vars
         run: |
-          echo "replace_symbol=${REPLACE_SYMBOL}" >> $GITHUB_OUTPUT 
+          echo "replace_symbol=${REPLACE_SYMBOL}" >> $GITHUB_OUTPUT
           kafka_distro_tgz="${KAFKA_DISTRO_URL##*/}"
           echo 'build_args<<EOF' >> $GITHUB_OUTPUT
           echo "KAFKA_DISTRO_URL=${KAFKA_DISTRO_URL}" >> $GITHUB_OUTPUT
@@ -62,7 +62,9 @@ jobs:
         uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
         id: meta
         with:
-          default-template: "{{ref-name}}"
+          default-template: "{{timestamp}}"
+          default-tag: ''
+          extra-tags: custom,patch,${{ github.event.client_payload.kafka-version }}
           replace-symbol: ${{ needs.prepare-inputs.outputs.replace_symbol }}
           ref: ${{ env.TARGET_REF }}
 
@@ -102,4 +104,3 @@ jobs:
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
-
