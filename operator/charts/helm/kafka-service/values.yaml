@@ -264,6 +264,9 @@ monitoring:
 
   lagExporter:
     enabled: false
+    refreshMetadata: "30s"
+    logEnableSarama: true
+    verbosity: 1
     service:
       image: "ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main"
       port: 8000

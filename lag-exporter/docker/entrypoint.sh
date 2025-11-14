@@ -35,6 +35,4 @@ if [[ -n "${KAFKA_USER}" && -n "${KAFKA_PASSWORD}" ]]; then
   args+=("--sasl.password=${KAFKA_PASSWORD}")
 fi
 
-set -x
-
 exec /sbin/tini -w -e 143 -- "$KAFKA_EXPORTER_HOME/kafka_exporter" "${args[@]}"
