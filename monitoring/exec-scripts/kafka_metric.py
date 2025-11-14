@@ -145,7 +145,6 @@ def _get_broker_metrics_simple(broker_id, admin_client):
     logger.info(f'Broker id={broker_id}.')
     try:
         broker_configs = _get_broker_configs(admin_client, str(broker_id))
-
     except Exception:
         logger.exception('Exception occurred working with broker id: %s', broker_id)
         return -1
