@@ -68,7 +68,7 @@ If you also want to back up configured ACL, you can specify `"mode":"acl"` param
 curl -u username:password -XPOST -v -H "Content-Type: application/json" -d '{"mode":"acl"}'  http://localhost:8080/backup
 ```
 
-**Note**: ACL Backup/Restore requires authorization enabled in Kafka configurations to be performed. Make sure that `enableAuthorization` property is set to `true`. Check [Kafka Installation Guide](https://github.com/Netcracker/qubership-kafka/blob/main/kafka-service-operator/documentation/installation-guide/helm/README.md#kafka-parameters).
+**Note**: ACL Backup/Restore requires authorization enabled in Kafka configurations to be performed. Make sure that `enableAuthorization` property is set to `true`. Check [Kafka Installation Guide](./installation.md#kafka).
 
 ## Backup Status
 

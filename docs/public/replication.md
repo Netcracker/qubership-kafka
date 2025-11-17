@@ -82,7 +82,7 @@ topics.blacklist = dc2\.*,dc1\.*,dc3\.*
 
 Where **.bootstrap.servers** specifies the kafka-cluster address. To get kafka-cluster addresses,
 refer to the _Enable Access to Kafka for External Clients_ section in the
-_[Kafka Service Installation Procedure](enable-external-access.md)_.
+_[Kafka Service Installation Procedure](external-access.md).
 
 The topic that is replicated from cluster **dc_name** has the same name with prefix **dc_name.** . 
 The connectors can be configured to replicate specific topics via a whitelist or regex. 
