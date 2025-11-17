@@ -1,35 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PLATFORM_MONITORING",
-      "label": "Platform Monitoring Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "11.6.5"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -49,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 221,
   "links": [],
   "panels": [
     {
@@ -149,13 +118,10 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[1m])) by (topic)",
+          "expr": "sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}[1m])) by (topic)",
           "legendFormat": "{{topic}}",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "uid": "$datasource"
-          }
+          "refId": "A"
         }
       ],
       "title": "Message produce per second",
@@ -163,8 +129,7 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PLATFORM_MONITORING}"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -246,14 +211,10 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(kafka_consumergroup_lag{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}) by (consumergroup, topic)",
+          "expr": "sum(kafka_consumergroup_lag{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}) by (consumergroup, topic)",
           "legendFormat": "{{consumergroup}} (topic: {{topic}})",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PLATFORM_MONITORING}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Lag by Consumer Group (offsets)",
@@ -343,13 +304,10 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(kafka_consumergroup_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[5m])) by (consumergroup, topic)",
+          "expr": "sum(rate(kafka_consumergroup_current_offset{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}[5m])) by (consumergroup, topic)",
           "legendFormat": "{{consumergroup}} (topic: {{topic}})",
           "range": true,
-          "refId": "A",
-          "datasource": {
-            "uid": "$datasource"
-          }
+          "refId": "A"
         }
       ],
       "title": "Message consume per minute",
@@ -357,8 +315,7 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PLATFORM_MONITORING}"
+        "uid": "$datasource"
       },
       "description": "Approximate estimation: (offset lag) / (ingest rate). The divisor represents the total rate across the selected topics.",
       "fieldConfig": {
@@ -440,13 +397,9 @@
       "pluginVersion": "11.6.5",
       "targets": [
         {
-          "expr": "sum by (consumergroup) (kafka_consumergroup_lag{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}) / clamp_min(sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[5m])), 1)",
+          "expr": "sum by (consumergroup) (kafka_consumergroup_lag{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}) / clamp_min(sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}[5m])), 1)",
           "legendFormat": "{{consumergroup}}",
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PLATFORM_MONITORING}"
-          }
+          "refId": "A"
         }
       ],
       "title": "Estimated lag seconds per consumer group",
@@ -546,13 +499,10 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "max(rate(kafka_topic_partition_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[1m])) by (topic, partition)",
+              "expr": "max(rate(kafka_topic_partition_current_offset{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}[1m])) by (topic, partition)",
               "legendFormat": "{{topic}}-{{partition}}",
               "range": true,
-              "refId": "A",
-              "datasource": {
-                "uid": "$datasource"
-              }
+              "refId": "A"
             }
           ],
           "title": "Message produce per second",
@@ -560,8 +510,7 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PLATFORM_MONITORING}"
+            "uid": "$datasource"
           },
           "fieldConfig": {
             "defaults": {
@@ -643,14 +592,10 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "max(kafka_consumergroup_lag{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}) by (consumergroup, topic, partition)",
+              "expr": "max(kafka_consumergroup_lag{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}) by (consumergroup, topic, partition)",
               "legendFormat": "{{consumergroup}} (topic: {{topic}}, partition: {{partition}})",
               "range": true,
-              "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PLATFORM_MONITORING}"
-              }
+              "refId": "A"
             }
           ],
           "title": "Lag by Consumer Group (offsets)",
@@ -740,13 +685,10 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(rate(kafka_consumergroup_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[5m])) by (consumergroup, topic, partition)",
+              "expr": "sum(rate(kafka_consumergroup_current_offset{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}[5m])) by (consumergroup, topic, partition)",
               "legendFormat": "{{consumergroup}} (topic: {{topic}}, partition: {{partition}})",
               "range": true,
-              "refId": "A",
-              "datasource": {
-                "uid": "$datasource"
-              }
+              "refId": "A"
             }
           ],
           "title": "Message consume per minute",
@@ -754,8 +696,7 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PLATFORM_MONITORING}"
+            "uid": "$datasource"
           },
           "description": "Approximate estimation: (offset lag) / (ingest rate). The divisor represents the total rate across the selected topics.",
           "fieldConfig": {
@@ -838,14 +779,10 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum by (consumergroup, topic, partition) (kafka_consumergroup_lag{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}) / clamp_min(sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",instance=~\"$instance\",topic=~\"$topic\"}[5m])), 1)",
+              "expr": "sum by (consumergroup, topic, partition) (kafka_consumergroup_lag{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}) / clamp_min(sum(rate(kafka_topic_partition_current_offset{job=~\"$job\",namespace=\"$namespace\",topic=~\"$topic\"}[5m])), 1)",
               "legendFormat": "{{consumergroup}} (topic: {{topic}}, partition: {{partition}})",
               "range": true,
-              "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PLATFORM_MONITORING}"
-              }
+              "refId": "A"
             }
           ],
           "title": "Estimated lag seconds per consumer group",
@@ -856,6 +793,7 @@
       "type": "row"
     }
   ],
+  "preload": false,
   "refresh": "30s",
   "schemaVersion": 41,
   "tags": [
@@ -865,7 +803,10 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "text": "Platform Monitoring Prometheus",
+          "value": "PC3E95692D54ABCC0"
+        },
         "label": "Prometheus",
         "name": "datasource",
         "options": [],
@@ -874,7 +815,10 @@
         "type": "datasource"
       },
       {
-        "current": {},
+        "current": {
+          "text": "kafka-monitoring",
+          "value": "kafka-monitoring"
+        },
         "datasource": {
           "uid": "$datasource"
         },
@@ -888,22 +832,29 @@
       },
       {
         "allValue": ".*",
-        "current": {},
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PLATFORM_MONITORING}"
+          "uid": "$datasource"
         },
         "includeAll": true,
-        "label": "Instance",
-        "name": "instance",
+        "label": "Namespace",
+        "name": "namespace",
         "options": [],
-        "query": "label_values(kafka_consumergroup_current_offset{job=~\"$job\"}, instance)",
+        "query": "label_values(kafka_consumergroup_current_offset{job=~\"$job\"}, namespace)",
         "refresh": 1,
         "type": "query"
       },
       {
         "allValue": ".*",
-        "current": {},
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": {
           "uid": "$datasource"
         },
@@ -912,23 +863,27 @@
         "multi": true,
         "name": "topic",
         "options": [],
-        "query": "label_values(kafka_topic_partition_current_offset{instance=~\"$instance\",topic!=\"__consumer_offsets\"}, topic)",
+        "query": "label_values(kafka_topic_partition_current_offset{namespace=\"$namespace\",topic!=\"__consumer_offsets\"}, topic)",
         "refresh": 1,
         "type": "query"
       },
       {
         "allValue": ".*",
-        "current": {},
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PLATFORM_MONITORING}"
+          "uid": "$datasource"
         },
         "includeAll": true,
         "label": "Consumer Group",
         "multi": true,
         "name": "consumergroup",
         "options": [],
-        "query": "label_values(kafka_consumergroup_current_offset{instance=~\"$instance\"}, consumergroup)",
+        "query": "label_values(kafka_consumergroup_current_offset{namespace=\"$namespace\"}, consumergroup)",
         "refresh": 1,
         "type": "query"
       }
@@ -942,6 +897,5 @@
   "timezone": "",
   "title": "Kafka Exporter — Lag & Throughput",
   "uid": "d6e01e97203e1e89f769a232c8b7317f01a6b43e",
-  "version": 7,
-  "weekStart": ""
+  "version": 7
 }
