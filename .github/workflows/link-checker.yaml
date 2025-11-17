@@ -41,7 +41,7 @@ jobs:
             --exclude-all-private
             --max-concurrency 4
             --cache
-            --cache-exclude-status '404, 429, 500..502'
+            --cache-exclude-status '429, 500..502'
             --max-cache-age 1d
           format: markdown
           fail: true
