@@ -26,11 +26,11 @@ Kafka provides metrics via jmx.
 More details see [here](https://kafka.apache.org/documentation/#monitoring)
 
 For monitoring you need:
-- setup link:https://github.com/influxdata/influxdb[InfluxDB] database
-- setup customized link:https://github.com/influxdata/telegraf[Telegraf] - 
-  link:https://github.com/Netcracker/qubership-kafka-monitoring[Kafka Monitoring] agent 
+- setup link:[InfluxDB](https://github.com/influxdata/influxdb) database
+- setup customized link:[Telegraf](https://github.com/influxdata/telegraf) 
+  link:[Kafka Monitoring](https://github.com/Netcracker/qubership-kafka-monitoring) agent 
   with InfluxDB output plugin and kafka exec input plugin
-- setup link:https://github.com/grafana/grafana[Grafana] and configure datasource (influxdb)
+- setup link:[Grafana](https://github.com/grafana/grafana) and configure datasource (influxdb)
 - import json template for Grafana Dashboard
 
 Also Kafka provides JMX metrics in Prometheus format on `/metrics` REST endpoint. 
