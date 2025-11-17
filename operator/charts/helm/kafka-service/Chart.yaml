@@ -26,3 +26,4 @@ dependencies:
   condition: monitoring.install
   version: ~0
   repository: "file://charts/prometheusrules"
+  
