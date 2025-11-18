@@ -249,7 +249,10 @@ func CalcCleanerNReplicaThreads(metadata kafka.MetadataResponse, client kafka.Cl
 	}
 	var cleanerVal string
 	var fetchersVal string
-	response, _ := client.DescribeConfigs(context.Background(), request)
+	response, err := client.DescribeConfigs(context.Background(), request)
+	if err != nil {
+		log.Fatalf("Failed to describe configs: %s", err)
+	}
 	for _, resource := range response.Resources {
 		brokerSignature := fmt.Sprintf("%s-%s", serviceName, resource.ResourceName)
 		for _, config := range resource.ConfigEntries {
