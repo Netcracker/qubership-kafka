@@ -80,7 +80,7 @@ bin/kafka-acls.sh \
   --deny-host 198.51.100.3 --operation Read --topic test-topic
 ```
 
-**Note**: The `--allow-host` and `deny-host` options only support IP addresses (host names are not 
+**Note**: The `--allow-host` and `deny-host` options only support IP addresses (hostnames are not 
 supported). Also note that IPv6 addresses are supported, and that you can use them in ACLs.
 
 The preceding example adds ACLs to a topic by specifying `--topic <topic-name>` as the resource 

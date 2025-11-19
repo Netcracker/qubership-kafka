@@ -85,7 +85,7 @@ refer to the _Enable Access to Kafka for External Clients_ section in the
 _[Kafka Service Installation Procedure](external-access.md).
 
 The topic that is replicated from cluster **dc_name** has the same name with prefix **dc_name.** . 
-The connectors can be configured to replicate specific topics via a whitelist or regex. 
+The connectors can be configured to replicate specific topics via a whitelist or regular expression. 
 There is no need to perform replication for topics that were created as result of a replication.
 For example, there is no need to copy **dc1.topic-1** from **dc-2** to **dc-3**. 
 Here,`topics.blacklist` specifies topics to exclude from replication. 

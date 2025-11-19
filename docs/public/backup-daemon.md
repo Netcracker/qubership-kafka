@@ -105,7 +105,7 @@ curl -XGET http://localhost:8080/listbackups/<backup_id>
 where `backup_id` is the name of specific backup. The command returns JSON string with data about
 specific backup:
 
-* `ts` - The UNIX timestamp of backup.
+* `ts` - The Unix timestamp of backup.
 * `spent_time` - The time spent on backup (in ms)
 * `db_list` - The list of stored topics (only for granular backup)
 * `id` - The name of backup
@@ -127,7 +127,7 @@ You must specify databases in the dbs list. You will not be able to run a recove
 You also can start a recovery with specifying topics (`dbs`). In this case only snapshots for specified topics are restored.
 
 ```
-curl -u admin:admin -XPOST -v -H "Content-Type: application/json" -d '{"vault":"20250513T095536"}' http://localhost:8080/restore
+curl -u username:password -XPOST -v -H "Content-Type: application/json" -d '{"vault":"20250513T095536"}' http://localhost:8080/restore
 ```
 
 Alternatively, you can specify regular expression (`topic-regex`) for topic names to restore.
@@ -191,7 +191,7 @@ curl -XGET -u username:password -v -H "Content-Type: application/json" -d  '{"ts
 
 This command will return a JSON string with stats about particular backup or the first backup newer that specified timestamp:
 
-* `ts`: UNIX timestamp of backup
+* `ts`: Unix timestamp of backup
 * `spent_time`: time spent on backup (in ms)
 * `db_list`: List of backed up databases
 * `id`: vault name

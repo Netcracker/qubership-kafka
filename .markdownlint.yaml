@@ -25,7 +25,13 @@ MD037: false
 MD004: false
 # MD007/ul-indent Unordered list indentation
 MD007: false
-# MD010/no-hard-tabs Hard tabs
-MD010: false
 # MD009/no-trailing-spaces Trailing spaces [Expected: 0 or 2; Actual: <?>]
 MD009: false
+# MD010/no-hard-tabs Hard tabs
+MD010: false
+# MD051/Link fragments should be valid
+MD051: false
+# MD025/Multiple top-level headings in the same document
+MD025: false
+# MD040/fenced-code-language Fenced code blocks should have a language specified
+MD040: false

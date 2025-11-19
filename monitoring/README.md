@@ -45,7 +45,7 @@ curl -XGET -k -u admin:admin http://localhost:3000/api/dashboards/db/kafka-monit
   Where:
    
    * `admin:admin` grafana user login and password
-   * `http://localhost:3000` grafana url
+   * `http://localhost:3000` grafana URL
    * `kafka-monitoring` dashboard name
  
 ### Dashboard importing
@@ -62,7 +62,7 @@ curl -XPOST \
   Where:
    
    * `admin:admin` grafana user login and password
-   * `http://localhost:3000` grafana url
+   * `http://localhost:3000` grafana URL
 
 
 ## Zabbix
