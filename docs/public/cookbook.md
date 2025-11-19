@@ -46,8 +46,8 @@ The important links are described in the table below.
 
 | Name                   | URL                                                                                                                                                                        |
 |------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Docker GIT repository  | [https://github.com/Netcracker/qubership-kafka](https://github.com/Netcracker/qubership-kafka)                                                                             |
-| Deploy GIT repository  | [https://github.com/Netcracker/qubership-kafka](https://github.com/Netcracker/qubership-kafka)                                                                             |
+| Docker Git repository  | [https://github.com/Netcracker/qubership-kafka](https://github.com/Netcracker/qubership-kafka)                                                                             |
+| Deploy Git repository  | [https://github.com/Netcracker/qubership-kafka](https://github.com/Netcracker/qubership-kafka)                                                                             |
 | Documentation          | [https://github.com/Netcracker/qubership-kafka/tree/main/docs](https://github.com/Netcracker/qubership-kafka/tree/main/docs)                                               |
 | Operator Documentation | [https://github.com/Netcracker/qubership-kafka/tree/main/docs/public/installation.md](https://github.com/Netcracker/qubership-kafka/tree/main/docs/public/installation.md) |
 | Official Documentation | [https://kafka.apache.org/documentation/](https://kafka.apache.org/documentation/)                                                                                         |

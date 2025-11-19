@@ -9,7 +9,7 @@ To update Kafka credentials:
 1. Navigate to **Kubernetes** > **"${KAFKA_NAMESPACE}"** > **Config and Storage** > **Secrets**.
 2. Select **`${SERVICE_NAME}-secret`**.
 3. Update the values for the `admin-username` and `admin-password` and/or `client-username` and `client-password` properties
-   with new credentials in `BASE64` encoding. 
+   with new credentials in `base64` encoding. 
    For more information about these credentials,
    refer to [Kafka Server Security Properties](/docs/public/security/kafka.md#kafka-server-security-properties).
 4. Don't forget to save your changes.
@@ -32,7 +32,7 @@ To update ZooKeeper credentials:
 1. Navigate to **Kubernetes** > **"${KAFKA_NAMESPACE}"** > **Config and Storage** > **Secrets**.
 2. Select **`${SERVICE_NAME}-secret`** on the `Secrets` tab.
 3. Update the values for the `zookeeper-client-username` and `zookeeper-client-password` properties with new credentials 
-   in `BASE64` encoding. 
+   in `base64` encoding. 
    For more information about these credentials, refer to
    [ZooKeeper Authentication](/docs/public/security/kafka.md#zookeeper-authentication).
 4. Don't forget to save your changes.

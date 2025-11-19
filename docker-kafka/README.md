@@ -31,7 +31,7 @@ For monitoring you need:
   link:[Kafka Monitoring](https://github.com/Netcracker/qubership-kafka) agent 
   with InfluxDB output plugin and kafka exec input plugin
 - setup link:[Grafana](https://github.com/grafana/grafana) and configure datasource (influxdb)
-- import json template for Grafana Dashboard
+- import JSON template for Grafana Dashboard
 
 Also Kafka provides JMX metrics in Prometheus format on `/metrics` REST endpoint. 
 When `DISABLE_SECURITY` environment variable is set to `true`, the `/metrics` endpoint is not secured. 
@@ -67,7 +67,7 @@ Defaults to the hostname of the container.
 
 ### `ADVERTISED_HOST_NAME`
 
-This environment variable is a recommended setting. The host name specified with this environment 
+This environment variable is a recommended setting. The hostname specified with this environment 
 variable will be registered in ZooKeeper and given out to other workers to connect with. By default 
 the value of `HOST_NAME` is used, so specify a different value if the `HOST_NAME` value will not be 
 useful to or reachable by clients.
@@ -158,5 +158,5 @@ Before performing scale down of the kafka cluster it is highle recommended to mi
 from broker that is going to be removed from cluster to other brokers. Following command can be used in
 container to perform this operation:
 `/opt/kafka/bin/kafka-partitions.sh release_broker %BROKER_ID%`
-where %BROKER_ID% is id of broker that is going to be removed from cluster.
+where %BROKER_ID% is ID of broker that is going to be removed from cluster.
 
