@@ -824,6 +824,200 @@
     },
     {
       "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "Transitions of controller broker states. The controller changes state when processing an event. Most of the time, the Idle state is displayed, which means that the controller has processed all the events. If the event processing takes a considerable time (several seconds or more), this state of the controller will be displayed",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "fillOpacity": 100,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-blue",
+                  "index": 19,
+                  "text": "Idle"
+                },
+                "1": {
+                  "color": "dark-orange",
+                  "index": 18,
+                  "text": "Controller Change"
+                },
+                "2": {
+                  "color": "dark-orange",
+                  "index": 17,
+                  "text": "Broker Change"
+                },
+                "3": {
+                  "color": "dark-orange",
+                  "index": 16,
+                  "text": "Topic Change"
+                },
+                "4": {
+                  "color": "dark-orange",
+                  "index": 15,
+                  "text": "Topic Deletion"
+                },
+                "5": {
+                  "color": "dark-orange",
+                  "index": 14,
+                  "text": "Alter Partition Reassignment"
+                },
+                "6": {
+                  "color": "dark-orange",
+                  "index": 13,
+                  "text": "Auto Leader Balance"
+                },
+                "7": {
+                  "color": "dark-orange",
+                  "index": 12,
+                  "text": "Manual Leader Balance"
+                },
+                "8": {
+                  "color": "dark-orange",
+                  "index": 11,
+                  "text": "Controlled Shutdown"
+                },
+                "9": {
+                  "color": "dark-orange",
+                  "index": 10,
+                  "text": "Isr Change"
+                },
+                "10": {
+                  "color": "dark-orange",
+                  "index": 9,
+                  "text": "Leader And Isr Response Received"
+                },
+                "11": {
+                  "color": "dark-orange",
+                  "index": 8,
+                  "text": "Log Dir Change"
+                },
+                "12": {
+                  "color": "dark-orange",
+                  "index": 7,
+                  "text": "Controller Shutdown"
+                },
+                "13": {
+                  "color": "dark-orange",
+                  "index": 6,
+                  "text": "Unclean Leader Election Enable"
+                },
+                "14": {
+                  "color": "dark-orange",
+                  "index": 5,
+                  "text": "Topic Unclean Leader Election Enable"
+                },
+                "15": {
+                  "color": "dark-orange",
+                  "index": 4,
+                  "text": "List Partition Reassignment"
+                },
+                "16": {
+                  "color": "dark-orange",
+                  "index": 3,
+                  "text": "Update Metadata Response Received"
+                },
+                "-1": {
+                  "color": "dark-red",
+                  "index": 1,
+                  "text": "Cluster Fail"
+                },
+                "null": {
+                  "color": "text",
+                  "index": 2,
+                  "text": "N/A"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": null,
+                "result": {
+                  "color": "text",
+                  "index": 0,
+                  "text": "N/A"
+                },
+                "to": null
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "id": 107,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "7.3.6",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "max(kafka_controller_KafkaController_Value{name=\"ControllerState\", namespace=\"$namespace\", cluster=\"$cluster\", broker=~\"$broker\"})",
+          "interval": "",
+          "legendFormat": "Controller state",
+          "queryType": "randomWalk",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Controller State Transitions",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
         "uid": "$datasource"
       },
       "description": "Transitions of readiness probes for each Kafka pod. May be not applicable for managed external Kafka.",
