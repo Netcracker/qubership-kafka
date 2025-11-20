@@ -232,13 +232,13 @@ monitoring:
   ##
   serviceMonitor:
     clusterStateScrapeInterval: "60s"
-    clusterStateScrapeTimeout: "10s"
+    clusterStateScrapeTimeout: "30s"
     jmxScrapeInterval: "60s"
-    jmxScrapeTimeout: "10s"
+    jmxScrapeTimeout: "50s"
     kmmScrapeInterval: "60s"
-    kmmScrapeTimeout: "10s"
+    kmmScrapeTimeout: "50s"
     lagExporterScrapeInterval: "60s"
-    lagExporterScrapeTimeout: "10s"
+    lagExporterScrapeTimeout: "50s"
   priorityClassName: ""
   kafkaTotalBrokerCount: 3
   dataCollectionInterval: "10s"
