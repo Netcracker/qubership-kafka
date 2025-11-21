@@ -117,7 +117,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          no-cache: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           context: ${{ matrix.component.context }}
           file: ${{ matrix.component.file }}
           platforms: linux/amd64,linux/arm64
