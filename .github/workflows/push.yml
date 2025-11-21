@@ -93,6 +93,7 @@ jobs:
             file: mirror-maker/docker/Dockerfile
             context: mirror-maker
     runs-on: ubuntu-latest
+    name: ${{ matrix.component.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
