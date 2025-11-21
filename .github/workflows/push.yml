@@ -107,13 +107,6 @@ jobs:
         run: echo "TAG_NAME=$(echo ${TAG_NAME} | sed 's@refs/tags/@@;s@refs/heads/@@;s@/@_@g')" >> $GITHUB_ENV
       - name: Prepare Group
         run: echo "GITHUB_GROUP=${GITHUB_GROUP,,}" >> $GITHUB_ENV
-      - name: Get package IDs for delete
-        id: get-ids-for-delete
-        uses: Netcracker/get-package-ids@v0.0.1
-        with:
-          component-name: ${{ matrix.component.name }}
-          component-tag: ${{ env.TAG_NAME }}
-          access-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
