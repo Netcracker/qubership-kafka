@@ -6,7 +6,7 @@ RUN wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tag
 
 RUN tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1
 COPY docker/build.gradle ./build.gradle
-RUN ./gradlew shadowJar --no-daemon
+RUN --mount=type=cache,target=/root/.cache/gradle-build ./gradlew shadowJar --no-daemon
 
 FROM eclipse-temurin:21-jdk-alpine-3.22
 
