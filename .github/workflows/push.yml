@@ -78,12 +78,14 @@ jobs:
           - name: qubership-docker-akhq
             file: docker-akhq/docker/Dockerfile
             context: docker-akhq
+            cache: 'true'
           - name: qubership-docker-kafka-lag-exporter
             file: lag-exporter/docker/Dockerfile
             context: lag-exporter
           - name: qubership-docker-cruise-control
             file: docker-cruise-control/docker/Dockerfile
             context: docker-cruise-control
+            cache: 'true'
           - name: qubership-kafka-mirror-maker-monitoring
             file: mirror-maker-monitoring/docker/Dockerfile
             context: mirror-maker-monitoring
@@ -110,13 +112,13 @@ jobs:
         run: echo "GITHUB_GROUP=${GITHUB_GROUP,,}" >> $GITHUB_ENV
       
       - name: Gradle Build Cache for Docker
-        if: matrix.component.name == 'qubership-docker-cruise-control'
+        if: matrix.component.cache == 'true'
         uses: actions/cache@v4
         with:
           path: gradle-build-cache
           key: ${{ runner.os }}-gradle-build-cache-${{ hashFiles(matrix.component.file) }}
       - name: Inject gradle-build-cache
-        if: matrix.component.name == 'qubership-docker-cruise-control'
+        if: matrix.component.cache == 'true'
         uses: reproducible-containers/buildkit-cache-dance@4b2444fec0c0fb9dbf175a96c094720a692ef810 # v2.1.4
         with:
           cache-source: gradle-build-cache
