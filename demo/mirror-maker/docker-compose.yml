@@ -5,7 +5,7 @@ services:
     ports:
       - 12181:2181
   left-kafka:
-    image: kafka:3.9.1
+    image: kafka:4.1.0
     ports:
       - 19092:9094
     links:
@@ -40,7 +40,7 @@ services:
     ports:
       - 22181:2181
   right-kafka:
-    image: kafka:3.9.1
+    image: kafka:4.1.0
     ports:
       - 29092:9094
     links:

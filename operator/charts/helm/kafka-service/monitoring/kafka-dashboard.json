@@ -33,10 +33,10 @@
       "icon": "dashboard",
       "tags": [],
       "targetBlank": true,
-      "title": "Kafka Lag Exporter",
-      "tooltip": "Open Kafka Lag Exporter dashboard (when corresponding Lag Exporter is enabled). ",
+      "title": "Kafka Exporter",
+      "tooltip": "Open Kafka Exporter dashboard (when corresponding Lag Exporter is enabled). ",
       "type": "link",
-      "url": "/d/8LW1Yd8ik/kafka-lag-exporter?var-namespace=${namespace}"
+      "url": "/d/d6e01e97203e1e89f769a232c8b7317f01a6b43e/kafka_exporter?var-namespace=${namespace}"
     },
     {
       "icon": "dashboard",
@@ -692,11 +692,11 @@
           "datasource": {
             "uid": "$datasource"
           },
-          "expr": "group by (kafka_version) (kafka_cluster_status{namespace=\"$namespace\",cluster=\"$cluster\"})",
+          "expr": "max by (version) (kafka_server_app_info_Version{namespace=\"$namespace\"})",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "{{kafka_version}}",
+          "legendFormat": "{{version}}",
           "refId": "B"
         }
       ],

@@ -937,6 +937,35 @@ Find an CRD Init job Docker image in various places.
   {{- printf "%s" $names | trimPrefix "," -}}
 {{- end -}}
 
+{{- define "kafka-services.regexJoin" -}}
+  {{- $list := .list | default (list) -}}
+  {{- if eq (len $list) 0 -}}
+    {{- "" -}}
+  {{- else if eq (len $list) 1 -}}
+    {{ index $list 0 -}}
+  {{- else -}}
+    {{ join "|" $list }}
+  {{- end -}}
+{{- end -}}
+
+{{- define "lag-exporter.bootstrapServers" -}}
+  {{- $servers := "" -}}
+  {{- if .Values.monitoring.lagExporter.cluster.bootstrapBrokers -}}
+    {{- $servers = .Values.monitoring.lagExporter.cluster.bootstrapBrokers -}}
+  {{- else -}}
+    {{- $servers = include "kafka-service.brokersList" . -}}
+  {{- end -}}
+  {{- $arr := split "," $servers -}}
+  {{- $items := list -}}
+  {{- range $arr -}}
+    {{- $t := trim . -}}
+    {{- if $t -}}
+      {{- $items = append $items (printf "\"%s\"" $t) -}}
+    {{- end -}}
+  {{- end -}}
+  [{{ join "," $items }}]
+{{- end }}
+
 {{/*
 Find a kubectl image in various places.
 */}}
