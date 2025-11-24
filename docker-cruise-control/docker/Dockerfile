@@ -27,7 +27,7 @@ COPY docker/config/settings.gradle settings.gradle
 # RUN git init
 # Compile and remove leftover directories
 RUN --mount=type=cache,target=/root/.gradle \
-    && git init && gradle jar :cruise-control:jar --stacktrace   \
+    git init && gradle jar :cruise-control:jar --stacktrace   \
     && rm -rf cruise-control-core cruise-control-metrics-reporter cruise-control-client
 
 RUN set -x \
