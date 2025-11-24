@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN --mount=type=cache,target=/app wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz \
 && tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1
-COPY --mount=type=cache,target=/app docker/build.gradle ./build.gradle
+COPY docker/build.gradle ./build.gradle
 RUN --mount=type=cache,target=/app ./gradlew shadowJar --no-daemon
 
 FROM eclipse-temurin:21-jdk-alpine-3.22
