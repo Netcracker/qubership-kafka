@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/root/.gradle \
     && ./gradlew shadowJar --no-daemon \
     && cp -rf /app /tmp
 
-RUN cp /tmp/app /
+RUN cp -rf /tmp/app /
 
 FROM eclipse-temurin:21-jdk-alpine-3.22
 
