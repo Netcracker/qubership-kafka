@@ -23,6 +23,8 @@ RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   rm -f /etc/apt/apt.conf.d/docker-clean && \
+  mkdir -p /etc/apt/apt.conf.d/ && \
+  chmod 766 /etc/apt/apt.conf.d && \
   echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache && \
   set -x \
     && apk add --upgrade \
