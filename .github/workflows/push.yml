@@ -116,13 +116,13 @@ jobs:
         if: matrix.component.cache == 'true'
         uses: actions/cache@v4
         with:
-          path: gradle-build-cache
-          key: ${{ runner.os }}-gradle-build-cache-${{ hashFiles(matrix.component.file) }}
-      - name: Inject gradle-build-cache
+          path: cache-mount
+          key: ${{ runner.os }}-cache-mount-${{ hashFiles(matrix.component.file) }}
+      - name: Inject cache-mount
         if: matrix.component.cache == 'true'
         uses: reproducible-containers/buildkit-cache-dance@4b2444fec0c0fb9dbf175a96c094720a692ef810 # v2.1.4
         with:
-          cache-source: gradle-build-cache
+          cache-source: cache-mount
 
       - name: Build and push
         uses: docker/build-push-action@v6

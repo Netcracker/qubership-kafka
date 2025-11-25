@@ -2,8 +2,13 @@ FROM eclipse-temurin:21-jdk-alpine-3.22 AS builder
 
 ENV CC_VERSION=2.5.141
 
-RUN set -x \
-    && apk add --update --no-cache \
+RUN RUN \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  rm -f /etc/apt/apt.conf.d/docker-clean && \
+  echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache && \
+  set -x \
+    && apk add --update \
       git \
       wget \
       gradle \
