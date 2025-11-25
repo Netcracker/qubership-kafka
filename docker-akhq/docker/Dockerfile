@@ -19,7 +19,7 @@ COPY docker/config/streaming.desc ${AKHQ_HOME}/config/streaming.desc
 COPY docker/app ${AKHQ_HOME}
 
 # Install misc tools
-RUN RUN \
+RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   rm -f /etc/apt/apt.conf.d/docker-clean && \

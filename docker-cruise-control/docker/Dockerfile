@@ -2,7 +2,7 @@ FROM eclipse-temurin:21-jdk-alpine-3.22 AS builder
 
 ENV CC_VERSION=2.5.141
 
-RUN RUN \
+RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   rm -f /etc/apt/apt.conf.d/docker-clean && \
