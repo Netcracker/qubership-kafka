@@ -16,28 +16,22 @@ RUN \
       gradle \
       tar
 
-RUN set -x \
+COPY docker/config/build.gradle /tmp/build.gradle
+COPY docker/config/build/build.gradle /tmp/buildSrc/build.gradle
+COPY docker/config/settings.gradle /tmp/settings.gradle
+
+RUN --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=/cruise-control \
+    set -x \
     && wget \
         --no-check-certificate \
         -nv \
         -O /tmp/cruise-control.tar.gz \
         "https://github.com/linkedin/cruise-control/archive/refs/tags/${CC_VERSION}.tar.gz" \
     && tar -zxvf /tmp/cruise-control.tar.gz --transform "s/cruise-control-${CC_VERSION}/cruise-control/" -C / \
-    && rm -f /tmp/cruise-control.tar.gz
-
-WORKDIR cruise-control
-
-COPY docker/config/build.gradle build.gradle
-COPY docker/config/build/build.gradle buildSrc/build.gradle
-COPY docker/config/settings.gradle settings.gradle
-
-# RUN git init
-# Compile and remove leftover directories
-RUN --mount=type=cache,target=/root/.gradle \
-    git init && gradle jar :cruise-control:jar --stacktrace   \
-    && rm -rf cruise-control-core cruise-control-metrics-reporter cruise-control-client
-
-RUN set -x \
+    && rm -f /tmp/cruise-control.tar.gz \
+    && cd cruise-control \
+    && git init && gradle jar :cruise-control:jar --stacktrace \
     && wget \
         --no-check-certificate \
         -nv \
@@ -45,6 +39,7 @@ RUN set -x \
         "https://github.com/linkedin/cruise-control-ui/releases/download/v0.4.0/cruise-control-ui-0.4.0.tar.gz" \
     && tar -zxvf /tmp/cruise-control-ui.tar.gz -C /cruise-control \
     && rm -f /tmp/cruise-control-ui.tar.gz
+
 # --------------- Final stage ---------------
 FROM eclipse-temurin:21-jdk-alpine-3.22
 
@@ -65,7 +60,9 @@ COPY --from=builder cruise-control .
 COPY docker/docker-entrypoint.sh docker-entrypoint.sh
 
 RUN chmod +x docker-entrypoint.sh
-RUN chmod -R 777 cruise-control
+RUN cd /cruise-control && \
+    rm -rf cruise-control-core cruise-control-metrics-reporter cruise-control-client && \
+    chmod -R 777 cruise-control
 
 # Ensure Cruise Control writable for logs
 RUN chmod a+rw -R .
