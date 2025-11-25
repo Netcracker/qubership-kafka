@@ -196,7 +196,7 @@ kafka:
 
 monitoring:
   install: true
-  alertsPackVersion: "v1"
+  alertsPackVersion: v1
   dockerImage: ghcr.io/netcracker/qubership-kafka-monitoring:main
   serviceMonitorEnabled: true
 #  affinity: {

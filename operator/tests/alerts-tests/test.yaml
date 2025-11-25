@@ -279,8 +279,8 @@ tests:
         broker: kafka-0
         container: kafka-monitoring
       exp_annotations:
-        description: Kafka Broker Skew for kafka-0 broker is higher than 50%
-        summary: Some of Kafka Broker Skew is higher than 50%
+        description: Kafka Broker Skew for kafka-0 broker is higher than 50 percent
+        summary: Some of Kafka Broker Skew is higher than 50 percent
 
 - interval: 1m
   input_series:
@@ -312,8 +312,8 @@ tests:
         broker: kafka-0
         container: kafka-monitoring
       exp_annotations:
-        description: Kafka Broker Leader Skew for kafka-0 broker is higher than 50%
-        summary: Some of Kafka Broker Leader Skew is higher than 50%
+        description: Kafka Broker Leader Skew for kafka-0 broker is higher than 50 percent
+        summary: Some of Kafka Broker Leader Skew is higher than 50 percent
 
 - interval: 1m
   input_series:

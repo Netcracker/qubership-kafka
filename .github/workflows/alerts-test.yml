@@ -34,7 +34,7 @@ jobs:
         run: |
           helm template kafka-montemplate ./operator/charts/helm/kafka-service/ > ./operator/tests/alerts-tests/rules.yaml
           sed -n '/prometheus_rules.yaml/,/---/p' -i ./operator/tests/alerts-tests/rules.yaml
-          sed '1,13d' -i ./operator/tests/alerts-tests/rules.yaml
+          sed '0,/spec:/d' -i ./operator/tests/alerts-tests/rules.yaml
 
 
       - name: Check that all necessary tests exists

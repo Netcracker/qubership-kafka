@@ -1,4 +1,4 @@
-{{- if (and (eq (include "monitoring.install" .) "true") (ne .Values.alertsPackVersion "v2") (ne (include "monitoring.type" .) "influxdb") .Values.global.installDashboard (ne (.Values.monitoring.installGrafanaDashboard | toString) "false")) }}
+{{- if and (eq (include "monitoring.install" .) "true") (ne .Values.monitoring.alertsPackVersion "v2") (ne (include "monitoring.type" .) "influxdb") }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -107,8 +107,8 @@ spec:
         {{- if .Values.monitoring.thresholds.brokerSkewAlert }}
         - alert: KafkaBrokerSkewAlert
           annotations:
-            description: 'Kafka Broker Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.monitoring.thresholds.brokerSkewAlert }}%'
-            summary: Some of Kafka Broker Skew is higher than {{ .Values.monitoring.thresholds.brokerSkewAlert }}%
+            description: 'Kafka Broker Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.monitoring.thresholds.brokerSkewAlert }} percent'
+            summary: Some of Kafka Broker Skew is higher than {{ .Values.monitoring.thresholds.brokerSkewAlert }} percent
           expr: (kafka_broker_skew{namespace="{{ .Release.Namespace }}", container="{{ template "kafka.name" . }}-monitoring", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.monitoring.thresholds.brokerSkewAlert }}) and on(broker, namespace) (kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}",  broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ coalesce .Values.monitoring.thresholds.brokerSkewAlertPartitionCount (include "kafka.replicas" . ) }})
           for: 3m
           labels:
@@ -119,8 +119,8 @@ spec:
         {{- if .Values.monitoring.thresholds.brokerLeaderSkewAlert }}
         - alert: KafkaBrokerLeaderSkewAlert
           annotations:
-            description: 'Kafka Broker Leader Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }}%'
-            summary: Some of Kafka Broker Leader Skew is higher than {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }}%
+            description: 'Kafka Broker Leader Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }} percent'
+            summary: Some of Kafka Broker Leader Skew is higher than {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }} percent
           expr: (kafka_broker_leader_skew{namespace="{{ .Release.Namespace }}", container="{{ template "kafka.name" . }}-monitoring", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }}) and on(broker, namespace) (kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}",  broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ coalesce .Values.monitoring.thresholds.brokerLeaderSkewAlertPartitionCount (include "kafka.replicas" . ) }})
           for: 3m
           labels:

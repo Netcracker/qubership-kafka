@@ -1,8 +1,7 @@
 {{- define "defaultAlerts" -}}
-{{- if and (eq .Values.alertsPackVersion "v2") (.Values.install) }}
-    - name: {{ .Release.Namespace }}-{{ .Release.Name }}
+    {{ .Release.Namespace }}-{{ .Release.Name }}:
       rules:
-        - alert: KafkaIsDegradedAlert
+        KafkaIsDegradedAlert:
           annotations:
             description: 'Kafka is Degraded'
             summary: Some of Kafka Service pods are down
@@ -12,7 +11,7 @@
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaMetricsAreAbsent
+        KafkaMetricsAreAbsent:
           annotations:
             description: 'Kafka metrics are absent on {{ .Release.Namespace }}.'
             summary: Kafka metrics are absent
@@ -22,7 +21,7 @@
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaIsDownAlert
+        KafkaIsDownAlert:
           annotations:
             description: 'Kafka is Down'
             summary: All of Kafka Service pods are down
@@ -32,7 +31,7 @@
             severity: critical
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaCPUUsageAlert
+        KafkaCPUUsageAlert:
           annotations:
             description: 'Kafka CPU usage is higher than 95 percents'
             summary: Some of Kafka Service pods load CPU higher then 95 percents
@@ -42,7 +41,7 @@
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaMemoryUsageAlert
+        KafkaMemoryUsageAlert:
           annotations:
             description: 'Kafka memory usage is higher than 95 percents'
             summary: Some of Kafka Service pods use memory higher then 95 percents
@@ -52,7 +51,7 @@
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaHeapMemoryUsageAlert
+        KafkaHeapMemoryUsageAlert:
           annotations:
             description: 'Kafka heap memory usage is higher than 95 percents'
             summary: Some of Kafka Service pods use heap memory higher then 95 percents
@@ -62,63 +61,63 @@
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaGCCountAlert
+        KafkaGCCountAlert:
           annotations:
-            description: 'Some of Kafka Service pods have Garbage collections count rate higher than {{ .Values.monitoring.thresholds.gcCountAlert }}'
-            summary: Some of Kafka Service pods have Garbage collections count rate higher than {{ .Values.monitoring.thresholds.gcCountAlert }}
-          expr: max(rate(java_GarbageCollector_CollectionCount_total{namespace="{{ .Release.Namespace }}", broker=~"{{ template "kafka.name" . }}-[0-9].*"}[5m])) > {{ .Values.monitoring.thresholds.gcCountAlert }}
+            description: 'Some of Kafka Service pods have Garbage collections count rate higher than {{ .Values.thresholds.gcCountAlert }}'
+            summary: Some of Kafka Service pods have Garbage collections count rate higher than {{ .Values.thresholds.gcCountAlert }}
+          expr: max(rate(java_GarbageCollector_CollectionCount_total{namespace="{{ .Release.Namespace }}", broker=~"{{ template "kafka.name" . }}-[0-9].*"}[5m])) > {{ .Values.thresholds.gcCountAlert }}
           for: 3m
           labels:
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaLagAlert
+        KafkaLagAlert:
           annotations:
-            description: 'Some of Kafka Service pods have partition lag higher than {{ .Values.monitoring.thresholds.lagAlert }}'
-            summary: Some of Kafka Service pods have partition lag higher than {{ .Values.monitoring.thresholds.lagAlert }}
-          expr: max(kafka_consumergroup_group_lag{namespace="{{ .Release.Namespace }}"}) > {{ .Values.monitoring.thresholds.lagAlert }}
+            description: 'Some of Kafka Service pods have partition lag higher than {{ .Values.thresholds.lagAlert }}'
+            summary: Some of Kafka Service pods have partition lag higher than {{ .Values.thresholds.lagAlert }}
+          expr: max(kafka_consumergroup_group_lag{namespace="{{ .Release.Namespace }}"}) > {{ .Values.thresholds.lagAlert }}
           for: 3m
           labels:
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        {{- if .Values.monitoring.thresholds.partitionCountAlert }}
-        - alert: KafkaPartitionCountAlert
+        {{- if .Values.thresholds.partitionCountAlert }}
+        KafkaPartitionCountAlert:
           annotations:
-            description: 'Kafka Partition count for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.monitoring.thresholds.partitionCountAlert }}'
-            summary: Some of Kafka Partition count is higher than {{ .Values.monitoring.thresholds.partitionCountAlert }}
-          expr: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.monitoring.thresholds.partitionCountAlert }}
-          for: 3m
-          labels:
-            severity: warning
-            namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}
-        {{- end }}
-        {{- if .Values.monitoring.thresholds.brokerSkewAlert }}
-        - alert: KafkaBrokerSkewAlert
-          annotations:
-            description: 'Kafka Broker Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.monitoring.thresholds.brokerSkewAlert }}%'
-            summary: Some of Kafka Broker Skew is higher than {{ .Values.monitoring.thresholds.brokerSkewAlert }}%
-          expr: (kafka_broker_skew{namespace="{{ .Release.Namespace }}", container="{{ template "kafka.name" . }}-monitoring", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.monitoring.thresholds.brokerSkewAlert }}) and on(broker, namespace) (kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}",  broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ coalesce .Values.monitoring.thresholds.brokerSkewAlertPartitionCount (include "kafka.replicas" . ) }})
+            description: 'Kafka Partition count for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.thresholds.partitionCountAlert }}'
+            summary: Some of Kafka Partition count is higher than {{ .Values.thresholds.partitionCountAlert }}
+          expr: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.thresholds.partitionCountAlert }}
           for: 3m
           labels:
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
         {{- end }}
-        {{- if .Values.monitoring.thresholds.brokerLeaderSkewAlert }}
-        - alert: KafkaBrokerLeaderSkewAlert
+        {{- if .Values.thresholds.brokerSkewAlert }}
+        KafkaBrokerSkewAlert:
           annotations:
-            description: 'Kafka Broker Leader Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }}%'
-            summary: Some of Kafka Broker Leader Skew is higher than {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }}%
-          expr: (kafka_broker_leader_skew{namespace="{{ .Release.Namespace }}", container="{{ template "kafka.name" . }}-monitoring", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.monitoring.thresholds.brokerLeaderSkewAlert }}) and on(broker, namespace) (kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}",  broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ coalesce .Values.monitoring.thresholds.brokerLeaderSkewAlertPartitionCount (include "kafka.replicas" . ) }})
+            description: 'Kafka Broker Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.thresholds.brokerSkewAlert }} percent'
+            summary: Some of Kafka Broker Skew is higher than {{ .Values.thresholds.brokerSkewAlert }} percent
+          expr: (kafka_broker_skew{namespace="{{ .Release.Namespace }}", container="{{ template "kafka.name" . }}-monitoring", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.thresholds.brokerSkewAlert }}) and on(broker, namespace) (kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}",  broker=~"{{ template "kafka.name" . }}-[0-9].*"} > 3 )
           for: 3m
           labels:
             severity: warning
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
         {{- end }}
-        - alert: SupplementaryServicesCompatibilityAlert
+        {{- if .Values.thresholds.brokerLeaderSkewAlert }}
+        KafkaBrokerLeaderSkewAlert:
+          annotations:
+            description: 'Kafka Broker Leader Skew for {{`{{ $labels.broker }}`}} broker is higher than {{ .Values.thresholds.brokerLeaderSkewAlert }} percent'
+            summary: Some of Kafka Broker Leader Skew is higher than {{ .Values.thresholds.brokerLeaderSkewAlert }} percent
+          expr: (kafka_broker_leader_skew{namespace="{{ .Release.Namespace }}", container="{{ template "kafka.name" . }}-monitoring", broker=~"{{ template "kafka.name" . }}-[0-9].*"} > {{ .Values.thresholds.brokerLeaderSkewAlert }}) and on(broker, namespace) (kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="{{ .Release.Namespace }}",  broker=~"{{ template "kafka.name" . }}-[0-9].*"} > 3 )
+          for: 3m
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+            service: {{ .Release.Name }}
+        {{- end }}
+        SupplementaryServicesCompatibilityAlert:
           annotations:
             description: 'Kafka supplementary services in namespace {{`{{ $labels.namespace }}`}} is not compatible with Kafka version {{`{{ $labels.application_version }}`}}'
             summary: 'Kafka supplementary services in namespace {{`{{ $labels.namespace }}`}} is not compatible with Kafka version {{`{{ $labels.application_version }}`}}, allowed range is {{`{{ $labels.min_version }}`}} - {{`{{ $labels.max_version }}`}}'
@@ -129,5 +128,5 @@
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
 {{- end }}
-{{- end }}
+
 
