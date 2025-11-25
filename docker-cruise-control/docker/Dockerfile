@@ -30,6 +30,10 @@ RUN --mount=type=cache,target=/root/.gradle \
         "https://github.com/linkedin/cruise-control/archive/refs/tags/${CC_VERSION}.tar.gz" \
     && tar -zxvf /tmp/cruise-control.tar.gz --transform "s/cruise-control-${CC_VERSION}/cruise-control/" -C / \
     && rm -f /tmp/cruise-control.tar.gz \
+    && cp -f /tmp/build.gradle /cruise-control \
+    && cp -f /tmp/settings.gradle /cruise-control \
+    && mkdir -p /cruise-control/buildSrc \
+    && cp -f /tmp/buildSrc/build.gradle /cruise-control/buildSrc \
     && cd cruise-control \
     && git init && gradle jar :cruise-control:jar --stacktrace \
     && wget \
