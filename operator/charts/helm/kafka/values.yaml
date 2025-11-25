@@ -29,13 +29,13 @@ global:
       adminPassword: ""
       clientUsername: ""
       clientPassword: ""
-      zookeeperClientUsername: "client"
-      zookeeperClientPassword: "client"
+      zookeeperClientUsername: ""
+      zookeeperClientPassword: ""
   # For backward compatibility
   externalKafka:
     enabled: false
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:feature_kafka_base_version_upgrade
+  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
   replicas: 1
   apiGroup: "netcracker.com"
   resources:
@@ -135,7 +135,7 @@ kafka:
   disruptionBudget:
     enabled: false
     maxUnavailable: 0
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:feature_kafka_base_version_upgrade
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:main
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
@@ -158,10 +158,7 @@ kafka:
     limits:
       cpu: 400m
       memory: 800Mi
-  securityContext: {
-    "fsGroup": 1000,
-    "runAsUser": 1000
-  }
+  securityContext: {}
   storage:
     size: 1Gi
 #    volumes:
@@ -172,8 +169,8 @@ kafka:
 #      - key1=value1
 #      - key2=value2
 #      - key3=value3
-    className:
-      - gp2
+#    className:
+#      - hostpath
 #    nodes:
 #      - node-1
 #      - node-2
@@ -215,7 +212,7 @@ kafka:
 #    jwksSizeLimit: 51200
   oauth: {}
   tls:
-    enabled: false
+    enabled: true
     certificates:
       crt: ""
       key: ""
@@ -227,10 +224,10 @@ kafka:
       additionalDnsNames: []
       additionalIpAddresses: []
   environmentVariables:
-    - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
   rollingUpdate: false
   customLabels: {}
-  debugContainer: true
+  debugContainer: false
   ccMetricReporterEnabled: false
   kraft:
     enabled: true
@@ -246,6 +243,7 @@ kafka:
       limits:
         cpu: 400m
         memory: 800Mi
+    securityContext: {}
     storage:
       size: 1Gi
   autoRestartOnSecretChange: true
