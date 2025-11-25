@@ -7,7 +7,7 @@ COPY docker/build.gradle /tmp/build.gradle
 RUN --mount=type=cache,target=/root/.gradle \
     --mount=type=cache,target=/app \
     cd /app \
-    && git init
+    && git init \
     && cp -f /tmp/build.gradle /app \
     && wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz \
     && tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1 \
