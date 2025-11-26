@@ -110,7 +110,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(sum(kafka_log_Log_Value{name=\"LogEndOffset\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, broker) - sum(kafka_log_Log_Value{name=\"LogStartOffset\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, broker)) by (topic)",
+              "expr": "max(sum(kafka_log_Log_Value{name=\"LogEndOffset\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, brokerInstance) - sum(kafka_log_Log_Value{name=\"LogStartOffset\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, brokerInstance)) by (topic)",
               "format": "table",
               "instant": true,
               "range": false,
@@ -120,7 +120,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(sum(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, broker)) by (topic)",
+              "expr": "max(sum(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, brokerInstance)) by (topic)",
               "format": "table",
               "instant": true,
               "range": false,
@@ -130,7 +130,7 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(count(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, broker)) by (topic)",
+              "expr": "max(count(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, brokerInstance)) by (topic)",
               "format": "table",
               "instant": true,
               "range": false,
@@ -274,7 +274,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(kafka_cluster_Partition_Value{name=\"UnderMinIsr\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, partition) == 1",
+              "expr": "sum(kafka_cluster_Partition_Value{name=\"UnderMinIsr\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, partition) == 1",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -385,7 +385,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(kafka_cluster_Partition_Value{name=\"UnderReplicated\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, partition) == 1",
+              "expr": "sum(kafka_cluster_Partition_Value{name=\"UnderReplicated\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, partition) == 1",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -499,7 +499,7 @@
               "expr": "sum(kafka_cluster_unclean_election_topics{namespace=\"$namespace\", topic=~\"$topic\"}) by (topic)",
               "format": "table",
               "instant": true,
-              "legendFormat": "{{ topic }} - {{ broker }}",
+              "legendFormat": "{{ topic }} - {{ brokerInstance }}",
               "range": false,
               "refId": "A"
             }
@@ -626,9 +626,9 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "sum(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, broker)",
+              "expr": "sum(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, brokerInstance)",
               "format": "time_series",
-              "legendFormat": "{{ topic }} - {{ broker }}",
+              "legendFormat": "{{ topic }} - {{ brokerInstance }}",
               "refId": "A"
             }
           ],
@@ -727,9 +727,9 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "sum(kafka_cluster_Partition_Value{name=\"UnderMinIsr\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, broker)",
+              "expr": "sum(kafka_cluster_Partition_Value{name=\"UnderMinIsr\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, brokerInstance)",
               "format": "time_series",
-              "legendFormat": "{{ topic }} - {{ broker }}",
+              "legendFormat": "{{ topic }} - {{ brokerInstance }}",
               "range": true,
               "refId": "A"
             }
@@ -850,9 +850,9 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"MessagesInPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"MessagesInPerSec\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, brokerInstance)",
               "format": "time_series",
-              "legendFormat": "{{ topic }} - {{ broker }}",
+              "legendFormat": "{{ topic }} - {{ brokerInstance }}",
               "range": true,
               "refId": "A"
             }
@@ -950,9 +950,9 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesInPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesInPerSec\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, brokerInstance)",
               "format": "time_series",
-              "legendFormat": "{{ topic }} - {{ broker }}",
+              "legendFormat": "{{ topic }} - {{ brokerInstance }}",
               "refId": "A"
             }
           ],
@@ -1049,9 +1049,9 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesOutPerSec\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, broker)",
+              "expr": "max(rate(kafka_server_BrokerTopicMetrics_Count_total{name=\"BytesOutPerSec\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}[5m])) by (topic, brokerInstance)",
               "format": "time_series",
-              "legendFormat": "{{ topic }} - {{ broker }}",
+              "legendFormat": "{{ topic }} - {{ brokerInstance }}",
               "refId": "A"
             }
           ],
@@ -1148,9 +1148,9 @@
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "sum(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",broker=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, broker)",
+              "expr": "sum(kafka_log_Log_Value{name=\"Size\",topic=~\"$topic\",brokerInstance=~\"$broker\",namespace=\"$namespace\",cluster=\"$cluster\"}) by (topic, brokerInstance)",
               "format": "time_series",
-              "legendFormat": "{{ topic }} - {{ broker }}",
+              "legendFormat": "{{ topic }} - {{ brokerInstance }}",
               "refId": "A"
             }
           ],
@@ -1257,7 +1257,7 @@
         "multi": true,
         "name": "broker",
         "options": [],
-        "query": "label_values(kafka_controller_KafkaController_Value{namespace=\"$namespace\", cluster=\"$cluster\"}, broker)",
+        "query": "label_values(kafka_controller_KafkaController_Value{namespace=\"$namespace\", cluster=\"$cluster\"}, brokerInstance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

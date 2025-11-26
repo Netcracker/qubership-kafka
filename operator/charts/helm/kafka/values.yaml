@@ -135,7 +135,7 @@ kafka:
   disruptionBudget:
     enabled: false
     maxUnavailable: 0
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:main
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
@@ -184,7 +184,7 @@ kafka:
   terminationGracePeriod: 1800
   rollbackTimeout: 3600
   healthCheckTimeout: 30
-  zookeeperConnect: zookeeper:2181
+  zookeeperConnect: ""
   zookeeperEnableSsl: false
   zookeeperSslSecretName: ""
   zookeeperSetACL: false
@@ -230,9 +230,10 @@ kafka:
   debugContainer: false
   ccMetricReporterEnabled: false
   kraft:
-    enabled: false
+    enabled: true
     migration: false
     migrationTimeout: 600
+    skipUpgradeCheck: false
   migrationController:
     heapSize: 256
     resources:

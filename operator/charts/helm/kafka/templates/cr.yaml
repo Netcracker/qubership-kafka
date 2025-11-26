@@ -14,6 +14,9 @@
 {{ fail "\nError: You cannot upgrade Kraft to Kafka with ZooKeeper.\nFind more information in corresponding release documentation." }}
 {{- end }}
 {{- end }}
+{{- if and (eq (include "validateKafkaUpgrade" .) "false") (not .Values.kafka.kraft.skipUpgradeCheck) -}}
+{{ fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress.\n You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
+{{- end }}
 apiVersion: {{ .Values.operator.apiGroup }}/v1
 kind: Kafka
 metadata:
