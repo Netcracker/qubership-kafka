@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export KRAFT_ENABLED=true
 # Add missing EOF at the end of the config file
 echo "" >> ${KAFKA_HOME}/config/server.properties
 
