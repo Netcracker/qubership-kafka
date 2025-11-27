@@ -230,7 +230,7 @@ kafka:
   debugContainer: false
   ccMetricReporterEnabled: false
   kraft:
-    enabled: true
+    enabled: false
     migration: false
     migrationTimeout: 600
     skipUpgradeCheck: false

@@ -35,7 +35,6 @@ KAFKA_TIMEOUT = 60
 OS_PROJECT = ""
 KAFKA_SERVICE_NAME = "kafka"
 KAFKA_ADDRESSES = ""
-KRAFT_ENABLED = False
 KAFKA_SASL_MECHANISM = 'SCRAM-SHA-512'
 KAFKA_ENABLE_SSL = False
 KAFKA_TOTAL_BROKERS_COUNT = 0
@@ -184,16 +183,12 @@ def _is_kraft(admin_client, broker_id):
 
 def _collect_metrics():
     admin_client = _create_admin_client()
-    is_kraft_enabled = KRAFT_ENABLED
     if not admin_client:
         broker_ids = []
     else:
         broker_ids = [broker['node_id'] for broker
                       in admin_client.describe_cluster()['brokers']]
         is_kraft_enabled = _is_kraft(admin_client, broker_ids[0])
-        if KRAFT_ENABLED != is_kraft_enabled:
-            logger.warning(f'KRAFT_ENABLED environment variable value is %s, but value returned from broker is %s',
-                           KRAFT_ENABLED, is_kraft_enabled)
     args = [(idx, admin_client) for idx in broker_ids]
     metrics_func = _get_broker_metrics_simple
     collect_func = _concatenate_all_brokers_metrics_simple
@@ -231,10 +226,9 @@ def _str2bool(v: str):
 def run():
     try:
         logger.info('Start script execution...')
-        global KAFKA_SERVICE_NAME, KAFKA_TOTAL_BROKERS_COUNT, OS_PROJECT, KAFKA_USER, KAFKA_PASSWORD, KAFKA_TIMEOUT, KAFKA_ADDRESSES, KRAFT_ENABLED, KAFKA_SASL_MECHANISM, KAFKA_ENABLE_SSL
+        global KAFKA_SERVICE_NAME, KAFKA_TOTAL_BROKERS_COUNT, OS_PROJECT, KAFKA_USER, KAFKA_PASSWORD, KAFKA_TIMEOUT, KAFKA_ADDRESSES, KAFKA_SASL_MECHANISM, KAFKA_ENABLE_SSL
         KAFKA_SERVICE_NAME = os.getenv('KAFKA_SERVICE_NAME')
         KAFKA_ADDRESSES = os.getenv('KAFKA_ADDRESSES')
-        KRAFT_ENABLED = _str2bool(os.getenv("KRAFT_ENABLED", "false"))
         KAFKA_SASL_MECHANISM = os.getenv('KAFKA_SASL_MECHANISM', 'SCRAM-SHA-512')
         KAFKA_ENABLE_SSL = _str2bool(os.getenv("KAFKA_ENABLE_SSL", "false"))
         KAFKA_TOTAL_BROKERS_COUNT = int(os.getenv('KAFKA_TOTAL_BROKERS_COUNT'))

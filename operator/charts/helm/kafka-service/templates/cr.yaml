@@ -24,8 +24,6 @@ spec:
   global:
     waitForPodsReady: {{ .Values.global.waitForPodsReady }}
     podReadinessTimeout: {{ .Values.global.podReadinessTimeout | default 600 }}
-    kraft:
-      enabled: {{ .Values.kafka.kraft.enabled }}
   {{- with .Values.global.customLabels }}
     customLabels:
       {{- toYaml . | nindent 6 -}}

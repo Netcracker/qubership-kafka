@@ -337,11 +337,6 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvironmentVariables() []core
 			Value: util.DefaultIfEmpty(mrp.spec.DataCollectionInterval, "10s"),
 		},
 	}
-	if mrp.cr.Spec.Global.Kraft.Enabled {
-		envs = append(envs, []corev1.EnvVar{
-			{Name: "KRAFT_ENABLED", Value: "true"},
-		}...)
-	}
 	return envs
 }
 
