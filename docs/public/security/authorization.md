@@ -4,7 +4,7 @@ By default, if a resource has no associated ACLs, then no one except the superus
 
 Producers and consumers need to be authorized to perform operations on topics, but they should be
 configured with different principals compared to the servers. The main operations that producers
-require authorization to execute are `WRITE` and `READ`. Admin users can use command line tools,
+require authorization to execute are `WRITE` and `READ`. Admin users can use command-line-tools,
 but require authorization for certain operations. Operations that an admin user might need 
 authorization for are `DELETE`, `CREATE`, and `ALTER`. You can use wildcards for producers and 
 consumers so that you only have to set it once.

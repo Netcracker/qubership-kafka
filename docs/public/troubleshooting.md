@@ -802,7 +802,7 @@ java.lang.InternalError: a fault occurred in a recent unsafe memory access opera
 ```
 
 It means there are some issues with file system, memory or JVM. There are a lot of causes lead to this issue.
-Some information about causes described in [stackoverflow answer](https://stackoverflow.com/a/45536678) or
+Some information about causes described in [Stack Overflow answer](https://stackoverflow.com/a/45536678) or
 ticket [KAFKA-5628](https://issues.apache.org/jira/browse/KAFKA-5628).
 
 ### Alerts
@@ -1147,7 +1147,8 @@ Not applicable
 
 ### Updating partition.metadata on Kafka side
 
-If ZooKeeper contains correct topic configuration, `topicId` can be synchronized by manual deletion of `partition.metadata` for affected topics and `__consumer.offsets` on all brokers. To remove `partition.metadata` for all topics use next command:
+If ZooKeeper contains correct topic configuration, `topicId` can be synchronized by manual deletion of `partition.metadata` for affected topics and `__consumer.offsets` on all brokers. 
+To remove `partition.metadata` for all topics use next command:
 
 ```
 cd /var/opt/kafka/data/$BROKER_ID

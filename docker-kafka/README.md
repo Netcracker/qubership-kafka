@@ -1,8 +1,7 @@
-# Requirements:
+# Requirements
 
 1. [Docker](https://www.docker.io/gettingstarted/#h_installation)
 2. [Docker Compose](http://docs.docker.com/compose/install/)
-
 
 # Security
 
@@ -18,7 +17,6 @@ KafkaClient {
     password="SampleUserPassword";
 };
 ```
-
 
 # Monitoring
 
@@ -106,12 +104,10 @@ include the property's name and value.
 
 The value of the environment variable may not contain a '\@' character.
 
-
 # Ports
 
 Containers created using this image will expose port 9092, which is the standard port used by Kafka.
 You can  use standard Docker options to map this to a different port on the host that runs the container.
-
 
 # Storing data
 
@@ -119,14 +115,12 @@ The Kafka broker run by this image writes data to the local file system, and the
 data is to use volumes that map specific directories inside the container to the local file system 
 (or to OpenShift persistent volumes).
 
-
 ### Topic data
 
 This image defines a data volume at `/var/opt/kafka/data`. The broker writes all persisted data as 
 files within this directory, inside a subdirectory named with the value of BROKER_ID (see above). 
 You must mount it appropriately when running your container to persist the data after the container 
 is stopped; failing to do so will result in all data being lost when the container is stopped.
-
 
 ### Log files
 
@@ -159,4 +153,3 @@ from broker that is going to be removed from cluster to other brokers. Following
 container to perform this operation:
 `/opt/kafka/bin/kafka-partitions.sh release_broker %BROKER_ID%`
 where %BROKER_ID% is ID of broker that is going to be removed from cluster.
-

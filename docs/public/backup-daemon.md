@@ -12,6 +12,7 @@ Kafka Backup Daemon provides abilities to create and restore snapshots of Kafka 
 **Note**: Only topic configuration stored during Kafka Service backup. Messages are not subject to back up.
 
 You can back up data for Kafka Service per your requirement. You can select any one of the following options for backup:
+
 * Full manual backup
 * Granular backup
 * Not Evictable Backup
@@ -137,13 +138,15 @@ curl -u username:password -XPOST -v -H "Content-Type: application/json" -d '{"va
 ```
 
 Example of restore from backup with timestamp specified:
+
 ```
 curl -u username:password -XPOST -v -H "Content-Type: application/json" -d  '{"ts":"1689762600000"}' http://localhost:8080/restore
 ```
 
 As a response, you receive `task_id`, which can be used to check _Recovery Status_.
 
-**Note**: If some of provided topics are already exists in your project or cannot be created due to misconfiguration (for example, incorrect replication factor), no one topic created during this restore. Only full recovery of selected snapshot supported.
+**Note**: If some of provided topics are already exists in your project or cannot be created due to misconfiguration (for example, incorrect replication factor), 
+no one topic created during this restore. Only full recovery of selected snapshot supported.
 
 ## Recovery ACL
 
@@ -180,11 +183,13 @@ It returns JSON with list of backup names.
 To find the backup with timestamp equal or newer than specified, use the following command:
 
 For full backups:
+
 ```
 curl -XGET -u username:password -v -H "Content-Type: application/json" -d  '{"ts":"1689762600000"}' localhost:8080/find
 ```
 
 For incremental backups:
+
 ```
 curl -XGET -u username:password -v -H "Content-Type: application/json" -d  '{"ts":"1689762600000"}' localhost:8080/icremental/find
 ```
