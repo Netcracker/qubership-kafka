@@ -41,7 +41,7 @@ POST /kafkacruisecontrol/topic_configuration?topic=[topic_regex]&replication_fac
 And the following is the example of POST request that should be invoked from the inside of the cruise-control pod via curl for `__TestTopic`
 
 ```sh
-curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/topic_configuration?topic=__TestTopic&replication_factor=3&dryrun=false"
+curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/topic_configuration?topic=__TestTopic&replication_factor=3&dryrun=false"
 ```
 
 For more information, refer to
@@ -54,7 +54,7 @@ See full Goals list [Cruise Control Goals](https://github.com/linkedin/cruise-co
 For example, we try to decrease replication factor from 3 to 1:
 
 ```sh
-curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/topic_configuration?topic=test_topic&replication_factor=1&dryrun=false"
+curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/topic_configuration?topic=test_topic&replication_factor=1&dryrun=false"
 ```
 
 In the output we see something like this:
@@ -75,7 +75,7 @@ caDistributionGoal instead.
 Below is the example, where we've skipped default goals check and provided another goal, which doesn't get violated by this operation:  
 
 ```bash
-curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/topic_configuration?topic=test_topic&replication_factor=1&dryrun=false&skip_hard_goal_check=true&goals={ReplicaDistributionGoal}"
+curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/topic_configuration?topic=test_topic&replication_factor=1&dryrun=false&skip_hard_goal_check=true&goals={ReplicaDistributionGoal}"
 ```
 
 Here we've added following parameters:
@@ -98,7 +98,7 @@ For full parameters' description, refer to
 Following is the example request:
 
 ```bash
-curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/rebalance
+curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/rebalance
 ```
 
 In the console output you will see how cluster would be balanced by Cruise Control proposals.
@@ -106,7 +106,7 @@ In the console output you will see how cluster would be balanced by Cruise Contr
 To make it actually start rebalance you have to disable `dryrun` mode, like in the following example:
 
 ```bash
-curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/rebalance?dryrun=false"
+curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/rebalance?dryrun=false"
 ```
 
 Description for some crucial default parameters:
@@ -154,7 +154,7 @@ While you invoke rebalance, two possible scenarios might take place:
     The following POST request removes a list of brokers from the Kafka cluster:
 
     ```bash
-    curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/remove_broker?brokerid=[id1,id2...]&dryrun=false"
+    curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/remove_broker?brokerid=[id1,id2...]&dryrun=false"
     ```
 
    For detailed information, refer to
@@ -165,13 +165,13 @@ While you invoke rebalance, two possible scenarios might take place:
    The following POST request moves all the leader replicas away from a list of brokers:
 
     ```bash
-    curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/demote_broker?brokerid=[id1, id2...]&dryrun=false"
+    curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/demote_broker?brokerid=[id1, id2...]&dryrun=false"
     ```
 
    User can also request to move all the leader replicas away from the list of disks via:
 
     ```bash
-    curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/demote_broker?brokerid_and_logdirs=[id1-logdir1, id2-logdir2...]&dryrun=false"
+    curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/demote_broker?brokerid_and_logdirs=[id1-logdir1, id2-logdir2...]&dryrun=false"
     ```
    
     For detailed information, refer to [Demote a list of brokers from the Kafka cluster](https://github.com/linkedin/cruise-control/wiki/REST-APIs#demote-a-list-of-brokers-from-the-kafka-cluster).
@@ -181,7 +181,7 @@ While you invoke rebalance, two possible scenarios might take place:
    The following POST request adds the given brokers to the Kafka cluster:
 
     ```bash
-    curl -X POST -u admin:admin "http://localhost:9090/kafkacruisecontrol/add_broker?brokerid=[id1,id2...]&dryrun=false"
+    curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/add_broker?brokerid=[id1,id2...]&dryrun=false"
     ```
 
    For detailed information, refer tot [Add a list of new brokers to Kafka Cluster](https://github.com/linkedin/cruise-control/wiki/REST-APIs#add-a-list-of-new-brokers-to-kafka-cluster).

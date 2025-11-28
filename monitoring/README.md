@@ -38,13 +38,13 @@ If you use OpenShift, prefix name parameter is set in `setEnv.sh` for OpenShift 
 ## Grafana
 ### Dashboard exporting
 ```bash
-curl -XGET -k -u admin:admin http://localhost:3000/api/dashboards/db/kafka-monitoring \
+curl -XGET -k -u username:password http://localhost:3000/api/dashboards/db/kafka-monitoring \
   | jq . > dashboard/kafka-dashboard.json
 ```
 
   Where:
    
-   * `admin:admin` grafana user login and password
+   * `username:password` grafana user login and password
    * `http://localhost:3000` grafana URL
    * `kafka-monitoring` dashboard name
  
@@ -53,7 +53,7 @@ Dashboard can be imported using the following command:
 
 ```bash
 curl -XPOST \
-  -u admin:admin \
+  -u username:password \
   --data @./dashboard/kafka-dashboard.json \
   -H 'Content-Type: application/json'  \
   -k \
@@ -61,7 +61,7 @@ curl -XPOST \
 ```
   Where:
    
-   * `admin:admin` grafana user login and password
+   * `username:password` grafana user login and password
    * `http://localhost:3000` grafana URL
 
 

@@ -25,7 +25,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
    * Check that monitoring endpoints are available from EKS cluster. For example:
 
     ```bash
-    curl -k -u prometheus_:prometheus_ https://kafka-2e256717-qubership-3c57.aivencloud.com:9273/metrics
+    curl -k -u username:password https://kafka-2e256717-qubership-3c57.aivencloud.com:9273/metrics
     ```
 
 2. Configure Prometheus scrappers for Kafka exporters:

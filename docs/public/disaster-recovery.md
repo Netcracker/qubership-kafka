@@ -798,10 +798,10 @@ If the automatic switchover operation for active side failed you can also try to
 
 1. Open terminal for `kafka-backup-daemon` pod (scale up it if necessary).
 2. Get the list of available backups (vaultIds) using Backup Daemon REST API.
-   For example, `curl -u admin:admin -XGET localhost:8080/listbackups`.
+   For example, `curl -u username:password -XGET localhost:8080/listbackups`.
 3. Find the latest full backup (`"db_list": full backup"`) from another region (`custom_vars.region`).
-   For example, `curl -u admin:admin -XGET localhost:8080/listbackups/20210913T1114`.
+   For example, `curl -u username:password -XGET localhost:8080/listbackups/20210913T1114`.
 4. Try to restore it. For example,
    `curl -XPOST -u username:password -v -H "Content-Type: application/json" -d  '{"vault":"20210913T1114"}' localhost:8080/restore`.
 5. Check restore job using id you got on previous step status to make sure it finished successfully.
-   For example, `curl -u admin:admin -XGET localhost:8080/listbackups/fcds677s826-18s73ds5-smof788`.
+   For example, `curl -u username:password -XGET localhost:8080/listbackups/fcds677s826-18s73ds5-smof788`.
