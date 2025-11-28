@@ -38,7 +38,7 @@ The standardized request is as follows:
 POST /kafkacruisecontrol/topic_configuration?topic=[topic_regex]&replication_factor=[target_replication_factor]
 ```
 
-And the following is the example of POST request that should be invoked from the inside of the cruise-control pod via curl for `__TestTopic`
+And the following is the example of POST request that should be invoked from the inside of the cruise-control pod via cURL for `__TestTopic`
 
 ```sh
 curl -X POST -u username:password "http://localhost:9090/kafkacruisecontrol/topic_configuration?topic=__TestTopic&replication_factor=3&dryrun=false"

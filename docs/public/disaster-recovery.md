@@ -43,7 +43,7 @@ In case of failover the Kafka operator does not wait and switches `active` side.
 By design, Kafka Mirror Maker has naming convention for replicated topics that implies additional alias at the beginning
 of the replicated topics. But in Disaster Recovery scheme it is important to replicate topic names as-is. For this purpose
 [Mirror Maker 2 Extensions](https://github.com/strimzi/mirror-maker-2-extensions) library created by [Strimzi](https://strimzi.io)
-is added to Kafka Mirror Maker docker image.
+is added to Kafka Mirror Maker Docker image.
 
 In Disaster Recovery scheme the following parameter is automatically added to the Kafka Mirror Maker configuration and overrides the default
 behaviour with topic aliases:
@@ -803,5 +803,5 @@ If the automatic switchover operation for active side failed you can also try to
    For example, `curl -u username:password -XGET localhost:8080/listbackups/20210913T1114`.
 4. Try to restore it. For example,
    `curl -XPOST -u username:password -v -H "Content-Type: application/json" -d  '{"vault":"20210913T1114"}' localhost:8080/restore`.
-5. Check restore job using id you got on previous step status to make sure it finished successfully.
+5. Check restore job using ID you got on previous step status to make sure it finished successfully.
    For example, `curl -u username:password -XGET localhost:8080/listbackups/fcds677s826-18s73ds5-smof788`.
