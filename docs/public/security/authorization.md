@@ -4,7 +4,7 @@ By default, if a resource has no associated ACLs, then no one except the superus
 
 Producers and consumers need to be authorized to perform operations on topics, but they should be
 configured with different principals compared to the servers. The main operations that producers
-require authorization to execute are `WRITE` and `READ`. Admin users can use command line tools,
+require authorization to execute are `WRITE` and `READ`. Admin users can use command-line-tools,
 but require authorization for certain operations. Operations that an admin user might need 
 authorization for are `DELETE`, `CREATE`, and `ALTER`. You can use wildcards for producers and 
 consumers so that you only have to set it once.
@@ -80,7 +80,7 @@ bin/kafka-acls.sh \
   --deny-host 198.51.100.3 --operation Read --topic test-topic
 ```
 
-**Note**: The `--allow-host` and `deny-host` options only support IP addresses (host names are not 
+**Note**: The `--allow-host` and `deny-host` options only support IP addresses (hostnames are not 
 supported). Also note that IPv6 addresses are supported, and that you can use them in ACLs.
 
 The preceding example adds ACLs to a topic by specifying `--topic <topic-name>` as the resource 

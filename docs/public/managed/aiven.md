@@ -25,7 +25,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
    * Check that monitoring endpoints are available from EKS cluster. For example:
 
     ```bash
-    curl -k -u prometheus_:prometheus_ https://kafka-2e256717-qubership-3c57.aivencloud.com:9273/metrics
+    curl -k -u username:password https://kafka-2e256717-qubership-3c57.aivencloud.com:9273/metrics
     ```
 
 2. Configure Prometheus scrappers for Kafka exporters:
@@ -179,11 +179,11 @@ secret with certificates specified in Aiven Kafka connection information.
     Where:
      * `${SECRET_NAME}` is the name of secret that contains all certificates. For example, `kafka-tls-secret`.
      * `${NAMESPACE}` is the namespace where the secret should be created. For example, `kafka-service`.
-     * `${ROOT_CA_CERTIFICATE}` is the certificate in BASE64 format that is taken from `CA Certificate` field in Aiven Kafka connection 
+     * `${ROOT_CA_CERTIFICATE}` is the certificate in base64 format that is taken from `CA Certificate` field in Aiven Kafka connection 
        information.
-     * `${CERTIFICATE}` is the certificate in BASE64 format that is taken from `Access Certificate` field in Aiven Kafka connection
+     * `${CERTIFICATE}` is the certificate in base64 format that is taken from `Access Certificate` field in Aiven Kafka connection
        information.
-     * `${PRIVATE_KEY}` is the private key in BASE64 format that is taken from `Access Key` field in Aiven Kafka connection information.
+     * `${PRIVATE_KEY}` is the private key in base64 format that is taken from `Access Key` field in Aiven Kafka connection information.
 
 2. If Aiven Kafka uses `SASL`, secret with the following content should be created:
 
@@ -202,7 +202,7 @@ secret with certificates specified in Aiven Kafka connection information.
     Where:
      * `${SECRET_NAME}` is the name of secret that contains all certificates. For example, `kafka-tls-secret`.
      * `${NAMESPACE}` is the namespace where the secret should be created. For example, `kafka-service`.
-     * `${ROOT_CA_CERTIFICATE}` is the certificate in BASE64 format that is taken from `CA Certificate` field
+     * `${ROOT_CA_CERTIFICATE}` is the certificate in base64 format that is taken from `CA Certificate` field
        in Aiven Kafka connection information.
 
 # Example of Deploy Parameters

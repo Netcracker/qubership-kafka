@@ -1,8 +1,7 @@
-# Requirements:
+# Requirements
 
 1. [Docker](https://www.docker.io/gettingstarted/#h_installation)
 2. [Docker Compose](http://docs.docker.com/compose/install/)
-
 
 # Security
 
@@ -19,19 +18,18 @@ KafkaClient {
 };
 ```
 
-
 # Monitoring
 
 Kafka provides metrics via jmx.
 More details see [here](https://kafka.apache.org/documentation/#monitoring)
 
 For monitoring you need:
-- setup link:https://github.com/influxdata/influxdb[InfluxDB] database
-- setup customized link:https://github.com/influxdata/telegraf[Telegraf] - 
-  link:https://github.com/Netcracker/qubership-kafka-monitoring[Kafka Monitoring] agent 
+- setup link:[InfluxDB](https://github.com/influxdata/influxdb) database
+- setup customized link:[Telegraf](https://github.com/influxdata/telegraf) 
+  link:[Kafka Monitoring](https://github.com/Netcracker/qubership-kafka) agent 
   with InfluxDB output plugin and kafka exec input plugin
-- setup link:https://github.com/grafana/grafana[Grafana] and configure datasource (influxdb)
-- import json template for Grafana Dashboard
+- setup link:[Grafana](https://github.com/grafana/grafana) and configure datasource (influxdb)
+- import JSON template for Grafana Dashboard
 
 Also Kafka provides JMX metrics in Prometheus format on `/metrics` REST endpoint. 
 When `DISABLE_SECURITY` environment variable is set to `true`, the `/metrics` endpoint is not secured. 
@@ -67,7 +65,7 @@ Defaults to the hostname of the container.
 
 ### `ADVERTISED_HOST_NAME`
 
-This environment variable is a recommended setting. The host name specified with this environment 
+This environment variable is a recommended setting. The hostname specified with this environment 
 variable will be registered in ZooKeeper and given out to other workers to connect with. By default 
 the value of `HOST_NAME` is used, so specify a different value if the `HOST_NAME` value will not be 
 useful to or reachable by clients.
@@ -106,12 +104,10 @@ include the property's name and value.
 
 The value of the environment variable may not contain a '\@' character.
 
-
 # Ports
 
 Containers created using this image will expose port 9092, which is the standard port used by Kafka.
 You can  use standard Docker options to map this to a different port on the host that runs the container.
-
 
 # Storing data
 
@@ -119,14 +115,12 @@ The Kafka broker run by this image writes data to the local file system, and the
 data is to use volumes that map specific directories inside the container to the local file system 
 (or to OpenShift persistent volumes).
 
-
 ### Topic data
 
 This image defines a data volume at `/var/opt/kafka/data`. The broker writes all persisted data as 
 files within this directory, inside a subdirectory named with the value of BROKER_ID (see above). 
 You must mount it appropriately when running your container to persist the data after the container 
 is stopped; failing to do so will result in all data being lost when the container is stopped.
-
 
 ### Log files
 
@@ -158,5 +152,4 @@ Before performing scale down of the kafka cluster it is highle recommended to mi
 from broker that is going to be removed from cluster to other brokers. Following command can be used in
 container to perform this operation:
 `/opt/kafka/bin/kafka-partitions.sh release_broker %BROKER_ID%`
-where %BROKER_ID% is id of broker that is going to be removed from cluster.
-
+where %BROKER_ID% is ID of broker that is going to be removed from cluster.
