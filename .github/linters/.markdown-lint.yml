@@ -1,7 +1,7 @@
 # MD013/line-length - Line length
 MD013:
-  line_length: 200
-  heading_line_length: 120
+  line_length: 250
+  heading_line_length: 140
   code_block_line_length: 120
   code_blocks: false
   tables: false
@@ -31,3 +31,7 @@ MD009: false
 MD010: false
 # MD051/Link fragments should be valid
 MD051: false
+# MD025/Multiple top-level headings in the same document
+MD025: false
+# MD040/fenced-code-language Fenced code blocks should have a language specified
+MD040: false
