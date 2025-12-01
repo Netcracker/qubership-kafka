@@ -25,6 +25,7 @@ Kafka provides metrics via jmx.
 More details see [Kafka Monitoring](https://kafka.apache.org/documentation/#monitoring)
 
 For monitoring you need:
+
 - setup link:[InfluxDB](https://github.com/influxdata/influxdb) database
 - setup customized link:[Telegraf](https://github.com/influxdata/telegraf) 
   link:[Kafka Monitoring](https://github.com/Netcracker/qubership-kafka) agent 
