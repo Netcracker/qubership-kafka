@@ -62,17 +62,6 @@ spec:
             - name: MONITORED_IMAGES
               value: {{ include "kafka.monitoredImages" . }}
             {{- end }}
-            {{- if not .Values.kafka.kraft.enabled }}
-            - name: ZOOKEEPER_HOST
-              value: {{ .Values.integrationTests.zookeeperHost }}
-            - name: ZOOKEEPER_PORT
-              value: {{ .Values.integrationTests.zookeeperPort | quote }}
-            - name: ZOOKEEPER_OS_PROJECT
-              value: {{ .Values.integrationTests.zookeeperOsProject }}
-            {{- else }}
-            - name: KRAFT_ENABLED
-              value: "true"
-            {{- end }}
             {{- if .Values.global.externalKafka.enabled }}
             - name: EXTERNAL_KAFKA
             {{- end }}

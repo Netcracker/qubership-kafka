@@ -190,8 +190,6 @@ kafka:
   tls:
     enabled: true
     secretName: ""
-  kraft:
-    enabled: true
   autoRestartOnSecretChange: true
 
 monitoring:
@@ -534,9 +532,6 @@ integrationTests:
   # Example: https://kube:6443
   url: ""
   kafkaIsManagedByOperator: true
-  zookeeperOsProject: "zookeeper-service"
-  zookeeperHost: "zookeeper"
-  zookeeperPort: 2181
   kafkaHost: "kafka"
   kafkaPort: 9092
   kafkaPvNames: "pv-1,pv-2,pv-3"

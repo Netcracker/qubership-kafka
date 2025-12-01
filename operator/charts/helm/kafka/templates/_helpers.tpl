@@ -435,3 +435,12 @@ Find a kubectl image in various places.
   {{- end -}}
   {{- printf "%t" $upgradeAllowed -}}
 {{- end }}
+
+{{- define "kraft.enabled" -}}
+  {{- $kraftEnabled := .Values.kafka.kraft.enabled -}}
+  {{- $desiredVar := include "kafka.imageVariant" (include "kafka.image" .) -}}
+  {{- if eq $desiredVar "4" -}}
+    {{- $kraftEnabled = true -}}
+  {{- end -}}
+  {{- printf "%t" $kraftEnabled -}}
+{{- end }}
