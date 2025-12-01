@@ -26,12 +26,12 @@ import (
 	akhqconfigv1 "github.com/Netcracker/qubership-kafka/operator/api/v1"
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
-	"github.com/go-yaml/yaml"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/yaml"
 )
 
 const (
