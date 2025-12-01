@@ -5,7 +5,6 @@ go 1.24.0
 require (
 	github.com/IBM/sarama v1.46.3
 	github.com/go-logr/logr v0.4.0
-	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/pkg/errors v0.9.1
 	github.com/sethvargo/go-password v0.3.1
@@ -16,6 +15,7 @@ require (
 	k8s.io/client-go v0.22.1
 	k8s.io/utils v0.0.0-20210802155522-efc7438f0176
 	sigs.k8s.io/controller-runtime v0.10.0
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -70,6 +70,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
@@ -87,5 +88,4 @@ require (
 	k8s.io/klog/v2 v2.9.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20210421082810-95288971da7e // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
-	sigs.k8s.io/yaml v1.2.0 // indirect
 )

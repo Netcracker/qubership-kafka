@@ -36,6 +36,7 @@ For including this sh input plugin, you need add next configuration in telegraf.
    ## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_INPUT.md
    data_format = "influx"
 ```
+
 If you use OpenShift, prefix name parameter is set in `setEnv.sh` for OpenShift deployer script.
 
 ## Grafana
@@ -54,6 +55,7 @@ curl -XGET -k -u username:password http://localhost:3000/api/dashboards/db/kafka
    * `kafka-monitoring` dashboard name
  
 ### Dashboard importing
+
 Dashboard can be imported using the following command:
 
 ```bash
@@ -64,11 +66,11 @@ curl -XPOST \
   -k \
    http://localhost:3000/api/dashboards/db
 ```
+
   Where:
    
    * `username:password` grafana user login and password
    * `http://localhost:3000` grafana URL
-
 
 ## Zabbix
 
@@ -79,6 +81,7 @@ Zabbix template for monitoring kafka cluster state consists of items and trigger
 Template can be imported in Zabbix UI from templates page (Configuration -> Templates) by using Import button.
 
 Following macroses are used in template items and triggers and should be specified either on template or on hosts that this template is going to be used with:
+
 * {$KAFKA_PROJECT_NAME} - name of openshift project where kafka is deployed
 * {$KAFKA_PV_NAMES} - names of persistent volumes (as regular expression) that are used in kafka pods
 * {$DR_SIDE} - name of side (`left`, `right`) if Kafka is deployed in DR mode. Should be empty if Kafka is not deployed in DR mode.
@@ -86,6 +89,7 @@ Following macroses are used in template items and triggers and should be specifi
 ### Template Items and Triggers
 
 Triggers for tracking following problems are included in template:
+
 * *Cluster degradation*: Related item - *Kafka Offline Partition Count*. If offline partition count is not 0 then trigger will report problem with High severity.
 * *Service is down*: Related item - *Kafka Cluster Size*. If cluster size is 0 then trigger will report problem with Disaster severity.
 * *CPU usage threshold reached*: Related items - *Kafka CPU limit* and *Kafka CPU usage*. If CPU usage is more than 95% of the limit then trigger will report problem with High Severity.
@@ -97,4 +101,3 @@ Triggers for tracking following problems are included in template:
 If you have Kafka which is deployed in DR mode you need to create two hosts: 
 for left and for right side and to specify the side as value (`left`, `right`) for the macros `{$DR_SIDE}`.
 If you have Kafka without DR just leave this macros empty.
-
