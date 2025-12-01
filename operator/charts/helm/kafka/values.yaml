@@ -35,7 +35,7 @@ global:
   externalKafka:
     enabled: false
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:2.3.5
   replicas: 1
   apiGroup: "netcracker.com"
   resources:
@@ -260,7 +260,7 @@ groupMigration:
     limits:
       memory: 256Mi
       cpu: 100m
-  image: "ghcr.io/netcracker/qubership-docker-kubectl:main"
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:0.0.4"
   imagePullPolicy: Always
   runAsNonRoot: true
 
