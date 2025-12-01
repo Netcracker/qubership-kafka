@@ -27,8 +27,6 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
@@ -40,8 +38,8 @@ const (
 	akhqDeserializationCMPrefix = "akhqdcm-"
 )
 
-func (r *AkhqConfigReconciler) getConfigMap(configMapName, namespace string) (*v1.ConfigMap, error) {
-	foundCM := &v1.ConfigMap{}
+func (r *AkhqConfigReconciler) getConfigMap(configMapName, namespace string) (*corev1.ConfigMap, error) {
+	foundCM := &corev1.ConfigMap{}
 	if err := r.Client.Get(context.TODO(),
 		types.NamespacedName{Name: configMapName, Namespace: namespace}, foundCM); err != nil {
 		return nil, err
@@ -49,7 +47,7 @@ func (r *AkhqConfigReconciler) getConfigMap(configMapName, namespace string) (*v
 	return foundCM, nil
 }
 
-func (r *AkhqConfigReconciler) getDeserializationConfig(deserializationCM *v1.ConfigMap) (*DeserializationConfig, error) {
+func (r *AkhqConfigReconciler) getDeserializationConfig(deserializationCM *corev1.ConfigMap) (*DeserializationConfig, error) {
 	data := deserializationCM.Data["config"]
 	dc := &DeserializationConfig{}
 	if err := yaml.Unmarshal([]byte(data), dc); err != nil {
@@ -58,7 +56,7 @@ func (r *AkhqConfigReconciler) getDeserializationConfig(deserializationCM *v1.Co
 	return dc, nil
 }
 
-func (r *AkhqConfigReconciler) updateDeserializationConfigMap(deserializationCM *v1.ConfigMap, dc DeserializationConfig) error {
+func (r *AkhqConfigReconciler) updateDeserializationConfigMap(deserializationCM *corev1.ConfigMap, dc DeserializationConfig) error {
 	binDc, err := yaml.Marshal(dc)
 	if err != nil {
 		return err
@@ -76,7 +74,7 @@ func (r *AkhqConfigReconciler) applyBinaryConfigMap(namespace string, mapToApply
 	for configName, rawConfig := range mapToApply {
 		namespacedName := types.NamespacedName{Name: akhqDeserializationCMPrefix + configName, Namespace: namespace}
 		configAlreadyPresented := true
-		descKeysCM := &v1.ConfigMap{}
+		descKeysCM := &corev1.ConfigMap{}
 
 		// Try to load config map from the cluster
 		if err := r.Client.Get(context.TODO(), namespacedName, descKeysCM); err != nil {
@@ -141,7 +139,7 @@ func (r *AkhqConfigReconciler) deleteBinaryConfigMap(namespace string, mapToDele
 
 		err := r.Client.Get(context.TODO(), namespacedName, foundConfigMap)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if k8sErrors.IsNotFound(err) {
 				logger.Info(fmt.Sprintf("Deserialization config map %s not found, so nothing to delete", namespacedName.Name))
 				continue
 			}
@@ -166,8 +164,8 @@ func compressBytes(bytes *[]byte) (*[]byte, error) {
 	if err := compressBytesFromTmpFile(); err != nil {
 		return nil, err
 	}
-	defer os.Remove(tmpFileName)
-	defer os.Remove(tmpCompressedFileName)
+	defer func() { _ = os.Remove(tmpFileName) }()
+	defer func() { _ = os.Remove(tmpCompressedFileName) }()
 
 	fileBytes, err := os.ReadFile(tmpCompressedFileName)
 	if err != nil {
@@ -182,16 +180,16 @@ func compressBytesFromTmpFile() error {
 	if err != nil {
 		return err
 	}
-	defer tmpFile.Close()
+	defer func() { _ = tmpFile.Close() }()
 
 	compressedTmp, err := os.Create(tmpCompressedFileName)
 	if err != nil {
 		return err
 	}
-	defer compressedTmp.Close()
+	defer func() { _ = compressedTmp.Close() }()
 
 	writer := gzip.NewWriter(compressedTmp)
-	defer writer.Close()
+	defer func() { _ = writer.Close() }()
 
 	if _, err = io.Copy(writer, tmpFile); err != nil {
 		return err
@@ -205,7 +203,7 @@ func storeBytesToTmpFile(bytes *[]byte) error {
 	if err != nil {
 		return err
 	}
-	defer tmpFile.Close()
+	defer func() { _ = tmpFile.Close() }()
 
 	if _, err = tmpFile.Write(*bytes); err != nil {
 		return err
