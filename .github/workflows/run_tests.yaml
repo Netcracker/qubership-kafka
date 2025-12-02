@@ -20,8 +20,7 @@ jobs:
           poll-interval: 20      
   Kafka-Pipeline:
     needs: Wait-for-images
-    if: ${{ needs.Wait-for-images.outputs.conclusion }} == 'success'  
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@v1.0.0
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@main
     with:
       service_branch: '${{ github.head_ref || github.ref_name }}'
       versions_file: '.github/versions.yaml'
