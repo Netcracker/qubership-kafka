@@ -1,5 +1,10 @@
 name: Run Kafka Pipeline
 
+permissions:
+  contents: read
+  packages: read
+  actions: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -12,7 +17,7 @@ jobs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
     steps:
       - name: Wait for push.yml to complete
-        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@main
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@0f2be042d7c833c6bf60df85732609b7991fb821 # v.2.0.0
         id: wait
         with:
           workflow: push.yml

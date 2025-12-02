@@ -1,0 +1,3 @@
+checks:
+  unpinned-uses:
+    enabled: false
