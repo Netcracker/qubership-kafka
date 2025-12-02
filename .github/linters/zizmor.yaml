@@ -1,4 +1,4 @@
 rules:
   unpinned-uses:
     ignore:
-      - path: ".github/workflows/run_tests.yaml"
+      - ".github/workflows/run_tests.yaml"
