@@ -1,3 +1,4 @@
 rules:
   unpinned-uses:
-    enabled: false
+    ignore:
+      - path: ".github/workflows/run_tests.yaml"
