@@ -40,7 +40,7 @@ import (
 const (
 	kafkaConditionReason              = "KafkaReadinessStatus"
 	kafkaHashName                     = "spec"
-	autoRestartAnnotation             = "kafkaservice.qubership.org/auto-restart"
+	autoRestartAnnotation             = "kafkaservice.netcracker.com/auto-restart"
 	resourceVersionAnnotationTemplate = "%s/resource-version"
 )
 
@@ -168,27 +168,6 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 
 	r.logger.Info(fmt.Sprintf("Update brokers set: current replicas count is [%d], new replicas count is [%d].", currentReplicas, kafkaSpec.Replicas))
 	kraft := r.cr.Spec.Kraft.Enabled
-	if r.cr.Spec.Kraft.Migration {
-		kraft = false
-	}
-	if err := r.rolloutBrokers(kafkaSpec.Replicas, kraft, kafkaSecret); err != nil {
-		return err
-	}
-
-	if currentReplicas > 0 && currentReplicas < kafkaSpec.Replicas {
-		if err := r.reassignPartitionsWithStatusUpdate(int32(kafkaSpec.Replicas), true); err != nil {
-			return err
-		}
-	} else {
-		if err := r.reassignPartitionsWithStatusUpdate(int32(kafkaSpec.Replicas), false); err != nil {
-			return err
-		}
-		if currentReplicas > kafkaSpec.Replicas && r.kafkaProvider.IsBrokerScalingInEnabled() {
-			if err = r.performBrokerScalingIn(currentReplicas, kafkaSpec.Replicas); err != nil {
-				return err
-			}
-		}
-	}
 
 	if r.cr.Spec.Kraft.Migration {
 		var status *kafka.KafkaStatus
@@ -211,11 +190,15 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 			step = 0
 		}
 		log.Info("Starting ZooKeeper to Kraft migration")
+		log.Info(fmt.Sprintf("current step is %d", step))
 
 		// ZooKeeper -> Kraft migration initial step, getting ZooKeeper cluster ID
-		zkClusterID, err := r.getZooKeeperClusterID()
-		if err != nil {
-			return err
+		var zkClusterID string
+		if step < 4 {
+			zkClusterID, err = r.getZooKeeperClusterID()
+			if err != nil {
+				return err
+			}
 		}
 
 		if step < 1 {
@@ -283,6 +266,25 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		}
 
 		log.Info("ZooKeeper to Kraft migration finished succesfully or not needed")
+	}
+
+	if err := r.rolloutBrokers(kafkaSpec.Replicas, kraft, kafkaSecret); err != nil {
+		return err
+	}
+
+	if currentReplicas > 0 && currentReplicas < kafkaSpec.Replicas {
+		if err := r.reassignPartitionsWithStatusUpdate(int32(kafkaSpec.Replicas), true); err != nil {
+			return err
+		}
+	} else {
+		if err := r.reassignPartitionsWithStatusUpdate(int32(kafkaSpec.Replicas), false); err != nil {
+			return err
+		}
+		if currentReplicas > kafkaSpec.Replicas && r.kafkaProvider.IsBrokerScalingInEnabled() {
+			if err = r.performBrokerScalingIn(currentReplicas, kafkaSpec.Replicas); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

@@ -64,6 +64,7 @@ The most common Kafka-services operator chart related resources labels
 {{- define "kafka-services.coreLabels" -}}
 app.kubernetes.io/version: '{{ .Values.ARTIFACT_DESCRIPTOR_VERSION | trunc 63 | trimAll "-_." | toString }}'
 app.kubernetes.io/part-of: '{{ .Values.PART_OF }}'
+app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
@@ -934,4 +935,40 @@ Find an CRD Init job Docker image in various places.
     {{- $names = printf "%s,%s" $names "kafkauser_crd.yaml" -}}
   {{- end -}}
   {{- printf "%s" $names | trimPrefix "," -}}
+{{- end -}}
+
+{{- define "kafka-services.regexJoin" -}}
+  {{- $list := .list | default (list) -}}
+  {{- if eq (len $list) 0 -}}
+    {{- "" -}}
+  {{- else if eq (len $list) 1 -}}
+    {{ index $list 0 -}}
+  {{- else -}}
+    {{ join "|" $list }}
+  {{- end -}}
+{{- end -}}
+
+{{- define "lag-exporter.bootstrapServers" -}}
+  {{- $servers := "" -}}
+  {{- if .Values.monitoring.lagExporter.cluster.bootstrapBrokers -}}
+    {{- $servers = .Values.monitoring.lagExporter.cluster.bootstrapBrokers -}}
+  {{- else -}}
+    {{- $servers = include "kafka-service.brokersList" . -}}
+  {{- end -}}
+  {{- $arr := split "," $servers -}}
+  {{- $items := list -}}
+  {{- range $arr -}}
+    {{- $t := trim . -}}
+    {{- if $t -}}
+      {{- $items = append $items (printf "\"%s\"" $t) -}}
+    {{- end -}}
+  {{- end -}}
+  [{{ join "," $items }}]
+{{- end }}
+
+{{/*
+Find a kubectl image in various places.
+*/}}
+{{- define "kubectl.image" -}}
+    {{- printf "%s" .Values.groupMigration.image -}}
 {{- end -}}

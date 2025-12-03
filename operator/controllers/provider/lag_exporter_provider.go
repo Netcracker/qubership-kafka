@@ -19,6 +19,7 @@ import (
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v7"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strconv"
 )
 
@@ -72,10 +73,6 @@ func (lep LagExporterResourceProvider) getEnvs(cmVersion string) []corev1.EnvVar
 			Name:  "KAFKA_ENABLE_SSL",
 			Value: strconv.FormatBool(lep.cr.Spec.Global.KafkaSsl.Enabled),
 		},
-		{
-			Name:  "LAG_EXPORTER_CM_VERSION",
-			Value: cmVersion,
-		},
 	}
 }
 
@@ -111,5 +108,25 @@ func (lep LagExporterResourceProvider) getContainer(cmVersion string) corev1.Con
 		VolumeMounts:    lep.getVolumeMounts(),
 		ImagePullPolicy: corev1.PullAlways,
 		SecurityContext: getDefaultContainerSecurityContext(),
+		LivenessProbe: &corev1.Probe{
+			Handler: corev1.Handler{
+				TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: int32(lep.spec.LagExporter.MetricsPort)}},
+			},
+			InitialDelaySeconds: 30,
+			TimeoutSeconds:      5,
+			PeriodSeconds:       15,
+			SuccessThreshold:    1,
+			FailureThreshold:    20,
+		},
+		ReadinessProbe: &corev1.Probe{
+			Handler: corev1.Handler{
+				TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: int32(lep.spec.LagExporter.MetricsPort)}},
+			},
+			InitialDelaySeconds: 30,
+			TimeoutSeconds:      5,
+			PeriodSeconds:       15,
+			SuccessThreshold:    1,
+			FailureThreshold:    20,
+		},
 	}
 }

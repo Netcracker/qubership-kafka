@@ -22,6 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strconv"
 )
 
@@ -163,6 +164,26 @@ func (mrp MonitoringResourceProvider) getMonitoringContainers(cmVersion string) 
 			Command:         mrp.getCommand(),
 			Args:            mrp.getArgs(),
 			SecurityContext: getDefaultContainerSecurityContext(),
+			LivenessProbe: &corev1.Probe{
+				Handler: corev1.Handler{
+					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
+				},
+				InitialDelaySeconds: 30,
+				TimeoutSeconds:      5,
+				PeriodSeconds:       15,
+				SuccessThreshold:    1,
+				FailureThreshold:    20,
+			},
+			ReadinessProbe: &corev1.Probe{
+				Handler: corev1.Handler{
+					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
+				},
+				InitialDelaySeconds: 30,
+				TimeoutSeconds:      5,
+				PeriodSeconds:       15,
+				SuccessThreshold:    1,
+				FailureThreshold:    20,
+			},
 		},
 	}
 	if mrp.spec.LagExporter != nil {
@@ -315,19 +336,6 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvironmentVariables() []core
 			Name:  "DATA_COLLECTION_INTERVAL",
 			Value: util.DefaultIfEmpty(mrp.spec.DataCollectionInterval, "10s"),
 		},
-		{
-			Name:  "MIN_VERSION",
-			Value: mrp.spec.MinVersion,
-		},
-		{
-			Name:  "MAX_VERSION",
-			Value: mrp.spec.MaxVersion,
-		},
-	}
-	if mrp.cr.Spec.Global.Kraft.Enabled {
-		envs = append(envs, []corev1.EnvVar{
-			{Name: "KRAFT_ENABLED", Value: "true"},
-		}...)
 	}
 	return envs
 }

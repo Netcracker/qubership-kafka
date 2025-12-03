@@ -109,6 +109,22 @@ spec:
             limits:
               cpu: {{ default "400m" .Values.cruiseControl.resources.limits.cpu }}
               memory: {{ default "1024Mi" .Values.cruiseControl.resources.limits.memory }}
+          livenessProbe:
+            tcpSocket:
+              port: 9090
+            initialDelaySeconds: 40
+            timeoutSeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            tcpSocket:
+              port: 9090
+            initialDelaySeconds: 40
+            timeoutSeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
           volumeMounts:
             - name: {{ template "kafka.name" . }}-cruise-control-configmap
               mountPath: /cruise-control/additionalConfig

@@ -62,17 +62,6 @@ spec:
             - name: MONITORED_IMAGES
               value: {{ include "kafka.monitoredImages" . }}
             {{- end }}
-            {{- if not .Values.kafka.kraft.enabled }}
-            - name: ZOOKEEPER_HOST
-              value: {{ .Values.integrationTests.zookeeperHost }}
-            - name: ZOOKEEPER_PORT
-              value: {{ .Values.integrationTests.zookeeperPort | quote }}
-            - name: ZOOKEEPER_OS_PROJECT
-              value: {{ .Values.integrationTests.zookeeperOsProject }}
-            {{- else }}
-            - name: KRAFT_ENABLED
-              value: "true"
-            {{- end }}
             {{- if .Values.global.externalKafka.enabled }}
             - name: EXTERNAL_KAFKA
             {{- end }}
@@ -189,6 +178,14 @@ spec:
           imagePullPolicy: Always
           securityContext:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "true"]
+            initialDelaySeconds: 20
+            timeoutSeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 5
           readinessProbe:
             exec:
               command:
