@@ -7,7 +7,7 @@ metadata:
     {{- include "kafka-services.defaultLabels" . | nindent 4 }}
     app: grafana
 spec:
-  name: lag-exporter-dashboard.json
+  name: kafka-exporter-dashboard.json
   json: >
-{{ .Files.Get "monitoring/lag-exporter-dashboard.json" | indent 4 }}
+{{ .Files.Get "monitoring/kafka-exporter-dashboard.json" | indent 4 }}
 {{- end}}

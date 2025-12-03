@@ -20,7 +20,6 @@ from unittest import mock
 import kafka_metric
 from kafka_metric import \
     _collect_metrics, \
-    _is_version_compatible, \
     _check_config_consistency
 
 
@@ -343,20 +342,6 @@ class TestKafkaMetric(unittest.TestCase):
         result = _check_config_consistency(brokers_configs_list)
         self.assertEqual('No: [auto.create.topics.enable]: false VS true', result,
                          'First inconsistent config should be shown')
-
-
-    def test_version_compatible(self):
-        self.assertTrue(_is_version_compatible("3.2.3", "2.0.0", "3.x.x"))
-        self.assertTrue(_is_version_compatible("3.2.x", "2.0.0", "3.5.0"))
-        self.assertTrue(_is_version_compatible("3.4.x", "2.0.0", "3.x.x"))
-
-        self.assertFalse(_is_version_compatible("2.2.x", "2.5.0", "3.x.x"))
-        self.assertFalse(_is_version_compatible("4.0.x", "2.0.0", "3.x.x"))
-        self.assertFalse(_is_version_compatible("1.1.1", "2.0.0", "3.x.x"))
-
-        self.assertTrue(_is_version_compatible("1.1.1", "0.0.0", "x.x.x"))
-        self.assertTrue(_is_version_compatible("3.2.x", "0.0.0", "x.x.x"))
-        self.assertTrue(_is_version_compatible("4.0.x", "0.0.0", "x.x.x"))
 
 
 if __name__ == '__main__':
