@@ -13,7 +13,7 @@ jobs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
     steps:
       - name: Wait for push.yml to complete
-        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@v2.0.2
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@b6d2198c722564e250d985a99990230d85b0d686
         id: wait
         with:
           workflow: push.yml
@@ -22,11 +22,11 @@ jobs:
   Kafka-Pipeline:
     needs: Wait-for-images
     if: ${{ needs.Wait-for-images.outputs.conclusion }} == 'success'  
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/kafka_upgrade_template
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@main
     with:
       service_branch: '${{ github.head_ref || github.ref_name }}'
       versions_file: '.github/versions.yaml'
-      pipeline_branch: 'fix/kafka_upgrade_template' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'main' #this value must match the value after '@' in 'uses'
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
