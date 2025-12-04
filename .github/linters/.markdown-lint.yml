@@ -35,3 +35,5 @@ MD051: false
 MD025: false
 # MD040/fenced-code-language Fenced code blocks should have a language specified
 MD040: false
+# MD055/Table pipe style
+MD055: false
