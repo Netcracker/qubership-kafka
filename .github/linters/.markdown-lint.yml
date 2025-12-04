@@ -37,3 +37,5 @@ MD025: false
 MD040: false
 # MD055/Table pipe style
 MD055: false
+# MD055/Table column count
+MD056: false
