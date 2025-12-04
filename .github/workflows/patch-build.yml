@@ -55,8 +55,8 @@ jobs:
 
       - id: load
         run: |
-          echo "components=$(jq -c '.components' .github/docker-build-config.json)" >> "$GITHUB_OUTPUT"
-          echo "platforms=$(jq -c '.platforms' .github/docker-build-config.json)" >> "$GITHUB_OUTPUT"
+          echo "components=$(jq -c '.components' .github/dev-build-config.cfg)" >> "$GITHUB_OUTPUT"
+          echo "platforms=$(jq -c '.platforms' .github/dev-build-config.cfg)" >> "$GITHUB_OUTPUT"
 
       - name: Create tags for images
         uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
