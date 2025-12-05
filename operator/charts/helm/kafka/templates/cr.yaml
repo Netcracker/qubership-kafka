@@ -2,10 +2,10 @@
 {{- if and .Values.deployDescriptor .Values.dockerKafka (ne (.Values.DEPLOY_W_HELM | toString) "true") }}
   {{- fail "Kafka requires `DEPLOY_W_HELM` parameter to be set to `true` for App Deployer" }}
 {{- end }}
-{{- if and (not .Values.kafka.zookeeperConnect) (not (eq (include "kraft.enabled" .) "true"))}}
+{{- if and (not (include "kafka.zooKeeperConnect" .)) (not (eq (include "kraft.enabled" .) "true"))}}
 {{ fail "\nError: You must set kafka.zookeeperConnect to install Kafka with ZooKeeper .\nFind more information in corresponding release documentation." }}
 {{- end }}
-{{- if and (not .Values.kafka.zookeeperConnect) (eq (include "kraft.enabled" .) "true") .Values.kafka.kraft.migration }}
+{{- if and (not (include "kafka.zooKeeperConnect" .)) (eq (include "kraft.enabled" .) "true") .Values.kafka.kraft.migration }}
 {{ fail "\nError: You must set kafka.zookeeperConnect to migrate from Kafka with ZooKeeper to Kraft .\nFind more information in corresponding release documentation." }}
 {{- end }}
 {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
