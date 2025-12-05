@@ -58,17 +58,37 @@ jobs:
       platforms: ${{ steps.load.outputs.platforms }}
       tags: "${{ steps.meta.outputs.result }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          persist-credentials: false
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Changed Files
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          json: true
+          write_output_files: true # .github/outputs/all_changed_files.json
 
       - id: load
+        name: Load Components and Platforms
         run: |
-          echo "components=$(jq -c '.components' .github/dev-build-config.cfg)" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_EVENT_NAME" == "release" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            components=$(jq -c '.components' .github/release-build-config.cfg)
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" || "$GITHUB_EVENT_NAME" == "push" ]]; then
+            all_changed_files=$(jq -c '.' .github/outputs/all_changed_files.json)
+            if [ "$all_changed_files" != "null" ]; then
+                chmod +x .github/scripts/matrix.sh
+                components=$(./.github/scripts/matrix.sh ".github/dev-build-config.cfg" ".github/outputs/all_changed_files.json")
+            fi
+          fi
+          echo "components=${components}" >> "$GITHUB_OUTPUT"
           echo "platforms=$(jq -c '.platforms' .github/dev-build-config.cfg)" >> "$GITHUB_OUTPUT"
 
       - name: Create tags for images
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@0f2be042d7c833c6bf60df85732609b7991fb821 #2.0.0
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@3e428f45132119ce49d90f3770a45d4fe1d1078d #2.0.4
         id: meta
         with:
           default-template: "{{ref-name}}"
@@ -76,7 +96,7 @@ jobs:
           replace-symbol: ${{ github.event.inputs.replace-symbol || '_'}}
 
   build:
-    name: Build Docker Images
+    name: ${{ matrix.component.name }} Image Build
     needs: [prepare]
     runs-on: ubuntu-latest
     permissions:
@@ -88,7 +108,7 @@ jobs:
         component: ${{ fromJson(needs.prepare.outputs.components) }}
     steps:
       - name: Docker
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@0f2be042d7c833c6bf60df85732609b7991fb821 #2.0.0
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@3e428f45132119ce49d90f3770a45d4fe1d1078d #2.0.4
         with:
           ref: ${{ github.ref }}
           dry-run: ${{ github.event.inputs.dry-run || github.event_name == 'pull_request' }}
