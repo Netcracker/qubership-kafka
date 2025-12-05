@@ -26,13 +26,13 @@ is enabled, create file `config/security.properties` with information about secu
   ```
   sasl.mechanism=SCRAM-SHA-512
   security.protocol=SASL_PLAINTEXT
-  sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="user1" password="userone";
+  sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin";
   ```
 
 ### Create topic
 
   ```
-  bin/kafka-topics.sh --create --bootstrap-server <kafka_container_name>:9092 --replication-factor 1 --partitions 1 --topic <topic_name> --command-config config/security.properties
+  bin/kafka-topics.sh --create --bootstrap-server kafka:9092 --replication-factor 2 --partitions 3 --topic testtopic --command-config config/security.properties
   ```
 
 For example, with parameters
@@ -44,13 +44,13 @@ For example, with parameters
 ### Check presence of topics
 
   ```
-  bin/kafka-topics.sh --list --bootstrap-server <kafka_container_name>:9092 --command-config config/security.properties
+  bin/kafka-topics.sh --list --bootstrap-server kafka:9092 --command-config config/security.properties
   ```
     
 ### Create records in topic
 
   ```
-  bin/kafka-console-producer.sh --broker-list <kafka_container_name>:9092 --topic <topic_name> --producer.config config/security.properties
+  bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic testtopic --producer.config config/security.properties
   ```
     
   ```
@@ -63,7 +63,8 @@ For example, with parameters
 ### Check presence of records in topic
 
   ```
-  bin/kafka-console-consumer.sh --bootstrap-server <kafka_container_name>:9092 --topic <topic_name> --consumer.config config/security.properties --from-beginning
+  bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic testtopic --consumer.config config/security.properties --from-beginning
+  bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic testtopic --group test-conusmer-group --consumer.config config/security.properties --from-beginning 
   ```
 
 ### Update replication factor of all topics to the number of brokers

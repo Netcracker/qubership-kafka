@@ -24,7 +24,7 @@ var cmContent string
 
 func Setup() {
 	cmContent = "# mm2.properties\nclusters = dc2, dc1\nreplication.factor = 3\nconfig.storage.replication.factor = 3\noffset.storage.replication.factor = 3\nstatus.storage.replication.factor = 3\nheartbeats.topic.replication.factor = 3\ncheckpoints.topic.replication.factor = 3\noffset-syncs.topic.replication.factor = 3\nrefresh.topics.interval.seconds = 5\nrefresh.groups.interval.seconds = 5\nsync.topic.acls.enabled = false\n\n# configure [dc2] cluster\ndc2.bootstrap.servers = kafka-1.kafka-service:9092,kafka-2.kafka-service:9092,kafka-3.kafka-service:9092\n\n# configure [dc1] cluster\ndc1.bootstrap.servers = kafka-1.kafka-cluster:9092,kafka-2.kafka-cluster:9092,kafka-3.kafka-cluster:9092\n\ntarget.dc=dc2\nreplication.policy.class = io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy\nemit.checkpoints.enabled = true\nemit.checkpoints.interval.seconds = 5\nsync.group.offsets.enabled = true\nsync.group.offsets.interval.seconds = 5\nenabled = false\ntopics = topic-71,topic-72\n# configure a specific source->target replication flow\ndc1->dc2.enabled = true\ntopics.blacklist = dc2\\.*,dc1\\.*"
-	os.Setenv("OPERATOR_NAME", "kafka-service-operator")
+	_ = os.Setenv("OPERATOR_NAME", "kafka-service-operator")
 }
 
 func createEmptyKmmSecret() map[string]string {

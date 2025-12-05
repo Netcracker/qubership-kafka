@@ -35,7 +35,6 @@ type Pool struct {
 	stop                   context.CancelFunc
 	maxConsecutiveRestarts int
 	restartResetAfter      time.Duration
-	exitFn                 func()
 }
 
 func NewPool(ctx context.Context, stop context.CancelFunc, opts cfg.Cfg, logger logr.Logger) *Pool {

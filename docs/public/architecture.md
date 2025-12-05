@@ -31,7 +31,7 @@ The deployment procedure and additional features include the following:
 * Support of Qubership deployment jobs for HA scheme and different configurations.
   For more information, refer to [Installation Guide](/docs/public/installation.md).
 * Backup and restore for topics configuration.
-  For more information, refer to [Kafka Backup Daemon Guide](https://github.com/Netcracker/qubership-kafka-backup-daemon/tree/main/documentation/maintenance-guide/development-guide/README.md).
+  For more information, refer to [Kafka Backup Daemon Guide](./backup-daemon.md).
 * Monitoring integration with Grafana Dashboard and Prometheus Alerts.
   For more information, refer to [Monitoring Guide](/docs/public/monitoring.md).
 * Mirroring data between Kafka clusters. For more information, refer to [Replication Guide](/docs/public/replication.md).

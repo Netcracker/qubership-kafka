@@ -31,7 +31,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	sigsScheme "sigs.k8s.io/controller-runtime/pkg/scheme"
-	"strconv"
 	"strings"
 )
 
@@ -78,18 +77,6 @@ func configureManagerNamespaces(configMgrOptions *ctrl.Options, namespace string
 		}
 		configMgrOptions.NewCache = cache.MultiNamespacedCacheBuilder(namespaces)
 	}
-}
-
-func duplicateAddr(addr string) (string, error) {
-	parts := strings.Split(addr, ":")
-	if len(parts) != 2 {
-		return fmt.Sprintf("%s:%d", addr, 8081), nil
-	}
-	port, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%s:%d", parts[0], port+10), nil
 }
 
 func mainApiGroup() string {

@@ -1,4 +1,4 @@
-FROM docker.io/danielqsj/kafka-exporter:latest AS builder
+FROM docker.io/danielqsj/kafka-exporter:v1.9.0 AS builder
 
 FROM alpine:3.20
 

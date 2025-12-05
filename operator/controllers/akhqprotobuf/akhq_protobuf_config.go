@@ -22,7 +22,6 @@ import (
 
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v7"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,8 +38,8 @@ const (
 `
 )
 
-func getConfigMap(configMapName, namespace string, client client.Client) (*v1.ConfigMap, error) {
-	foundCM := &v1.ConfigMap{}
+func getConfigMap(configMapName, namespace string, client client.Client) (*corev1.ConfigMap, error) {
+	foundCM := &corev1.ConfigMap{}
 	if err := client.Get(context.TODO(),
 		types.NamespacedName{Name: configMapName, Namespace: namespace}, foundCM); err != nil {
 		return nil, err

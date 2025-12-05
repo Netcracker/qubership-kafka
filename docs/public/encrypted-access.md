@@ -25,9 +25,9 @@ You can enable TLS-based encryption for communication with Kafka. For this you n
   
     * `${SECRET_NAME}` is the name of secret that contains all certificates. For example, `kafka-tls-secret`.
     * `${NAMESPACE}` is the namespace where the secret should be created. For example, `kafka-service`.
-    * `${ROOT_CA_CERTIFICATE}` is the root CA in BASE64 format.
-    * `${CERTIFICATE}` is the certificate in BASE64 format.
-    * `${PRIVATE_KEY}` is the private key in BASE64 format.
+    * `${ROOT_CA_CERTIFICATE}` is the root CA in base64 format.
+    * `${CERTIFICATE}` is the certificate in base64 format.
+    * `${PRIVATE_KEY}` is the private key in base64 format.
 
 2. Specify the following deployment parameters:
 
@@ -112,7 +112,7 @@ global:
 You can automatically generate TLS-based secrets using Helm by specifying certificates in deployment parameters.
 For example, to generate `kafka-tls-secret` :
 
-1. Following certificates should be generated in BASE64 format:
+1. Following certificates should be generated in base64 format:
 
     ```yaml
       ca.crt: ${ROOT_CA_CERTIFICATE}
@@ -122,9 +122,9 @@ For example, to generate `kafka-tls-secret` :
   
     Where:
   
-    * `${ROOT_CA_CERTIFICATE}` is the root CA in BASE64 format.
-    * `${CERTIFICATE}` is the certificate in BASE64 format.
-    * `${PRIVATE_KEY}` is the private key in BASE64 format.
+    * `${ROOT_CA_CERTIFICATE}` is the root CA in base64 format.
+    * `${CERTIFICATE}` is the certificate in base64 format.
+    * `${PRIVATE_KEY}` is the private key in base64 format.
 
 2. Specify the certificates and other deployment parameters:
 
