@@ -21,7 +21,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
 from kafka.sasl.oauth import AbstractTokenProvider
-from kafka.errors import UnknownTopicOrPartitionError
+from kafka.errors import UnknownTopicOrPartitionError, KafkaConnectionError
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -377,15 +377,28 @@ class KafkaLibrary(object):
             return
         self.__delete_topics(admin, topics)
 
-    def __delete_topics(self, admin, topics):
-        try:
-            admin.delete_topics(topics)
-            logger.debug(f'Topic "{topics}" is deleted.')
-        except UnknownTopicOrPartitionError:
-            BuiltIn().log_to_console(f'Topic "{topics}" has already been deleted or does not exist.')
-            logger.debug(f'Topic "{topics}" has already been deleted or does not exist.')
-        except Exception as e:
-            self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
+    def __delete_topics(self, admin, topics, retries=12, delay=5):
+        for attempt in range(1, retries + 1):
+            try:
+                admin.delete_topics(topics)
+                logger.debug(f'Topic "{topics}" is deleted.')
+                return
+            except UnknownTopicOrPartitionError:
+                BuiltIn().log_to_console(
+                    f'Topic "{topics}" has already been deleted or does not exist.'
+                )
+                logger.debug(f'Topic "{topics}" has already been deleted or does not exist.')
+                return
+            except KafkaConnectionError as e:
+                msg = (f'Attempt {attempt}/{retries}: cannot delete topic "{topics}" '
+                       f'due to KafkaConnectionError: {e}')
+                BuiltIn().log_to_console(msg)
+                logger.warning(msg)
+                if attempt == retries:
+                    self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
+                time.sleep(delay)
+            except Exception as e:
+                self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
 
     def find_out_leader_broker(self, admin, brokers, topic_name):
         """
