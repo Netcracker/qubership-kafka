@@ -17,6 +17,7 @@ import re
 import time
 
 import requests
+import traceback
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
