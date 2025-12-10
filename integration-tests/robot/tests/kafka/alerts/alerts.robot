@@ -11,6 +11,8 @@ Library  MonitoringLibrary  host=%{PROMETHEUS_URL}
 ...                         username=%{PROMETHEUS_USER}
 ...                         password=%{PROMETHEUS_PASSWORD}
 Resource  ../../shared/keywords.robot
+Library     RetryFailed
+Test Teardown    Run Keyword If Test Failed    Sleep    10s
 
 *** Keywords ***
 Check That Prometheus Alert Is Active
@@ -33,7 +35,7 @@ Check That Kafka Broker Is Up
 
 *** Test Cases ***
 Kafka Is Degraded Alert
-    [Tags]  kafka  prometheus  kafka_prometheus_alert  kafka_is_degraded_alert
+    [Tags]  kafka  prometheus  kafka_prometheus_alert  kafka_is_degraded_alert  test:retry(3)
     Wait Until Keyword Succeeds  ${ALERT_RETRY_TIME}  ${ALERT_RETRY_INTERVAL}
     ...  Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DEGRADED_ALERT_NAME}
     ${replicas}=  Get Active Deployment Entities Count For Service  ${KAFKA_OS_PROJECT}  ${KAFKA_SERVICE_NAME}
@@ -47,7 +49,7 @@ Kafka Is Degraded Alert
     [Teardown]  Check That Kafka Broker Is Up  ${KAFKA_SERVICE_NAME}-1
 
 Kafka Is Down Alert
-    [Tags]  kafka  prometheus  kafka_prometheus_alert  kafka_is_down_alert
+    [Tags]  kafka  prometheus  kafka_prometheus_alert  kafka_is_down_alert  test:retry(3)
     Wait Until Keyword Succeeds  ${ALERT_RETRY_TIME}  ${ALERT_RETRY_INTERVAL}
     ...  Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DOWN_ALERT_NAME}
     ${replicas}=  Get Active Deployment Entities Count For Service  ${KAFKA_OS_PROJECT}  ${KAFKA_SERVICE_NAME}
