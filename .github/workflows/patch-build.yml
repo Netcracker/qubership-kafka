@@ -1,4 +1,5 @@
-name: Build patched Kafka Images
+name: Kafka Integration Build
+run-name: "Event: Tag ${{ github.event.client_payload.tag }} from ${{ github.event.client_payload.repo }} || Branch: ${{ github.event.client_payload.target-ref || github.ref }}"
 permissions:
   contents: read
   packages: write
@@ -11,47 +12,71 @@ concurrency:
   group: ${{ github.ref_type == 'branch' && format('build-branch-{0}', github.ref_name) || format('build-{0}', github.sha) }}
   cancel-in-progress: true
 
+env:
+  INTEGRATION_BUILD_BRANCH: "feature/integration-build"
+  TARGET_REF: ${{ github.event.client_payload.target-ref || github.ref }}
+  KAFKA_DISTRO_URL: ${{ github.event.client_payload.kafka-distro-url }}
+  KAFKA_VERSION: ${{ github.event.client_payload.kafka-version }}
+  REPLACE_SYMBOL: ${{ github.event.client_payload.replace-symbol }}
+
 jobs:
   prepare-inputs:
     runs-on: ubuntu-latest
     outputs:
       build_args: ${{ steps.set-vars.outputs.build_args }}
-      replace_symbol: ${{ steps.set-vars.outputs.replace_symbol }}
     steps:
       - name: Set Variables
         if: github.event_name == 'repository_dispatch' && github.event.action == 'kafka-patched-build'
         id: set-vars
         run: |
-          echo "replace_symbol=${REPLACE_SYMBOL}" >> $GITHUB_OUTPUT 
           kafka_distro_tgz="${KAFKA_DISTRO_URL##*/}"
           echo 'build_args<<EOF' >> $GITHUB_OUTPUT
           echo "KAFKA_DISTRO_URL=${KAFKA_DISTRO_URL}" >> $GITHUB_OUTPUT
           echo "DISTRO_NAME=${kafka_distro_tgz%.*}" >> $GITHUB_OUTPUT
           echo "KAFKA_VERSION=${KAFKA_VERSION}" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
-        env:
-          KAFKA_DISTRO_URL: ${{ github.event.client_payload.kafka-distro-url }}
-          KAFKA_VERSION: ${{ github.event.client_payload.kafka-version }}
-          REPLACE_SYMBOL: ${{ github.event.client_payload.replace-symbol }}
+
       - name: Debug
         run: |
           echo "build_args: ${{ steps.set-vars.outputs.build_args }}"
+      - name: Show payload
+        run: |
+          echo "${{ toJson(github.event.client_payload) }}"
 
   prepare:
     name: "Prepare Images and Metadata"
     needs: [prepare-inputs]
     runs-on: ubuntu-latest
-    env:
-      TARGET_REF: ${{ github.event.client_payload.target-ref || github.ref }}
+    permissions:
+      contents: write
     outputs:
       components: ${{ steps.load.outputs.components }}
       platforms: ${{ steps.load.outputs.platforms }}
       tags: "${{ steps.meta.outputs.result }}"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v5
         with:
-          persist-credentials: false
           ref: ${{ env.TARGET_REF }}
+          fetch-depth: 0
+      - name: Prepare ${{ env.INTEGRATION_BUILD_BRANCH }}
+        run: |
+          git fetch origin
+          if git show-ref --verify --quiet refs/heads/${INTEGRATION_BUILD_BRANCH}; then
+            git checkout ${INTEGRATION_BUILD_BRANCH}
+            git reset --hard origin/${TARGET_REF}
+          else
+            git checkout -b ${INTEGRATION_BUILD_BRANCH} origin/${TARGET_REF}
+          fi
+
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+          echo "$(date): [IBuild] Updated ${INTEGRATION_BUILD_BRANCH} by ${TARGET_REF} to build qubership-kafka images with patched kafka from ${KAFKA_DISTRO_URL}" >> patched-build.log
+
+          git add .
+          git commit -m "[IBuild] Updated ${INTEGRATION_BUILD_BRANCH} by ${TARGET_REF} to build qubership-kafka images with patched kafka from ${KAFKA_DISTRO_URL}"
+          git push origin "${INTEGRATION_BUILD_BRANCH}"
 
       - id: load
         run: |
@@ -59,31 +84,31 @@ jobs:
           echo "platforms=$(jq -c '.platforms' .github/dev-build-config.cfg)" >> "$GITHUB_OUTPUT"
 
       - name: Create tags for images
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@v2.0.5
         id: meta
         with:
           default-template: "{{ref-name}}"
-          replace-symbol: ${{ needs.prepare-inputs.outputs.replace_symbol }}
-          ref: ${{ env.TARGET_REF }}
+          default-tag: ''
+          ref: ${{ env.INTEGRATION_BUILD_BRANCH }}
+          extra-tags: ${{ github.event.client_payload.tag }}
+          replace-symbol: ${{ env.REPLACE_SYMBOL }}
 
   build:
-    name: Build Docker Images
+    name: ${{ matrix.component.name }}
     needs: [prepare-inputs, prepare]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    env:
-      TARGET_REF: ${{ github.event.client_payload.target-ref || github.ref }}
     strategy:
       fail-fast: false
       matrix:
         component: ${{ fromJson(needs.prepare.outputs.components) }}
     steps:
       - name: Docker
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@0f2be042d7c833c6bf60df85732609b7991fb821 #2.0.0
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@v2.0.5
         with:
-          ref: ${{ env.TARGET_REF }}
+          ref: ${{ env.INTEGRATION_BUILD_BRANCH }}
           download-artifact: false
           component: ${{ toJson(matrix.component) }}
           platforms: ${{ needs.prepare.outputs.platforms }}
@@ -94,11 +119,12 @@ jobs:
 
   Kafka-Pipeline:
     needs: build
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@ad32edfdc745328e61b9b0eca992a68b91e96e20
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@d035050ec322700c3df9a7ec62efc0220abe4243  # v1.1.0
     with:
+      repository_name: ${{ github.repository }}
       service_branch: '${{ github.event.client_payload.target-ref || github.head_ref || github.ref }}'
       versions_file: '.github/versions.yaml'
-      pipeline_branch: 'ad32edfdc745328e61b9b0eca992a68b91e96e20' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'd035050ec322700c3df9a7ec62efc0220abe4243' #this value must match the value after '@' in 'uses'
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
