@@ -188,7 +188,7 @@ class KafkaLibrary(object):
                 "INFO"
             )
         except Exception as e:
-            self.builtin.log(traceback.format_exc(), "ERROR")
+            self.builtin.log(traceback.format_exc(), "ERROR")  # ruff: noqa: F821
             self.builtin.fail(f'Failed to produce message: "{message}" to '
                               f'topic: {topic_name} {e}')
 
@@ -494,7 +494,7 @@ class KafkaLibrary(object):
             admin.create_acls([acl])
             logger.debug(f'ACL {[acl]} was successfully created.')
         except Exception as e:
-            self.builtin.fail('Failed to create ACL')
+            self.builtin.fail('Failed to create ACL: {}'.format(e))
 
     def get_acls(self, admin, topic_name, host='*', resource_type='topic'):
         resource_type = self.__resolve_resource_type(resource_type)
@@ -523,7 +523,7 @@ class KafkaLibrary(object):
             admin.delete_acls([acl_filter])
             logger.debug('ACL was deleted')
         except Exception as e:
-            self.builtin.fail('Failed to delete ACL')
+            self.builtin.fail('Failed to delete ACL: {}'.format(e))
 
     def get_topic_configs(self, admin, topic):
         return admin.describe_configs(config_resources=[ConfigResource(ConfigResourceType.TOPIC, topic)])
