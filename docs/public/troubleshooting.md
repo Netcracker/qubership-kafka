@@ -685,7 +685,7 @@ java.io.IOException: Connection to 3 was disconnected before the response was re
 
 ### How to solve
 
-If you get a lot of log messages like mentioned above but the remote broker is available it can be a reason to use local storage instead of NFS.
+If you get a lot of log messages like mentioned above but the remote broker is available it can be a reason to use localStorage instead of NFS.
 
 ### Recommendations
 
@@ -782,7 +782,7 @@ Reading files can take long time, from a few seconds to a few minutes.
 If you have a big Kafka storage you also need to increase the liveness probe initial delay.
 
 **Note**: The above workaround does not guarantee Kafka to work fine with NFS.
-To avoid side effects, it is recommended to plan the transition to local storage.
+To avoid side effects, it is recommended to plan the transition to localStorage.
 
 ### Recommendations
 
@@ -802,7 +802,7 @@ java.lang.InternalError: a fault occurred in a recent unsafe memory access opera
 ```
 
 It means there are some issues with file system, memory or JVM. There are a lot of causes lead to this issue.
-Some information about causes described in [stackoverflow answer](https://stackoverflow.com/a/45536678) or
+Some information about causes described in [Stack Overflow answer](https://stackoverflow.com/a/45536678) or
 ticket [KAFKA-5628](https://issues.apache.org/jira/browse/KAFKA-5628).
 
 ### Alerts
@@ -1147,7 +1147,8 @@ Not applicable
 
 ### Updating partition.metadata on Kafka side
 
-If ZooKeeper contains correct topic configuration, `topicId` can be synchronized by manual deletion of `partition.metadata` for affected topics and `__consumer.offsets` on all brokers. To remove `partition.metadata` for all topics use next command:
+If ZooKeeper contains correct topic configuration, `topicId` can be synchronized by manual deletion of `partition.metadata` for affected topics and `__consumer.offsets` on all brokers. 
+To remove `partition.metadata` for all topics use next command:
 
 ```
 cd /var/opt/kafka/data/$BROKER_ID
