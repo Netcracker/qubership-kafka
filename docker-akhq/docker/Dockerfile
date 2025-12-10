@@ -1,12 +1,20 @@
 FROM eclipse-temurin:17-jdk-ubi10-minimal AS builder
-RUN microdnf install -y nodejs npm && microdnf clean all
-WORKDIR /app
+RUN microdnf install -y nodejs npm git && microdnf clean all
+# WORKDIR /app
 
-RUN wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz
+COPY docker/build.gradle /tmp/build.gradle
 
-RUN tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1
-COPY docker/build.gradle ./build.gradle
-RUN ./gradlew shadowJar --no-daemon
+RUN --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=/app \
+    cd /app \
+    && git init \
+    && cp -f /tmp/build.gradle /app \
+    && wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz \
+    && tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1 \
+    && ./gradlew shadowJar --no-daemon \
+    && cp -rf /app /tmp
+
+RUN cp -rf /tmp/app /
 
 FROM eclipse-temurin:21-jdk-alpine-3.22
 
@@ -20,8 +28,15 @@ COPY docker/config/streaming.desc ${AKHQ_HOME}/config/streaming.desc
 COPY docker/app ${AKHQ_HOME}
 
 # Install misc tools
-RUN set -x \
-    && apk add --upgrade --no-cache \
+RUN \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  rm -f /etc/apt/apt.conf.d/docker-clean && \
+  mkdir -p /etc/apt/apt.conf.d/ && \
+  chmod 766 /etc/apt/apt.conf.d && \
+  echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache && \
+  set -x \
+    && apk add --upgrade \
         netcat-openbsd \
         rsync \
         bash \
