@@ -36,7 +36,7 @@ RUN set -x \
     && useradd -s /bin/bash -r -g kafka --uid=1000 kafka \
     && usermod -a -G 0 kafka
 
-ARG KAFKA_VERSION=4.1.0
+ARG KAFKA_VERSION=4.1.1
 ARG DISTRO_NAME=kafka_2.13-${KAFKA_VERSION}
 ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
