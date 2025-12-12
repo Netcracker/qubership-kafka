@@ -22,7 +22,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
 from kafka.sasl.oauth import AbstractTokenProvider
-from kafka.errors import UnknownTopicOrPartitionError, KafkaConnectionError
+from kafka.errors import UnknownTopicOrPartitionError, KafkaConnectionError, KafkaError
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -82,6 +82,7 @@ class KafkaLibrary(object):
             configs['max_in_flight_requests_per_connection'] = 1
             configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
+            configs['acks'] = 'all'
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
                 configs['sasl_plain_username'] = self._kafka_username
@@ -305,11 +306,37 @@ class KafkaLibrary(object):
                              replication_factor=replication_factor,
                              topic_configs=topic_configs)
         try:
-            admin.create_topics([new_topic])
-            logger.debug(f'Topic "{topic_name}" is created.')
+            resp = admin.create_topics([new_topic])
+            if isinstance(resp, dict):
+                fut = resp.get(topic_name)
+                if fut is None:
+                    return f"CreateTopics returned dict without key {topic_name}: keys={list(resp.keys())}"
+                try:
+                    fut.result()
+                    logger.info(f'Topic "{topic_name}" is created.')
+                    return ''
+                except KafkaError as e:
+                    return f"{type(e).__name__}: {e}"
+            topic_errors = getattr(resp, "topic_errors", None)
+            if topic_errors is None:
+                return f"Unexpected create_topics response type: {type(resp).__name__} ({resp})"
+            for err in topic_errors:
+                t = err[0] if len(err) > 0 else None
+                code = err[1] if len(err) > 1 else None
+                msg = err[2] if len(err) > 2 else None
+                if t == topic_name:
+                    if code in (0, None):
+                        logger.info(f'Topic "{topic_name}" is created.')
+                        return ''
+                    try:
+                        exc = KafkaError.from_code(code)
+                        name = type(exc).__name__
+                    except Exception:
+                        name = f"KafkaErrorCode({code})"
+                    return f"{name}: {msg}"
+            return f"CreateTopicsResponse had no entry for topic {topic_name}: {topic_errors}"
         except Exception as e:
-            error_message = str(e)
-        return error_message
+            return str(e)
 
     def create_partitions(self, admin, topic_name, count):
         """
@@ -394,7 +421,7 @@ class KafkaLibrary(object):
                 msg = (f'Attempt {attempt}/{retries}: cannot delete topic "{topics}" '
                        f'due to KafkaConnectionError: {e}')
                 BuiltIn().log_to_console(msg)
-                logger.warning(msg)
+                logger.warn(msg)
                 if attempt == retries:
                     self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
                 time.sleep(delay)
