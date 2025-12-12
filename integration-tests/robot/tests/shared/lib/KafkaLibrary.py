@@ -22,7 +22,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
 from kafka.sasl.oauth import AbstractTokenProvider
-from kafka.errors import UnknownTopicOrPartitionError, KafkaConnectionError
+from kafka.errors import UnknownTopicOrPartitionError, KafkaConnectionError, KafkaError
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -82,6 +82,7 @@ class KafkaLibrary(object):
             configs['max_in_flight_requests_per_connection'] = 1
             configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
+            configs['acks'] = 'all'
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
                 configs['sasl_plain_username'] = self._kafka_username
@@ -305,8 +306,18 @@ class KafkaLibrary(object):
                              replication_factor=replication_factor,
                              topic_configs=topic_configs)
         try:
-            admin.create_topics([new_topic])
-            logger.debug(f'Topic "{topic_name}" is created.')
+            futures = admin.create_topics([new_topic])
+            future = futures[topic_name]
+            try:
+                future.result()
+                logger.info(f'Topic "{topic_name}" is created.')
+            except KafkaError as e:
+                error_message = f"{type(e).__name__}: {e}"
+                logger.info(f'Error while creating topic "{topic_name}": {error_message}')
+            except Exception as e:
+                error_message = str(e)
+                logger.info(f'Exception while sending CreateTopics request for "{topic_name}": {error_message}')
+            return error_message
         except Exception as e:
             error_message = str(e)
         return error_message
@@ -394,7 +405,7 @@ class KafkaLibrary(object):
                 msg = (f'Attempt {attempt}/{retries}: cannot delete topic "{topics}" '
                        f'due to KafkaConnectionError: {e}')
                 BuiltIn().log_to_console(msg)
-                logger.warning(msg)
+                logger.warn(msg)
                 if attempt == retries:
                     self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
                 time.sleep(delay)
