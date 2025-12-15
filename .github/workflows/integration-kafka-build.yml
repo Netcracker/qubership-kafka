@@ -110,9 +110,10 @@ jobs:
           DOCKER_KAFKA_VERSIONED_NAME: "qubership-docker-kafka-${{ needs.prepare.outputs.kafka_major_version }}"
         if: github.event_name == 'repository_dispatch' && github.event.action == 'kafka-patched-build' && matrix.component.name == env.DOCKER_KAFKA_VERSIONED_NAME
         id: set-vars
+        # shellcheck disable=2129
         run: |
-          # shellcheck disable=2129
           kafka_distro_tgz="${KAFKA_DISTRO_URL##*/}"
+          # shellcheck disable=2129
           echo 'build_args<<EOF' >> $GITHUB_OUTPUT
           echo "KAFKA_DISTRO_URL=${KAFKA_DISTRO_URL}" >> $GITHUB_OUTPUT
           echo "DISTRO_NAME=${kafka_distro_tgz%.*}" >> $GITHUB_OUTPUT
