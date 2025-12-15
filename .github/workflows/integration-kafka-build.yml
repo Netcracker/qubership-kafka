@@ -2,8 +2,6 @@ name: Kafka Integration Build
 run-name: "Event: Tag ${{ github.event.client_payload.tag }} from ${{ github.event.client_payload.repo }} || Branch: ${{ github.event.client_payload.target-ref || github.ref }}"
 permissions:
   contents: read
-  packages: write
-  actions: read
 on:
   repository_dispatch:
     types: [kafka-patched-build]
@@ -26,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: read
     outputs:
       components: ${{ steps.load.outputs.components }}
       platforms: ${{ steps.load.outputs.platforms }}
@@ -33,13 +32,17 @@ jobs:
       kafka_major_version: ${{ steps.set-kafka-major-version.outputs.major }}
     steps:
       - name: Show payload
+        env:
+          PAYLOADS: ${{ toJson(github.event.client_payload) }}
         run: |
-          echo "${{ toJson(github.event.client_payload) }}"
+          echo "${PAYLOADS}"
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: ${{ env.TARGET_REF }}
           fetch-depth: 0
+          persist-credentials: false
+
       - name: Prepare ${{ env.INTEGRATION_BUILD_BRANCH }}
         run: |
           git fetch origin
@@ -73,7 +76,7 @@ jobs:
           fi
 
       - name: Create tags for images
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@v2.0.5
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
         id: meta
         with:
           default-template: "{{ref-name}}"
@@ -84,7 +87,7 @@ jobs:
 
       - name: Set Kafka Major Version
         id: set-kafka-major-version
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@v2.0.5
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
         with:
           ref: ${{ env.KAFKA_VERSION }}
           default-template: "{{ref-name}}"
@@ -96,6 +99,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -107,6 +111,7 @@ jobs:
         if: github.event_name == 'repository_dispatch' && github.event.action == 'kafka-patched-build' && matrix.component.name == env.DOCKER_KAFKA_VERSIONED_NAME
         id: set-vars
         run: |
+          # shellcheck disable=2129
           kafka_distro_tgz="${KAFKA_DISTRO_URL##*/}"
           echo 'build_args<<EOF' >> $GITHUB_OUTPUT
           echo "KAFKA_DISTRO_URL=${KAFKA_DISTRO_URL}" >> $GITHUB_OUTPUT
@@ -117,7 +122,7 @@ jobs:
           cat $GITHUB_OUTPUT
 
       - name: Docker
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@v2.0.5
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
         with:
           ref: ${{ env.INTEGRATION_BUILD_BRANCH }}
           download-artifact: false
@@ -129,6 +134,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   Kafka-Pipeline:
+    permissions:
+      contents: read
     needs: build
     uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@d035050ec322700c3df9a7ec62efc0220abe4243  # v1.1.0
     with:
