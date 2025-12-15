@@ -306,37 +306,11 @@ class KafkaLibrary(object):
                              replication_factor=replication_factor,
                              topic_configs=topic_configs)
         try:
-            resp = admin.create_topics([new_topic])
-            if isinstance(resp, dict):
-                fut = resp.get(topic_name)
-                if fut is None:
-                    return f"CreateTopics returned dict without key {topic_name}: keys={list(resp.keys())}"
-                try:
-                    fut.result()
-                    logger.info(f'Topic "{topic_name}" is created.')
-                    return ''
-                except KafkaError as e:
-                    return f"{type(e).__name__}: {e}"
-            topic_errors = getattr(resp, "topic_errors", None)
-            if topic_errors is None:
-                return f"Unexpected create_topics response type: {type(resp).__name__} ({resp})"
-            for err in topic_errors:
-                t = err[0] if len(err) > 0 else None
-                code = err[1] if len(err) > 1 else None
-                msg = err[2] if len(err) > 2 else None
-                if t == topic_name:
-                    if code in (0, None):
-                        logger.info(f'Topic "{topic_name}" is created.')
-                        return ''
-                    try:
-                        exc = KafkaError.from_code(code)
-                        name = type(exc).__name__
-                    except Exception:
-                        name = f"KafkaErrorCode({code})"
-                    return f"{name}: {msg}"
-            return f"CreateTopicsResponse had no entry for topic {topic_name}: {topic_errors}"
+            admin.create_topics([new_topic])
+            logger.debug(f'Topic "{topic_name}" is created.')
         except Exception as e:
-            return str(e)
+            error_message = str(e)
+        return error_message
 
     def create_partitions(self, admin, topic_name, count):
         """

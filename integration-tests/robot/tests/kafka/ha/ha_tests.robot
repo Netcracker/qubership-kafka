@@ -183,32 +183,19 @@ Test Producing And Consuming Data Without Kafka Master
 
 Test Disk Is Filled On One Node
     [Tags]  kafka_ha  kafka_ha_disk_is_filled
-    ${pod_names}=  Get Pod Names By Service Name  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
-    ${pod_name}=  Get From List  ${pod_names}  0
     ${admin} =  Create Admin Client
-    ${postfix} =  Generate Random String  5
-    ${replication_factor} =  Get Length  ${pod_names}
-    Create Topic  ${admin}  ${KAFKA_DISK_FILLED_TOPIC_NAME}-${postfix}  ${replication_factor}  ${1}
+    ${env_names} =  Create List  BROKER_ID
+    ${broker_envs} =  Get Pod Container Environment Variables For Service
+    ...  %{KAFKA_OS_PROJECT}  %{KAFKA_HOST}  kafka  ${env_names}
+    ${replication_factor} =  Get Length  ${broker_envs}
 
-    ${filled_space_in_mb} =  Get Filled Space  ${pod_name}
-    ${disk_space_in_mb} =  Get Disk Space  ${pod_name}
-    ${20_gigabytes} =  Evaluate  20 * 1024
-    Run Keyword If  ${disk_space_in_mb} > ${20_gigabytes}
-    ...  Pass Execution  Current test can't be executed due to too large size (${disk_space_in_mb}Mb) of the Kafka storage
-    ${free_space_in_mb} =  Evaluate  ${disk_space_in_mb} - ${filled_space_in_mb}
-    ${evaluate_amount_of_blocks} =  Evaluate  ${free_space_in_mb} / 50
-    ${blocks_count} =  Convert To Integer  ${evaluate_amount_of_blocks}
-    Log  Node space is filling  DEBUG
-    Run Keyword And Ignore Error  Execute Command In Pod  ${pod_name}  %{KAFKA_OS_PROJECT}
-    ...  dd if=/dev/zero of=/var/opt/kafka/data/busy_space bs=50M count=${blocks_count}
+    ${leader} =  Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Find Out Leader Among Brokers  ${broker_envs}  ${PARTITION_LEADER_CRASH_TOPIC_NAME}
 
-    Wait Until Keyword Succeeds  ${DISK_FILLED_RETRY_COUNT}  ${DISK_FILLED_RETRY_INTERVAL}
-    ...  Check Disk Is Full  ${pod_name}  ${disk_space_in_mb}
-    Log  Node space is filled with more than 90%  DEBUG
+    Scale Down Deployment Entities By Service Name  ${leader}  %{KAFKA_OS_PROJECT}  with_check=True
+    Sleep  ${SLEEP_TIME}  reason=Waiting for Kafka cluster to notice broker is down
 
-    Set Test Variable  ${index}  -1
-    Sleep  20s  reason=Kafka pod can be unavailable
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Create Kafka Topic With Exception  ${admin}  ${replication_factor}
 
-    [Teardown]  Recovery After Disk Is Full  ${pod_name}
+    [Teardown]  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
