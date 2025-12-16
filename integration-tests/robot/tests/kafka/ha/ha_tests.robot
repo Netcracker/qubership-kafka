@@ -72,29 +72,6 @@ Get Filled Space
     ${filled_space_in_mb}  ${disk_folder} =  Split String  ${disk_information}  ${EMPTY}  1
     [Return]  ${filled_space_in_mb}
 
-Get Disk Space
-    [Documentation]  There are cases when disk space differs from PV size:
-    ...  1) Available disk space is much less than PV size (for example, command 'df -h' shows that
-    ...  3G is available, but PV size is 10G).
-    ...  2) If classical hostPath is used, command 'df -h' shows free space on the root system, but
-    ...  in reality available space depends on PV size (for example, command 'df -h' shows
-    ...  that 80G is available, but PV size is 2G).
-    [Arguments]  ${pod_name}
-    ${full_information}  ${errors}  Execute Command In Pod  ${pod_name}  %{KAFKA_OS_PROJECT}
-    ...  df -m /var/opt/kafka/data
-    ${header}  ${disk_information}  Split String  ${full_information}  \n  1
-    ${disk}  ${space_size_in_mb}  ${rest}  Split String  ${disk_information}  ${EMPTY}  2
-    ${space_size_int} =  Convert To Integer  ${space_size_in_mb}
-    ${pv_size_in_mb} =  Evaluate  %{KAFKA_VOLUME_SIZE} * 1024
-    ${minimum} =  Evaluate  min(${space_size_int}, ${pv_size_in_mb})
-    [Return]  ${minimum}
-
-Check Disk Is Full
-    [Arguments]  ${pod_name}  ${disk_space}
-    ${filled_space} =  Get Filled Space  ${pod_name}
-    ${disk_fullness} =  Evaluate  100 * ${filled_space} / ${disk_space}
-    Should Be True  ${disk_fullness} > 90
-
 Scale Up Full Service
     [Arguments]  ${service}  ${project}
     Scale Up Deployment Entities By Service Name  ${service}  ${project}  with_check=True  replicas=1
@@ -109,17 +86,6 @@ Create Kafka Topic With Exception
     ...  ${1}
     Should Contain  ${exception_message}
     ...  InvalidReplicationFactorError
-
-Recovery After Disk Is Full
-    [Arguments]  ${pod_name}
-    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Clean Disk Space  ${pod_name}
-    Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
-
-Clean Disk Space
-    [Arguments]  ${pod_name}
-    ${result}  ${errors} =  Execute Command In Pod  ${pod_name}  %{KAFKA_OS_PROJECT}  rm /var/opt/kafka/data/busy_space
-    Should Match Regexp  ${errors}  rm: can('|no)t remove '/var/opt/kafka/data/busy_space': No such file or directory
 
 *** Test Cases ***
 Test Producing And Consuming Data Without Zookeeper
@@ -181,7 +147,7 @@ Test Producing And Consuming Data Without Kafka Master
 
     [Teardown]  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
 
-Test Disk Is Filled On One Node
+Test Invalid Topic Creation
     [Tags]  kafka_ha  kafka_ha_disk_is_filled
     ${admin} =  Create Admin Client
     ${env_names} =  Create List  BROKER_ID
