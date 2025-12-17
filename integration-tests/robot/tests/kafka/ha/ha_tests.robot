@@ -6,7 +6,7 @@ ${KAFKA_DISK_FILLED_TOPIC_NAME}        kafka-disk-filled-topic
 ${LIBRARIES}                           /opt/robot/tests/shared/lib
 ${OPERATION_RETRY_COUNT}               17x
 ${OPERATION_RETRY_INTERVAL}            4s
-${SLEEP_TIME}                          20s
+${SLEEP_TIME}                          60s
 ${DISK_FILLED_RETRY_COUNT}             30x
 ${DISK_FILLED_RETRY_INTERVAL}          5s
 
@@ -58,19 +58,12 @@ Delete Topics
     Delete Topic By Pattern  ${admin}  ${KAFKA_DISK_FILLED_TOPIC_NAME_PATTERN}
 
 Cleanup
-    Sleep  10s  reason=Kafka pod can be unavailable
+    Sleep  60s  reason=Kafka pod can be unavailable
     ${producer} =  Set Variable  ${None}
     Run Keyword If Any Tests Failed
     ...  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
     Delete Topics
     ${admin} =  Set Variable  ${None}
-
-Get Filled Space
-    [Arguments]  ${pod_name}
-    ${disk_information}  ${errors}  Execute Command In Pod  ${pod_name}  %{KAFKA_OS_PROJECT}
-    ...  du -m /var/opt/kafka/data -d 0
-    ${filled_space_in_mb}  ${disk_folder} =  Split String  ${disk_information}  ${EMPTY}  1
-    [Return]  ${filled_space_in_mb}
 
 Scale Up Full Service
     [Arguments]  ${service}  ${project}
