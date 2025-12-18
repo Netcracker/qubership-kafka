@@ -1,4 +1,5 @@
 *** Variables ***
+${KAFKA_SERVICE_NAME}                  %{KAFKA_HOST}
 ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}       zookeeper-shutdown-test-topic
 ${PARTITION_LEADER_CRASH_TOPIC_NAME}   partition-leader-crash-test-topic
 ${ZOOKEEPER_AFTER_RESTART_TOPIC_NAME}  zookeeper-after-restart-test-topic
@@ -148,10 +149,9 @@ Test Invalid Topic Creation
     ...  %{KAFKA_OS_PROJECT}  %{KAFKA_HOST}  kafka  ${env_names}
     ${replication_factor} =  Get Length  ${broker_envs}
 
-    ${leader} =  Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Find Out Leader Among Brokers  ${broker_envs}  ${PARTITION_LEADER_CRASH_TOPIC_NAME}
-
-    Scale Down Deployment Entities By Service Name  ${leader}  %{KAFKA_OS_PROJECT}  with_check=True
+    ${replicas}=  Get Active Deployment Entities Count For Service  ${KAFKA_OS_PROJECT}  ${KAFKA_SERVICE_NAME}
+    Pass Execution If  ${replicas} < 3  Kafka cluster has less than 3 brokers
+    Scale Down Deployment Entities By Service Name  ${KAFKA_SERVICE_NAME}-1  ${KAFKA_OS_PROJECT}
     Sleep  ${SLEEP_TIME}  reason=Waiting for Kafka cluster to notice broker is down
 
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
