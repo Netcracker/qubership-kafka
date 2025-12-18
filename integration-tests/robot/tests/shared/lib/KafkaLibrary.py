@@ -379,9 +379,10 @@ class KafkaLibrary(object):
             return
         self.__delete_topics(admin, topics)
 
-    def __delete_topics(self, admin, topics, retries=5, delay=20):
+    def __delete_topics(self, admin, topics, retries=15, delay=10):
         for attempt in range(1, retries + 1):
             try:
+                admin = self.create_admin_client()
                 admin.delete_topics(topics)
                 logger.debug(f'Topic "{topics}" is deleted.')
                 return
@@ -403,7 +404,6 @@ class KafkaLibrary(object):
                 except Exception:
                     pass
                 time.sleep(delay)
-                admin = self.create_admin_client()
             except Exception as e:
                 self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
 
