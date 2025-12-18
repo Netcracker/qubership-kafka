@@ -1,5 +1,6 @@
 *** Variables ***
 ${KAFKA_SERVICE_NAME}                  %{KAFKA_HOST}
+${KAFKA_OS_PROJECT}                    %{KAFKA_OS_PROJECT}
 ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}       zookeeper-shutdown-test-topic
 ${PARTITION_LEADER_CRASH_TOPIC_NAME}   partition-leader-crash-test-topic
 ${ZOOKEEPER_AFTER_RESTART_TOPIC_NAME}  zookeeper-after-restart-test-topic
