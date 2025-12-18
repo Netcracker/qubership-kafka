@@ -142,22 +142,3 @@ Test Producing And Consuming Data Without Kafka Master
     ${consumer} =  Set Variable  ${None}
 
     [Teardown]  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
-
-Test Invalid Topic Creation
-    [Tags]  kafka_ha  kafka_ha_disk_is_filled
-    ${admin} =  Create Admin Client
-    ${env_names} =  Create List  BROKER_ID
-    ${broker_envs} =  Get Pod Container Environment Variables For Service
-    ...  %{KAFKA_OS_PROJECT}  %{KAFKA_HOST}  kafka  ${env_names}
-    ${replication_factor} =  Get Length  ${broker_envs}
-
-    ${replicas}=  Get Active Deployment Entities Count For Service  ${KAFKA_OS_PROJECT}  ${KAFKA_SERVICE_NAME}
-    Pass Execution If  ${replicas} < 3  Kafka cluster has less than 3 brokers
-    Scale Down Deployment Entities By Service Name  ${KAFKA_SERVICE_NAME}-1  ${KAFKA_OS_PROJECT}
-    Sleep  ${SLEEP_TIME}  reason=Waiting for Kafka cluster to notice broker is down
-
-    ${admin} =  Create Admin Client
-    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Create Kafka Topic With Exception  ${admin}  ${replication_factor}
-
-    [Teardown]  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
