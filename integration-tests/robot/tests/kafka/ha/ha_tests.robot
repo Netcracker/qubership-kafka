@@ -64,6 +64,7 @@ Cleanup
     ${producer} =  Set Variable  ${None}
     Run Keyword If Any Tests Failed
     ...  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
+    ${admin} =  Create Admin Client
     Delete Topics
     ${admin} =  Set Variable  ${None}
 
@@ -155,6 +156,7 @@ Test Invalid Topic Creation
     Scale Down Deployment Entities By Service Name  ${KAFKA_SERVICE_NAME}-1  ${KAFKA_OS_PROJECT}
     Sleep  ${SLEEP_TIME}  reason=Waiting for Kafka cluster to notice broker is down
 
+    ${admin} =  Create Admin Client
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Create Kafka Topic With Exception  ${admin}  ${replication_factor}
 
