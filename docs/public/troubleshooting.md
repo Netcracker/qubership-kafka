@@ -67,7 +67,7 @@ Any replica in the ISR set is eligible to be elected as leader. If there are no 
 ISR set, then the partition will be unavailable until the crashed leader of partition goes back up.
 **Note**: This can be changed by setting the property `unclean.leader.election.enable` to `true`
 in the configuration. For more information about Kafka configuration,
-refer to Kafka Documentation located at [https://kafka.apache.org/0110/documentation.html#topicconfigs](https://kafka.apache.org/0110/documentation.html#topicconfigs).
+refer to Kafka Documentation located at [https://kafka.apache.org/documentation/#topicconfigs](https://kafka.apache.org/documentation/#topicconfigs).
 In this case, replicas that are not in the ISR set can be elected as leader
 as a last resort, even though doing so may result in data loss.
 
