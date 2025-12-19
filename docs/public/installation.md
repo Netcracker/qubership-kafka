@@ -1542,7 +1542,6 @@ You can use the following tags:
     * `kafka_ha` tag runs all tests connected to HA scenarios:
         * `kafka_ha_without_zookeeper` tag runs `Test Producing And Consuming Data Without Zookeeper` test.
         * `kafka_ha_without_kafka_master` tag runs `Test Producing And Consuming Data Without Kafka Master` test.
-        * `kafka_ha_disk_is_filled` tag runs `Test Disk Is Filled On One Node` test.
     * `rebalance` tag runs `Test Rebalance Topic` test.
     * `kafka_zabbix` tag runs all tests connected to Kafka and Zabbix scenarios:
         * `kafka_is_degraded_alarm` tag runs `Kafka Is Degraded Alarm` test.
