@@ -427,8 +427,6 @@ Find a kubectl image in various places.
           {{- if not (index $found "ok") -}}
             {{- $upgradeAllowed = false -}}
           {{- end -}}
-        {{- else -}}
-           {{- $upgradeAllowed = false -}}
         {{- end -}}
       {{- end -}}
     {{- end -}}
