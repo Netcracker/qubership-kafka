@@ -135,8 +135,10 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) NewMirrorMakerMonitoringDeplo
 							Args:            mmmrp.getArgs(),
 							SecurityContext: getDefaultContainerSecurityContext(),
 							LivenessProbe: &corev1.Probe{
-								Handler: corev1.Handler{
-									TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
+								ProbeHandler: corev1.ProbeHandler{
+									TCPSocket: &corev1.TCPSocketAction{
+										Port: intstr.FromInt32(8096),
+									},
 								},
 								InitialDelaySeconds: 30,
 								TimeoutSeconds:      5,
@@ -145,8 +147,10 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) NewMirrorMakerMonitoringDeplo
 								FailureThreshold:    20,
 							},
 							ReadinessProbe: &corev1.Probe{
-								Handler: corev1.Handler{
-									TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
+								ProbeHandler: corev1.ProbeHandler{
+									TCPSocket: &corev1.TCPSocketAction{
+										Port: intstr.FromInt32(8096),
+									},
 								},
 								InitialDelaySeconds: 30,
 								TimeoutSeconds:      5,
