@@ -1,0 +1,356 @@
+rule_files:
+- rules.yaml
+evaluation_interval: 1m
+tests:
+- interval: 1m
+  input_series:
+  - series: kafka_cluster_status{namespace="default",container="kafka-monitoring"}
+    values: "6x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaIsDegradedAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+        container: kafka-monitoring
+      exp_annotations:
+        description: Kafka is Degraded
+        summary: Some of Kafka Service pods are down
+
+- interval: 1m
+  input_series:
+  - series: kafka_cluster_status{namespace="default",container="kafka-monitoring"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaIsDegradedAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: kafka_cluster_status
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaMetricsAreAbsent
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+      exp_annotations:
+        description: Kafka metrics are absent on default.
+        summary: Kafka metrics are absent
+
+- interval: 1m
+  input_series:
+  - series: kafka_cluster_status{namespace="default"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaMetricsAreAbsent
+    exp_alerts: []
+
+- interval: 1m
+  input_series:
+  - series: kafka_cluster_status{namespace="default",container="kafka-monitoring"}
+    values: "10x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaIsDownAlert
+    exp_alerts:
+    - exp_labels:
+        severity: critical
+        namespace: default
+        service: kafka-montemplate
+        container: kafka-monitoring
+      exp_annotations:
+        description: Kafka is Down
+        summary: All of Kafka Service pods are down
+
+- interval: 1m
+  input_series:
+  - series: kafka_cluster_status{namespace="default",container="kafka-monitoring"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaIsDownAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: container_cpu_usage_seconds_total{namespace="default",pod="kafka-0",container="kafka"}
+    values: "300+300x5"
+  - series: kube_pod_container_resource_limits_cpu_cores{exported_namespace="default",exported_pod="kafka-0"}
+    values: "1x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaCPUUsageAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+      exp_annotations:
+        description: Kafka CPU usage is higher than 95 percents
+        summary: Some of Kafka Service pods load CPU higher then 95 percents
+
+- interval: 1m
+  input_series:
+  - series: container_cpu_usage_seconds_total{namespace="default",pod="kafka-0",container="kafka"}
+    values: "0x5"
+  - series: kube_pod_container_resource_limits_cpu_cores{exported_namespace="default",exported_pod="kafka-0"}
+    values: "1x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaCPUUsageAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: container_memory_working_set_bytes{namespace="default",pod="kafka-0",container="kafka"}
+    values: "1x5"
+  - series: kube_pod_container_resource_limits_memory_bytes{exported_namespace="default",exported_pod="kafka-0"}
+    values: "1x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaMemoryUsageAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+      exp_annotations:
+        description: Kafka memory usage is higher than 95 percents
+        summary: Some of Kafka Service pods use memory higher then 95 percents
+
+- interval: 1m
+  input_series:
+  - series: container_memory_working_set_bytes{namespace="default",pod="kafka-0",container="kafka"}
+    values: "0x5"
+  - series: kube_pod_container_resource_limits_memory_bytes{exported_namespace="default",exported_pod="kafka-0"}
+    values: "1x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaMemoryUsageAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: java_Memory_HeapMemoryUsage_used{namespace="default",broker="kafka-0"}
+    values: "1x5"
+  - series: java_Memory_HeapMemoryUsage_max{namespace="default",broker="kafka-0"}
+    values: "1x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaHeapMemoryUsageAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+      exp_annotations:
+        description: Kafka heap memory usage is higher than 95 percents
+        summary: Some of Kafka Service pods use heap memory higher then 95 percents
+
+- interval: 1m
+  input_series:
+  - series: java_Memory_HeapMemoryUsage_used{namespace="default",broker="kafka-0"}
+    values: "0x5"
+  - series: java_Memory_HeapMemoryUsage_max{namespace="default",broker="kafka-0"}
+    values: "1x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaHeapMemoryUsageAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: java_GarbageCollector_CollectionCount_total{namespace="default", broker="kafka-0"}
+    values: "3001+3001x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaGCCountAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+      exp_annotations:
+        description: Some of Kafka Service pods have Garbage collections count rate higher than 10
+        summary: Some of Kafka Service pods have Garbage collections count rate higher than 10
+
+- interval: 1m
+  input_series:
+  - series: java_GarbageCollector_CollectionCount_total{namespace="default", broker="kafka-0"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaGCCountAlert
+    exp_alerts: []
+
+- interval: 1m
+  input_series:
+  - series: kafka_consumergroup_group_lag{namespace="default"}
+    values: "1001x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaLagAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+      exp_annotations:
+        description: Some of Kafka Service pods have partition lag higher than 1000
+        summary: Some of Kafka Service pods have partition lag higher than 1000
+
+- interval: 1m
+  input_series:
+  - series: kafka_consumergroup_group_lag{namespace="default"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaLagAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="default", broker="kafka-0"}
+    values: "4001x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaPartitionCountAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+        broker: kafka-0
+        name: PartitionCount
+      exp_annotations:
+        description: Kafka Partition count for kafka-0 broker is higher than 4000
+        summary: Some of Kafka Partition count is higher than 4000
+
+- interval: 1m
+  input_series:
+  - series: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="default", broker="kafka-0"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaPartitionCountAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: kafka_broker_skew{namespace="default", container="kafka-monitoring", broker="kafka-0"}
+    values: "51x5"
+  - series: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="default",  broker="kafka-0"}
+    values: "4x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaBrokerSkewAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+        broker: kafka-0
+        container: kafka-monitoring
+      exp_annotations:
+        description: Kafka Broker Skew for kafka-0 broker is higher than 50 percent
+        summary: Some of Kafka Broker Skew is higher than 50 percent
+
+- interval: 1m
+  input_series:
+  - series: kafka_broker_skew{namespace="default", container="kafka-monitoring", broker="kafka-0"}
+    values: "0x5"
+  - series: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="default",  broker="kafka-0"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaBrokerSkewAlert
+    exp_alerts: []
+
+- interval: 1m
+  input_series:
+  - series: kafka_broker_leader_skew{namespace="default", container="kafka-monitoring", broker="kafka-0"}
+    values: "51x5"
+  - series: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="default",  broker="kafka-0"}
+    values: "4x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaBrokerLeaderSkewAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+        broker: kafka-0
+        container: kafka-monitoring
+      exp_annotations:
+        description: Kafka Broker Leader Skew for kafka-0 broker is higher than 50 percent
+        summary: Some of Kafka Broker Leader Skew is higher than 50 percent
+
+- interval: 1m
+  input_series:
+  - series: kafka_broker_leader_skew{namespace="default", container="kafka-monitoring", broker="kafka-0"}
+    values: "0x5"
+  - series: kafka_server_ReplicaManager_Value{name="PartitionCount", namespace="default",  broker="kafka-0"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: KafkaBrokerLeaderSkewAlert
+    exp_alerts: []
+    
+- interval: 1m
+  input_series:
+  - series: supplementary_services_version_compatible{application="kafka", namespace="default"}
+    values: "0x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: SupplementaryServicesCompatibilityAlert
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: default
+        service: kafka-montemplate
+        application: kafka
+      exp_annotations:
+        description: "Kafka supplementary services in namespace default is not compatible with Kafka version "
+        summary: "Kafka supplementary services in namespace default is not compatible with Kafka version , allowed range is  - "
+
+- interval: 1m
+  input_series:
+  - series: supplementary_services_version_compatible{application="kafka", namespace="default"}
+    values: "1x5"
+  alert_rule_test:
+  - eval_time: 5m
+    groupname: default-kafka-montemplate
+    alertname: SupplementaryServicesCompatibilityAlert
+    exp_alerts: []
