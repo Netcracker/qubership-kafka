@@ -25,7 +25,7 @@ jobs:
           poll-interval: 20
   Kafka-Pipeline:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@cee02b3e1a049e1c2b28f8566d4362247240fa5f  #v1.1.2
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@81a445840dde346a27ce09955779af4894bb0a14  #v1.2.0
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
