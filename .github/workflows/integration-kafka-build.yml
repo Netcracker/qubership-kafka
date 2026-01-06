@@ -76,7 +76,7 @@ jobs:
           fi
 
       - name: Create tags for images
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@9538833017019ab6bbc2138d3034778dfe3a5d1f  # v2.0.6
         id: meta
         with:
           default-template: "{{ref-name}}"
@@ -87,7 +87,7 @@ jobs:
 
       - name: Set Kafka Major Version
         id: set-kafka-major-version
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@9538833017019ab6bbc2138d3034778dfe3a5d1f  # v2.0.6
         with:
           ref: ${{ env.KAFKA_VERSION }}
           default-template: "{{ref-name}}"
@@ -123,7 +123,7 @@ jobs:
           cat $GITHUB_OUTPUT
 
       - name: Docker
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@9538833017019ab6bbc2138d3034778dfe3a5d1f  # v2.0.6
         with:
           ref: ${{ env.INTEGRATION_BUILD_BRANCH }}
           download-artifact: false
