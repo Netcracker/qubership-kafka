@@ -2,41 +2,52 @@ FROM eclipse-temurin:21-jdk-alpine-3.22 AS builder
 
 ENV CC_VERSION=2.5.141
 
-RUN set -x \
-    && apk add --update --no-cache \
+RUN \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  rm -f /etc/apt/apt.conf.d/docker-clean && \
+  mkdir -p /etc/apt/apt.conf.d/ && \
+  chmod 766 /etc/apt/apt.conf.d && \
+  echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache && \
+  set -x \
+    && apk add --update \
       git \
       wget \
       gradle \
       tar
 
-RUN set -x \
+COPY docker/config/build.gradle /tmp/build.gradle
+COPY docker/config/build/build.gradle /tmp/buildSrc/build.gradle
+COPY docker/config/settings.gradle /tmp/settings.gradle
+
+RUN --mount=type=cache,target=/root/.gradle \
+    --mount=type=cache,target=/cruise-control \
+    set -x \
     && wget \
         --no-check-certificate \
         -nv \
         -O /tmp/cruise-control.tar.gz \
         "https://github.com/linkedin/cruise-control/archive/refs/tags/${CC_VERSION}.tar.gz" \
     && tar -zxvf /tmp/cruise-control.tar.gz --transform "s/cruise-control-${CC_VERSION}/cruise-control/" -C / \
-    && rm -f /tmp/cruise-control.tar.gz
-
-WORKDIR cruise-control
-
-COPY docker/config/build.gradle build.gradle
-COPY docker/config/build/build.gradle buildSrc/build.gradle
-COPY docker/config/settings.gradle settings.gradle
-
-RUN git init
-# Compile and remove leftover directories
-RUN gradle jar :cruise-control:jar --stacktrace   \
-    && rm -rf cruise-control-core cruise-control-metrics-reporter cruise-control-client
-
-RUN set -x \
+    && rm -f /tmp/cruise-control.tar.gz \
+    && cp -f /tmp/build.gradle /cruise-control \
+    && cp -f /tmp/settings.gradle /cruise-control \
+    && mkdir -p /cruise-control/buildSrc \
+    && cp -f /tmp/buildSrc/build.gradle /cruise-control/buildSrc \
+    && cd cruise-control \
+    && git init && gradle jar :cruise-control:jar --stacktrace \
     && wget \
         --no-check-certificate \
         -nv \
         -O /tmp/cruise-control-ui.tar.gz \
         "https://github.com/linkedin/cruise-control-ui/releases/download/v0.4.0/cruise-control-ui-0.4.0.tar.gz" \
     && tar -zxvf /tmp/cruise-control-ui.tar.gz -C /cruise-control \
-    && rm -f /tmp/cruise-control-ui.tar.gz
+    && rm -f /tmp/cruise-control-ui.tar.gz \
+    && cp -rf /cruise-control /tmp/ \
+    && cd /tmp/cruise-control \
+    && rm -rf cruise-control-core cruise-control-metrics-reporter cruise-control-client
+RUN cp -rf /tmp/cruise-control /
+
 # --------------- Final stage ---------------
 FROM eclipse-temurin:21-jdk-alpine-3.22
 
@@ -56,11 +67,12 @@ COPY --from=builder cruise-control .
 
 COPY docker/docker-entrypoint.sh docker-entrypoint.sh
 
-RUN chmod +x docker-entrypoint.sh
-RUN chmod -R 777 cruise-control
+RUN chmod +x docker-entrypoint.sh \
+    && chmod -R 777 cruise-control \
+    && chmod a+rw -R .
 
 # Ensure Cruise Control writable for logs
-RUN chmod a+rw -R .
+# RUN chmod a+rw -R .
 
 ARG TMP_DIR="/tmp"
 
