@@ -26,7 +26,7 @@ spec:
           annotations:
             description: 'Kafka metrics are absent on {{ .Release.Namespace }}.'
             summary: Kafka metrics are absent
-          expr: absent(kafka_cluster_status{namespace="{{ .Release.Namespace }}"}) == 1
+          expr: absent(kafka_cluster_status{namespace="{{ .Release.Namespace }}"})
           for: 3m
           labels:
             severity: high
