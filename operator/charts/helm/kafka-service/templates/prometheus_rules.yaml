@@ -134,7 +134,7 @@ spec:
             description: 'Detected Kafka {{`{{ $labels.version }}`}}; allowed: 3.x.y or 4.x.y.'
           expr: kafka_server_app_info_Version{
             namespace="{{ .Release.Namespace }}",
-            version!~"^(3\\.[0-9]+\\.[0-9]+|4\\.[0-9]+\\.[0-9]+)$"
+            version!~"^(3|4)\\.[0-9]+\\.[0-9]+$"
             } > 0
           for: 5m
           labels:
