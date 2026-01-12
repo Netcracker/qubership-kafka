@@ -427,11 +427,31 @@ Find a kubectl image in various places.
           {{- if not (index $found "ok") -}}
             {{- $upgradeAllowed = false -}}
           {{- end -}}
-        {{- else -}}
-           {{- $upgradeAllowed = false -}}
         {{- end -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}
   {{- printf "%t" $upgradeAllowed -}}
+{{- end }}
+
+{{- define "kraftMigrationCheck" -}}
+  {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
+  {{- if $pvc }}
+    {{- if and (hasKey $pvc.metadata.labels "kraft") .Values.kafka.kraft.migration }}
+      {{- printf "%t" false -}}
+    {{- else }}
+      {{- printf "%t" true -}}
+    {{- end }}
+  {{- else }}
+    {{- printf "%t" true -}}
+  {{- end }}
+{{- end }}
+
+{{- define "kraft.enabled" -}}
+  {{- $kraftEnabled := .Values.kafka.kraft.enabled -}}
+  {{- $desiredVar := include "kafka.imageVariant" (include "kafka.image" .) -}}
+  {{- if eq $desiredVar "4" -}}
+    {{- $kraftEnabled = true -}}
+  {{- end -}}
+  {{- printf "%t" $kraftEnabled -}}
 {{- end }}

@@ -2,7 +2,7 @@ This document describes monitoring dashboards, their metrics, Zabbix alarms and 
 
 - [Overview](#overview)
 - [Kafka Monitoring](#kafka-monitoring)
-- [Kafka Lag Exporter](#kafka-lag-exporter)
+- [Kafka Exporter](#kafka-exporter)
 - [Kafka Topics](#kafka-topics)
 - [Kafka Mirror Maker Monitoring](#kafka-mirror-maker-monitoring)
 - [Table of Metrics](#table-of-metrics)
@@ -260,13 +260,15 @@ NOTE: JVM metrics are not applicable for external managed Kafka (e.g. Amazon MSK
 of external managed Kafka brokers (e.g. [Amazon MSK](managed/amazon.md#preparations-for-monitoring)).
 Pay attention, this dashboard does not work with platform Kafka, and it could have a lot of empty panels for external Kafka.
 
-# Kafka Lag Exporter
+# Kafka Exporter
 
-This section describes the Kafka Lag Exporter dashboard and their metrics.
+Kafka Exporter is an open source project to enhance monitoring of Apache Kafka brokers and clients.
+Lag data is exposed as Prometheus metrics, which can then be presented in Grafana for analysis.
+This section describes the Kafka Exporter dashboard and their metrics.
 
 ## Dashboard
 
-An overview of Kafka Lag Exporter dashboard is shown below.
+An overview of Kafka Exporter dashboard is shown below.
 
 ![Dashboard](/docs/public/images/overview_kafka_lag_exporter.png)
 
@@ -303,13 +305,13 @@ own Grafana widget.
 * `Consumer Group Lag in Time Per Group Over Summed Offsets` - shows the max lag in time on the left Y axis. 
   The right Y axis has the sum of latest and last consumed offsets for all the current group partitions.
 
-**Kafka Lag Exporter JVM Metrics**
+**Kafka Exporter JVM Metrics**
 
-![Kafka Lag Exporter JVM Metrics](/docs/public/images/Kafka_Lag_Exporter_JVM_Metrics.png)
+![Kafka Exporter JVM Metrics](/docs/public/images/Kafka_Lag_Exporter_JVM_Metrics.png)
 
-* `JVM Memory Used` - displays JVM memory usage for Kafka Lag Exporter.
-* `JVM GC Time` - displays JVM garbage collection time for Kafka Lag Exporter.
-* `JVM GC Rate` - displays JVM garbage collection rate for Kafka Lag Exporter.
+* `JVM Memory Used` - displays JVM memory usage for Kafka Exporter.
+* `JVM GC Time` - displays JVM garbage collection time for Kafka Exporter.
+* `JVM GC Rate` - displays JVM garbage collection rate for Kafka Exporter.
 
 # Kafka Topics
 
