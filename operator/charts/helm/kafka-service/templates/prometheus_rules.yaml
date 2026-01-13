@@ -132,7 +132,7 @@ spec:
           annotations:
             summary: 'Kafka version out of allowed range in {{`{{ $labels.namespace }}`}}'
             description: 'Detected Kafka {{`{{ $labels.version }}`}}; allowed: 3.x.y or 4.x.y.'
-          expr: (kafka_server_app_info_Version{namespace="{{ .Release.Namespace }}"}) and on(kafka_server_app_info_Version{namespace="{{ .Release.Namespace }}", version!~"^(3\\.[0-9]+\\.[0-9]+|4\\.[0-9]\\.[0-9])$"} > 0)
+          expr: kafka_server_app_info_Version{namespace="{{ .Release.Namespace }}",version!~"^(3\\.[0-9]+\\.[0-9]+|4\\.[0-9]+\\.[0-9]+)$"} > 0
           for: 5m
           labels:
             severity: high
