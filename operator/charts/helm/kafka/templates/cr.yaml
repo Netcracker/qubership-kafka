@@ -2,17 +2,23 @@
 {{- if and .Values.deployDescriptor .Values.dockerKafka (ne (.Values.DEPLOY_W_HELM | toString) "true") }}
   {{- fail "Kafka requires `DEPLOY_W_HELM` parameter to be set to `true` for App Deployer" }}
 {{- end }}
-{{- if and (not .Values.kafka.zookeeperConnect) (not .Values.kafka.kraft.enabled) }}
+{{- if and (not (include "kafka.zooKeeperConnect" .)) (not (eq (include "kraft.enabled" .) "true"))}}
 {{ fail "\nError: You must set kafka.zookeeperConnect to install Kafka with ZooKeeper .\nFind more information in corresponding release documentation." }}
 {{- end }}
-{{- if and (not .Values.kafka.zookeeperConnect) .Values.kafka.kraft.enabled .Values.kafka.kraft.migration }}
+{{- if and (not (include "kafka.zooKeeperConnect" .)) (eq (include "kraft.enabled" .) "true") .Values.kafka.kraft.migration }}
 {{ fail "\nError: You must set kafka.zookeeperConnect to migrate from Kafka with ZooKeeper to Kraft .\nFind more information in corresponding release documentation." }}
 {{- end }}
 {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
 {{- if $pvc }}
-{{- if and (hasKey $pvc.metadata.labels "kraft") (not .Values.kafka.kraft.enabled) }}
+{{- if and (hasKey $pvc.metadata.labels "kraft") (not (eq (include "kraft.enabled" .) "true")) }}
 {{ fail "\nError: You cannot upgrade Kraft to Kafka with ZooKeeper.\nFind more information in corresponding release documentation." }}
 {{- end }}
+{{- end }}
+{{- if and (eq (include "validateKafkaUpgrade" .) "false") (not .Values.kafka.kraft.skipUpgradeCheck) -}}
+{{ fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress.\n You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
+{{- end }}
+{{- if and (eq (include "kraftMigrationCheck" .) "false") (not .Values.kafka.kraft.skipUpgradeCheck) -}}
+{{ fail (printf "Kraft Migration is forbidden on Kafka which already installed on Kraft. Disable kafka.kraft.migration and rerun the upgrade") -}}
 {{- end }}
 apiVersion: {{ .Values.operator.apiGroup }}/v1
 kind: Kafka
@@ -172,8 +178,8 @@ spec:
   debugContainer: {{ .Values.kafka.debugContainer }}
   ccMetricReporterEnabled: {{ .Values.kafka.ccMetricReporterEnabled }}
   kraft:
-    enabled: {{ .Values.kafka.kraft.enabled }}
-    {{- if .Values.kafka.kraft.enabled }}
+    enabled: {{ template "kraft.enabled" . }}
+    {{- if eq (include "kraft.enabled" .) "true" }}
     {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
     {{- if $pvc }}
     {{- if and (not (hasKey $pvc.metadata.labels "kraft")) (not .Values.kafka.kraft.migration) }}

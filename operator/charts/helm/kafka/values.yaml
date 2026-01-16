@@ -135,7 +135,7 @@ kafka:
   disruptionBudget:
     enabled: false
     maxUnavailable: 0
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:main
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
@@ -233,6 +233,7 @@ kafka:
     enabled: false
     migration: false
     migrationTimeout: 600
+    skipUpgradeCheck: false
   migrationController:
     heapSize: 256
     resources:

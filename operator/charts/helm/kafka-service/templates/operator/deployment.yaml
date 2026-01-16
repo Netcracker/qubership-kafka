@@ -28,6 +28,7 @@ spec:
       {{- end }}
         name: {{ template "kafka.name" . }}-service-operator
         app.kubernetes.io/name: {{ template "kafka.name" . }}-service-operator
+        app.kubernetes.io/technology: "go"
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
       {{- if and .Values.global.tls.enabled (or .Values.global.disasterRecovery.tls.enabled .Values.backupDaemon.tls.enabled) }}

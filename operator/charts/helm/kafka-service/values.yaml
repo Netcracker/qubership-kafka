@@ -190,8 +190,6 @@ kafka:
   tls:
     enabled: true
     secretName: ""
-  kraft:
-    enabled: false
   autoRestartOnSecretChange: true
 
 monitoring:
@@ -232,13 +230,13 @@ monitoring:
   ##
   serviceMonitor:
     clusterStateScrapeInterval: "60s"
-    clusterStateScrapeTimeout: "10s"
+    clusterStateScrapeTimeout: "30s"
     jmxScrapeInterval: "60s"
-    jmxScrapeTimeout: "10s"
+    jmxScrapeTimeout: "50s"
     kmmScrapeInterval: "60s"
-    kmmScrapeTimeout: "10s"
+    kmmScrapeTimeout: "50s"
     lagExporterScrapeInterval: "60s"
-    lagExporterScrapeTimeout: "10s"
+    lagExporterScrapeTimeout: "50s"
   priorityClassName: ""
   kafkaTotalBrokerCount: 3
   dataCollectionInterval: "10s"
@@ -264,6 +262,9 @@ monitoring:
 
   lagExporter:
     enabled: false
+    refreshMetadata: "30s"
+    logEnableSarama: true
+    verbosity: 1
     service:
       image: "ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main"
       port: 8000
@@ -531,9 +532,6 @@ integrationTests:
   # Example: https://kube:6443
   url: ""
   kafkaIsManagedByOperator: true
-  zookeeperOsProject: "zookeeper-service"
-  zookeeperHost: "zookeeper"
-  zookeeperPort: 2181
   kafkaHost: "kafka"
   kafkaPort: 9092
   kafkaPvNames: "pv-1,pv-2,pv-3"

@@ -37,21 +37,25 @@ func NewCustomResourceUpdater(client client.Client, cr *kafka.KafkaUser) CustomR
 }
 
 func (cru CustomResourceUpdater) UpdateWithRetry(updateFunc func(*kafka.KafkaUser)) error {
-	return cru.updateWithRetry(updateFunc, cru.client)
+	return cru.updateWithRetry(updateFunc, func(ctx context.Context, obj client.Object) error {
+		return cru.client.Update(ctx, obj)
+	})
 }
 
 func (cru CustomResourceUpdater) UpdateStatusWithRetry(statusUpdateFunc func(*kafka.KafkaUser)) error {
-	return cru.updateWithRetry(statusUpdateFunc, cru.client.Status())
+	return cru.updateWithRetry(statusUpdateFunc, func(ctx context.Context, obj client.Object) error {
+		return cru.client.Status().Update(ctx, obj)
+	})
 }
 
-func (cru CustomResourceUpdater) updateWithRetry(updateFunc func(*kafka.KafkaUser), writer client.StatusWriter) error {
+func (cru CustomResourceUpdater) updateWithRetry(updateFunc func(*kafka.KafkaUser), doUpdate func(context.Context, client.Object) error) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		instance, err := cru.GetCustomResource()
 		if err != nil {
 			return err
 		}
 		updateFunc(instance)
-		return writer.Update(context.TODO(), instance)
+		return doUpdate(context.TODO(), instance)
 	})
 }
 

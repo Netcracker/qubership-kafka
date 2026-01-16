@@ -72,7 +72,7 @@
     ```
     sasl.mechanism=SCRAM-SHA-512
     security.protocol=SASL_PLAINTEXT
-    sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="user1" password="userone";
+    sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin";
     ```
 
     Username and password should be filled with actual data for security connection.

@@ -73,10 +73,6 @@ func (lep LagExporterResourceProvider) getEnvs(cmVersion string) []corev1.EnvVar
 			Name:  "KAFKA_ENABLE_SSL",
 			Value: strconv.FormatBool(lep.cr.Spec.Global.KafkaSsl.Enabled),
 		},
-		{
-			Name:  "LAG_EXPORTER_CM_VERSION",
-			Value: cmVersion,
-		},
 	}
 }
 
@@ -113,8 +109,10 @@ func (lep LagExporterResourceProvider) getContainer(cmVersion string) corev1.Con
 		ImagePullPolicy: corev1.PullAlways,
 		SecurityContext: getDefaultContainerSecurityContext(),
 		LivenessProbe: &corev1.Probe{
-			Handler: corev1.Handler{
-				TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: int32(lep.spec.LagExporter.MetricsPort)}},
+			ProbeHandler: corev1.ProbeHandler{
+				TCPSocket: &corev1.TCPSocketAction{
+					Port: intstr.FromInt32(int32(lep.spec.LagExporter.MetricsPort)),
+				},
 			},
 			InitialDelaySeconds: 30,
 			TimeoutSeconds:      5,
@@ -123,8 +121,10 @@ func (lep LagExporterResourceProvider) getContainer(cmVersion string) corev1.Con
 			FailureThreshold:    20,
 		},
 		ReadinessProbe: &corev1.Probe{
-			Handler: corev1.Handler{
-				TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: int32(lep.spec.LagExporter.MetricsPort)}},
+			ProbeHandler: corev1.ProbeHandler{
+				TCPSocket: &corev1.TCPSocketAction{
+					Port: intstr.FromInt32(int32(lep.spec.LagExporter.MetricsPort)),
+				},
 			},
 			InitialDelaySeconds: 30,
 			TimeoutSeconds:      5,

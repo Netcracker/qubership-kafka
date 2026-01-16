@@ -478,6 +478,15 @@ if [[ "$DISABLE_SECURITY" == false ]]; then
   fi
   echo "Create jaas config file"
   cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+KafkaServer {
+    org.apache.kafka.common.security.scram.ScramLoginModule required
+    username="${ADMIN_USERNAME}"
+    password="${ADMIN_PASSWORD}";
+};
+
+EOL
+
+  cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
 inter_broker.KafkaServer {
     org.apache.kafka.common.security.scram.ScramLoginModule required
     username="${ADMIN_USERNAME}"
@@ -487,6 +496,25 @@ inter_broker.KafkaServer {
 EOL
 
   if [[ "$KRAFT_ENABLED" == "true" || "$MIGRATION_BROKER" == "true" ]]; then
+    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+KafkaClient {
+    org.apache.kafka.common.security.scram.ScramLoginModule required
+    username="${ADMIN_USERNAME}"
+    password="${ADMIN_PASSWORD}";
+};
+
+EOL
+
+    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+Controller {
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="${ADMIN_USERNAME}"
+    password="${ADMIN_PASSWORD}"
+    user_${ADMIN_USERNAME}="${ADMIN_PASSWORD}";
+};
+
+EOL
+
     cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
 internal.KafkaServer {
     org.apache.kafka.common.security.scram.ScramLoginModule required

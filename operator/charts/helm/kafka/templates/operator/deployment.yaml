@@ -29,6 +29,7 @@ spec:
       {{- end }}
         name: {{ template "kafka.name" . }}-operator
         app.kubernetes.io/name: {{ template "kafka.name" . }}-operator
+        app.kubernetes.io/technology: "go"
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
       containers:

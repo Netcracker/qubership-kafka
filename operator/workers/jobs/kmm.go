@@ -22,6 +22,8 @@ import (
 	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 const kmmJobName = "kmm"
@@ -50,9 +52,13 @@ func (rj KmmJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, logge
 	}
 
 	kmmMgrOpts := ctrl.Options{
-		Scheme:                  runScheme,
-		MetricsBindAddress:      "0",
-		Port:                    port,
+		Scheme: runScheme,
+		Metrics: metricsserver.Options{
+			BindAddress: "0",
+		},
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Port: port,
+		}),
 		HealthProbeBindAddress:  "0",
 		LeaderElection:          opts.EnableLeaderElection,
 		LeaderElectionNamespace: opts.OperatorNamespace,
