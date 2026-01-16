@@ -6,7 +6,7 @@
 # Security
 
 When using plain authentication all credentials are stored in JAAS config files 
-(see [broker configuration](http://kafka.apache.org/documentation.html#security_sasl_plain_brokerconfig) 
+(see [broker configuration](https://kafka.apache.org/documentation/#security_sasl) 
 section in kafka documentation for more info).
 Example of JAAS config file for broker configuration is provided in /config folder. Kafka clients 
 (producer or consumer) should use following configuration in this case:
