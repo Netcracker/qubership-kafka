@@ -165,7 +165,7 @@ func (mrp MonitoringResourceProvider) getMonitoringContainers(cmVersion string) 
 			Args:            mrp.getArgs(),
 			SecurityContext: getDefaultContainerSecurityContext(),
 			LivenessProbe: &corev1.Probe{
-				Handler: corev1.Handler{
+				ProbeHandler: corev1.ProbeHandler{
 					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
 				},
 				InitialDelaySeconds: 30,
@@ -175,7 +175,7 @@ func (mrp MonitoringResourceProvider) getMonitoringContainers(cmVersion string) 
 				FailureThreshold:    20,
 			},
 			ReadinessProbe: &corev1.Probe{
-				Handler: corev1.Handler{
+				ProbeHandler: corev1.ProbeHandler{
 					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
 				},
 				InitialDelaySeconds: 30,
