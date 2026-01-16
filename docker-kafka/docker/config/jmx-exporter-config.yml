@@ -35,7 +35,7 @@ rules:
       clientId: "$3"
       topic: "$4"
       partition: "$5"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), brokerHost=(.+), brokerPort=(.+)><>Value
     name: kafka_server_$1_Value
     type: GAUGE
@@ -44,7 +44,7 @@ rules:
       clientId: "$3"
       brokerHost: "$4"
       brokerPort: "$5"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: 'kafka.server<type=SessionExpireListener, name=SessionState><>Value: (\w+)'
     name: kafka_server_SessionExpireListener_Value
     value: 1
@@ -52,7 +52,7 @@ rules:
     labels:
       name: "SessionState"
       value: "$1"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: 'kafka.server<type=app-info, id=(\d+)><>Version: (.+)'
     name: kafka_server_app_info_Version
     value: 1
@@ -60,18 +60,18 @@ rules:
     labels:
       id: "$1"
       version: "$2"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.server<type=Fetch><>queue-size
     name: kafka_server_Fetch_queue_size
     type: GAUGE
     labels:
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.coordinator.(\w+)<type=(.+), name=(.+)><>Value
     name: kafka_coordinator_$1_$2_Value
     type: GAUGE
     labels:
       name: "$3"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
 
   # Generic per-second counters with 0-2 key/value pairs
   - pattern: kafka.(\w+)<type=(.+), name=(.+)PerSec\w*, (.+)=(.+), (.+)=(.+)><>Count
@@ -81,20 +81,20 @@ rules:
       name: "$3PerSec"
       "$4": "$5"
       "$6": "$7"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.(\w+)<type=(.+), name=(.+)PerSec\w*, (.+)=(.+)><>Count
     name: kafka_$1_$2_Count
     type: COUNTER
     labels:
       name: "$3PerSec"
       "$4": "$5"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.(\w+)<type=(.+), name=(.+)PerSec\w*><>Count
     name: kafka_$1_$2_Count
     type: COUNTER
     labels:
       name: "$3PerSec"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
 
   # Generic gauges with 0-2 key/value pairs
   - pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+), (.+)=(.+)><>Value
@@ -104,20 +104,20 @@ rules:
       name: "$3"
       "$4": "$5"
       "$6": "$7"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+)><>Value
     name: kafka_$1_$2_Value
     type: GAUGE
     labels:
       name: "$3"
       "$4": "$5"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.(\w+)<type=(.+), name=(.+)><>Value
     name: kafka_$1_$2_Value
     type: GAUGE
     labels:
       name: "$3"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
 
   # Emulate Prometheus 'Summary' metrics for the exported 'Histogram's.
   #
@@ -129,47 +129,47 @@ rules:
       name: "$3"
       "$4": "$5"
       "$6": "$7"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+)><>Count
     name: kafka_$1_$2_Count
     type: COUNTER
     labels:
       name: "$3"
       "$4": "$5"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.(\w+)<type=(.+), name=(.+)><>Count
     name: kafka_$1_$2_Count
     type: COUNTER
     labels:
       name: "$3"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: kafka.server<type=ZooKeeperClientMetrics, name=ZooKeeperRequestLatencyMs><>(\d+)thPercentile
     name: kafka_server_ZooKeeperClientMetrics_$1thPercentile
     type: GAUGE
     labels:
       name: "ZooKeeperRequestLatencyMs"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
 
   # JVM metrics
   - pattern: java.lang<type=Memory><(\w+)MemoryUsage>(\w+)
     name: java_Memory_$1MemoryUsage_$2
     type: GAUGE
     labels:
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: java.lang<type=GarbageCollector, name=(.*)><>(CollectionTime|CollectionCount)
     name: java_GarbageCollector_$2
     type: COUNTER
     labels:
       name: "$1"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: java.lang<name=(.*), type=GarbageCollector><>(CollectionTime|CollectionCount)
     name: java_GarbageCollector_$2
     type: COUNTER
     labels:
       name: "$1"
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"
   - pattern: java.lang<type=Threading><>(TotalStartedThreadCount|ThreadCount|DaemonThreadCount|PeakThreadCount)
     name: java_Threading_$1
     type: GAUGE
     labels:
-      broker: "${BROKER_HOST_NAME}"
+      brokerInstance: "${BROKER_HOST_NAME}"

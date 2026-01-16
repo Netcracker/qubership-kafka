@@ -67,7 +67,7 @@ Any replica in the ISR set is eligible to be elected as leader. If there are no 
 ISR set, then the partition will be unavailable until the crashed leader of partition goes back up.
 **Note**: This can be changed by setting the property `unclean.leader.election.enable` to `true`
 in the configuration. For more information about Kafka configuration,
-refer to Kafka Documentation located at [https://kafka.apache.org/0110/documentation.html#topicconfigs](https://kafka.apache.org/0110/documentation.html#topicconfigs).
+refer to Kafka Documentation located at [https://kafka.apache.org/documentation/#topicconfigs](https://kafka.apache.org/documentation/#topicconfigs).
 In this case, replicas that are not in the ISR set can be elected as leader
 as a last resort, even though doing so may result in data loss.
 
@@ -685,7 +685,7 @@ java.io.IOException: Connection to 3 was disconnected before the response was re
 
 ### How to solve
 
-If you get a lot of log messages like mentioned above but the remote broker is available it can be a reason to use local storage instead of NFS.
+If you get a lot of log messages like mentioned above but the remote broker is available it can be a reason to use localStorage instead of NFS.
 
 ### Recommendations
 
@@ -782,7 +782,7 @@ Reading files can take long time, from a few seconds to a few minutes.
 If you have a big Kafka storage you also need to increase the liveness probe initial delay.
 
 **Note**: The above workaround does not guarantee Kafka to work fine with NFS.
-To avoid side effects, it is recommended to plan the transition to local storage.
+To avoid side effects, it is recommended to plan the transition to localStorage.
 
 ### Recommendations
 
@@ -802,7 +802,7 @@ java.lang.InternalError: a fault occurred in a recent unsafe memory access opera
 ```
 
 It means there are some issues with file system, memory or JVM. There are a lot of causes lead to this issue.
-Some information about causes described in [stackoverflow answer](https://stackoverflow.com/a/45536678) or
+Some information about causes described in [Stack Overflow answer](https://stackoverflow.com/a/45536678) or
 ticket [KAFKA-5628](https://issues.apache.org/jira/browse/KAFKA-5628).
 
 ### Alerts
@@ -1144,6 +1144,40 @@ The recommended procedure for executing this restoration process encompasses the
 ### Recommendations
 
 Not applicable
+
+### Updating partition.metadata on Kafka side
+
+If ZooKeeper contains correct topic configuration, `topicId` can be synchronized by manual deletion of `partition.metadata` for affected topics and `__consumer.offsets` on all brokers. 
+To remove `partition.metadata` for all topics use next command:
+
+```
+cd /var/opt/kafka/data/$BROKER_ID
+find . -regex ".*partition.metadata" -delete
+```
+
+To delete `partition.metadata` for `__consumer.offsets` use the command:
+
+```
+cd /var/opt/kafka/data/$BROKER_ID
+find . -regex ".*__consumer_offsets.*partition.metadata" -delete
+```
+
+After that you need to restart all Kafka brokers. All necessary `partion.metadata` for topics are recreated with new `topicId` once brokers are restarted.
+
+Check topic configuration again with command:
+
+```
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --command-config bin/adminclient.properties --topic test
+
+Topic: test     TopicId: nI-JQtPwQwGiylMfm8k13w PartitionCount: 10      ReplicationFactor: 3    Configs: min.insync.replicas=2,segment.bytes=1073
+741824
+        Topic: test     Partition: 0    Leader: 3       Replicas: 1,2,3 Isr: 3,2,1
+        Topic: test     Partition: 1    Leader: 1       Replicas: 2,3,1 Isr: 1,2,3
+        Topic: test     Partition: 2    Leader: 3       Replicas: 3,1,2 Isr: 1,2,3
+        ...
+```
+
+If some partitions are out of balance after update, refer to [Topics with Insufficient Replication Factor](#topics-with-insufficient-replication-factor) guide.
 
 ## Dealing with Kafka's Under-replicated Partitions or Heaviest Partitions in Topics Due to Data Sync Issues
 

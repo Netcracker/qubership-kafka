@@ -35,7 +35,6 @@ KAFKA_TIMEOUT = 60
 OS_PROJECT = ""
 KAFKA_SERVICE_NAME = "kafka"
 KAFKA_ADDRESSES = ""
-KRAFT_ENABLED = False
 KAFKA_SASL_MECHANISM = 'SCRAM-SHA-512'
 KAFKA_ENABLE_SSL = False
 KAFKA_TOTAL_BROKERS_COUNT = 0
@@ -46,8 +45,6 @@ ALLOWED_DIFFERENT_CONFIGS = ["listeners", "zookeeper.connect", "node.id"]
 CA_CERT_PATH = '/tls/ca.crt'
 TLS_CERT_PATH = '/tls/tls.crt'
 TLS_KEY_PATH = '/tls/tls.key'
-MIN_VERSION = "0.0.0"
-MAX_VERSION = "x.x.x"
 
 
 def __configure_logging(log):
@@ -138,11 +135,6 @@ def _check_config_consistency(broker_configs_list: list) -> str:
     return "Yes"
 
 
-# Return Kafka version in [major version].x format (e.x. 2.7.x)
-def _get_kafka_version(broker_configs: dict) -> str:
-    return broker_configs["inter.broker.protocol.version"].split('-')[0] + '.x'
-
-
 # Collects metrics for each broker in a separate thread
 def _get_broker_metrics_simple(broker_id, admin_client):
     if not admin_client:
@@ -152,23 +144,19 @@ def _get_broker_metrics_simple(broker_id, admin_client):
     logger.info(f'Broker id={broker_id}.')
     try:
         broker_configs = _get_broker_configs(admin_client, str(broker_id))
-        kafka_version = _get_kafka_version(broker_configs)
-
     except Exception:
         logger.exception('Exception occurred working with broker id: %s', broker_id)
         return -1
-    return broker_id, broker_configs, special_broker_metrics, kafka_version
+    return broker_id, broker_configs, special_broker_metrics
 
 
 # Concatenates metrics received for each broker for further processing
 def _concatenate_all_brokers_metrics_simple(brokers_metrics):
-    all_brokers_metrics = {'active_brokers': list(),
-                           'kafka_version': ""}
+    all_brokers_metrics = {'active_brokers': list()}
     broker_configs_list = list()
-    for broker_id, broker_configs, special_broker_metrics, kafka_version in brokers_metrics:
+    for broker_id, broker_configs, special_broker_metrics in brokers_metrics:
         all_brokers_metrics['active_brokers'].append(broker_id)
         broker_configs_list.append(broker_configs)
-        all_brokers_metrics['kafka_version'] = kafka_version
     return all_brokers_metrics, None, broker_configs_list, None
 
 
@@ -176,35 +164,6 @@ def _parse_version(v):
     v = v.replace("x", "99")
     return tuple(map(int, v.split('.')))
 
-
-def _is_version_compatible(version, min_version, max_version):
-    version_parts = _parse_version(version)
-    min_version_parts = _parse_version(min_version)
-    max_version_parts = _parse_version(max_version)
-
-    return min_version_parts <= version_parts <= max_version_parts
-
-
-def _collect_compatibility_metric(admin_client: KafkaAdminClient):
-    broker_ids = [broker['node_id'] for broker
-                  in admin_client.describe_cluster()['brokers']]
-    min_broker_version = None
-    for broker_id in broker_ids:
-        broker_configs = _get_broker_configs(admin_client, str(broker_id))
-        kafka_version = _get_kafka_version(broker_configs)
-        if min_broker_version is None or _parse_version(kafka_version) < _parse_version(min_broker_version):
-            min_broker_version = kafka_version
-
-    version_compatible = 1 if _is_version_compatible(min_broker_version, MIN_VERSION, MAX_VERSION) else 0
-
-    message = f'supplementary_services,' \
-              f'application=kafka,' \
-              f'namespace={OS_PROJECT},' \
-              f'application_version={min_broker_version},' \
-              f'min_version={MIN_VERSION},' \
-              f'max_version={MAX_VERSION}' \
-              f' version_compatible={version_compatible}i'
-    return message
 
 def _is_kraft(admin_client, broker_id):
     config_resource = ConfigResource(ConfigResourceType.BROKER, str(broker_id))
@@ -221,17 +180,15 @@ def _is_kraft(admin_client, broker_id):
     else:
         return False
 
+
 def _collect_metrics():
     admin_client = _create_admin_client()
-    is_kraft_enabled = KRAFT_ENABLED
     if not admin_client:
         broker_ids = []
     else:
         broker_ids = [broker['node_id'] for broker
                       in admin_client.describe_cluster()['brokers']]
         is_kraft_enabled = _is_kraft(admin_client, broker_ids[0])
-        if KRAFT_ENABLED != is_kraft_enabled:
-            logger.warning(f'KRAFT_ENABLED environment variable value is %s, but value returned from broker is %s', KRAFT_ENABLED, is_kraft_enabled)
     args = [(idx, admin_client) for idx in broker_ids]
     metrics_func = _get_broker_metrics_simple
     collect_func = _concatenate_all_brokers_metrics_simple
@@ -251,7 +208,6 @@ def _collect_metrics():
     active_brokers = all_brokers_metrics["active_brokers"]
     logger.info('Active brokers: %s', active_brokers)
     same_configs = _check_config_consistency(broker_configs_list)
-    kafka_version = all_brokers_metrics['kafka_version']
     cluster_status = _determine_cluster_status_simple(active_brokers)
     quorum_mode = 101 if is_kraft_enabled else 100
     logger.info('Cluster status: %s', cluster_status)
@@ -259,11 +215,7 @@ def _collect_metrics():
               f'size={len(active_brokers)}i,' \
               f'status={cluster_status},' \
               f'quorum_mode={quorum_mode}i,' \
-              f'same_configs=\"{same_configs}\",' \
-              f'kafka_version=\"{kafka_version}\"'
-    if admin_client is not None:
-        compatibility_message = _collect_compatibility_metric(admin_client)
-        message = f'{message}\n{compatibility_message}'
+              f'same_configs=\"{same_configs}\"'
     return message
 
 
@@ -274,20 +226,17 @@ def _str2bool(v: str):
 def run():
     try:
         logger.info('Start script execution...')
-        global KAFKA_SERVICE_NAME, KAFKA_TOTAL_BROKERS_COUNT, OS_PROJECT, KAFKA_USER, KAFKA_PASSWORD, KAFKA_TIMEOUT, KAFKA_ADDRESSES, KRAFT_ENABLED, KAFKA_SASL_MECHANISM, KAFKA_ENABLE_SSL, MIN_VERSION, MAX_VERSION
+        global KAFKA_SERVICE_NAME, KAFKA_TOTAL_BROKERS_COUNT, OS_PROJECT, KAFKA_USER, KAFKA_PASSWORD, KAFKA_TIMEOUT, KAFKA_ADDRESSES, KAFKA_SASL_MECHANISM, KAFKA_ENABLE_SSL
         KAFKA_SERVICE_NAME = os.getenv('KAFKA_SERVICE_NAME')
         KAFKA_ADDRESSES = os.getenv('KAFKA_ADDRESSES')
-        KRAFT_ENABLED = _str2bool(os.getenv("KRAFT_ENABLED", "false"))
         KAFKA_SASL_MECHANISM = os.getenv('KAFKA_SASL_MECHANISM', 'SCRAM-SHA-512')
         KAFKA_ENABLE_SSL = _str2bool(os.getenv("KAFKA_ENABLE_SSL", "false"))
         KAFKA_TOTAL_BROKERS_COUNT = int(os.getenv('KAFKA_TOTAL_BROKERS_COUNT'))
         OS_PROJECT = os.getenv('OS_PROJECT')
         KAFKA_USER = os.getenv('KAFKA_USER')
         KAFKA_PASSWORD = os.getenv('KAFKA_PASSWORD')
-        MIN_VERSION = os.getenv('MIN_VERSION', MIN_VERSION)
-        MAX_VERSION = os.getenv('MAX_VERSION', MAX_VERSION)
         timeout = os.getenv('KAFKA_EXEC_PLUGIN_TIMEOUT', "60s")
-        KAFKA_TIMEOUT = int(re.compile("(\d+)").match(timeout).group(1))
+        KAFKA_TIMEOUT = int(re.compile(r"(\d+)").match(timeout).group(1))
         message = _collect_metrics()
         logger.debug('Message to send:\n%s', message)
         logger.info('End script execution!\n')

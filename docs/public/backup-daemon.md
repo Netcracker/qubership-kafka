@@ -12,6 +12,7 @@ Kafka Backup Daemon provides abilities to create and restore snapshots of Kafka 
 **Note**: Only topic configuration stored during Kafka Service backup. Messages are not subject to back up.
 
 You can back up data for Kafka Service per your requirement. You can select any one of the following options for backup:
+
 * Full manual backup
 * Granular backup
 * Not Evictable Backup
@@ -68,7 +69,7 @@ If you also want to back up configured ACL, you can specify `"mode":"acl"` param
 curl -u username:password -XPOST -v -H "Content-Type: application/json" -d '{"mode":"acl"}'  http://localhost:8080/backup
 ```
 
-**Note**: ACL Backup/Restore requires authorization enabled in Kafka configurations to be performed. Make sure that `enableAuthorization` property is set to `true`. Check [Kafka Installation Guide](https://github.com/Netcracker/qubership-kafka/blob/main/kafka-service-operator/documentation/installation-guide/helm/README.md#kafka-parameters).
+**Note**: ACL Backup/Restore requires authorization enabled in Kafka configurations to be performed. Make sure that `enableAuthorization` property is set to `true`. Check [Kafka Installation Guide](./installation.md#kafka).
 
 ## Backup Status
 
@@ -105,7 +106,7 @@ curl -XGET http://localhost:8080/listbackups/<backup_id>
 where `backup_id` is the name of specific backup. The command returns JSON string with data about
 specific backup:
 
-* `ts` - The UNIX timestamp of backup.
+* `ts` - The Unix timestamp of backup.
 * `spent_time` - The time spent on backup (in ms)
 * `db_list` - The list of stored topics (only for granular backup)
 * `id` - The name of backup
@@ -127,7 +128,7 @@ You must specify databases in the dbs list. You will not be able to run a recove
 You also can start a recovery with specifying topics (`dbs`). In this case only snapshots for specified topics are restored.
 
 ```
-curl -u admin:admin -XPOST -v -H "Content-Type: application/json" -d '{"vault":"20250513T095536"}' http://localhost:8080/restore
+curl -u username:password -XPOST -v -H "Content-Type: application/json" -d '{"vault":"20250513T095536"}' http://localhost:8080/restore
 ```
 
 Alternatively, you can specify regular expression (`topic-regex`) for topic names to restore.
@@ -137,13 +138,15 @@ curl -u username:password -XPOST -v -H "Content-Type: application/json" -d '{"va
 ```
 
 Example of restore from backup with timestamp specified:
+
 ```
 curl -u username:password -XPOST -v -H "Content-Type: application/json" -d  '{"ts":"1689762600000"}' http://localhost:8080/restore
 ```
 
 As a response, you receive `task_id`, which can be used to check _Recovery Status_.
 
-**Note**: If some of provided topics are already exists in your project or cannot be created due to misconfiguration (for example, incorrect replication factor), no one topic created during this restore. Only full recovery of selected snapshot supported.
+**Note**: If some of provided topics are already exists in your project or cannot be created due to misconfiguration (for example, incorrect replication factor), 
+no one topic created during this restore. Only full recovery of selected snapshot supported.
 
 ## Recovery ACL
 
@@ -153,7 +156,7 @@ If you also want to recover ACL snapshot, you can specify `"mode":"acl"` paramet
 curl -u username:password -XPOST -v -H "Content-Type: application/json" -d '{"vault":"20190321T080000", "mode":"acl"}'  http://localhost:8080/restore
 ```
 
-**Note**: ACL Backup/Restore requires authorization enabled in Kafka configurations to be performed. Make sure that `enableAuthorization` property is set to `true`. Check [Kafka Installation Guide](https://github.com/Netcracker/qubership-kafka/blob/main/kafka-service-operator/documentation/installation-guide/helm/README.md#kafka-parameters).
+**Note**: ACL Backup/Restore requires authorization enabled in Kafka configurations to be performed. Make sure that `enableAuthorization` property is set to `true`. Check [Kafka Installation Guide](installation.md#kafka).
 
 ## Recovery Status
 
@@ -180,18 +183,20 @@ It returns JSON with list of backup names.
 To find the backup with timestamp equal or newer than specified, use the following command:
 
 For full backups:
+
 ```
 curl -XGET -u username:password -v -H "Content-Type: application/json" -d  '{"ts":"1689762600000"}' localhost:8080/find
 ```
 
 For incremental backups:
+
 ```
 curl -XGET -u username:password -v -H "Content-Type: application/json" -d  '{"ts":"1689762600000"}' localhost:8080/icremental/find
 ```
 
 This command will return a JSON string with stats about particular backup or the first backup newer that specified timestamp:
 
-* `ts`: UNIX timestamp of backup
+* `ts`: Unix timestamp of backup
 * `spent_time`: time spent on backup (in ms)
 * `db_list`: List of backed up databases
 * `id`: vault name

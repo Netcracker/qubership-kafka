@@ -31,7 +31,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	sigsScheme "sigs.k8s.io/controller-runtime/pkg/scheme"
-	"strconv"
 	"strings"
 )
 
@@ -69,27 +68,22 @@ func getWatchNamespace() (string, error) {
 }
 
 func configureManagerNamespaces(configMgrOptions *ctrl.Options, namespace string, ownNamespace string) {
-	if namespace == "" || namespace == ownNamespace {
-		configMgrOptions.Namespace = namespace
-	} else {
-		namespaces := strings.Split(namespace, ",")
-		if !util.Contains(ownNamespace, namespaces) {
-			namespaces = append(namespaces, ownNamespace)
+	namespaces := strings.Split(namespace, ",")
+	if !util.Contains(ownNamespace, namespaces) {
+		namespaces = append(namespaces, ownNamespace)
+	}
+	nsMap := make(map[string]cache.Config, len(namespaces))
+	for _, ns := range namespaces {
+		ns = strings.TrimSpace(ns)
+		if ns == "" {
+			continue
 		}
-		configMgrOptions.NewCache = cache.MultiNamespacedCacheBuilder(namespaces)
+		nsMap[ns] = cache.Config{}
 	}
-}
-
-func duplicateAddr(addr string) (string, error) {
-	parts := strings.Split(addr, ":")
-	if len(parts) != 2 {
-		return fmt.Sprintf("%s:%d", addr, 8081), nil
+	if len(nsMap) == 0 {
+		return
 	}
-	port, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%s:%d", parts[0], port+10), nil
+	configMgrOptions.Cache.DefaultNamespaces = nsMap
 }
 
 func mainApiGroup() string {

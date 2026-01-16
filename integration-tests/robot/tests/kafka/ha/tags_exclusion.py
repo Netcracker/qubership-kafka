@@ -33,9 +33,6 @@ def get_excluded_tags(environ) -> list:
         return ['kafka_ha']
     excluded = []
     if not check_parameters_are_specified(environ,
-                                          'KAFKA_VOLUME_SIZE'):
-        excluded.append('kafka_ha_disk_is_filled')
-    if not check_parameters_are_specified(environ,
                                           'ZOOKEEPER_HOST'):
         excluded.append('kafka_ha_without_zookeeper')
     return excluded
