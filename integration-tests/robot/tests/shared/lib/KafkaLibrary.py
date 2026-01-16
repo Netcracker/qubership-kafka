@@ -17,11 +17,12 @@ import re
 import time
 
 import requests
+import traceback
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
 from kafka.sasl.oauth import AbstractTokenProvider
-from kafka.errors import UnknownTopicOrPartitionError
+from kafka.errors import UnknownTopicOrPartitionError, KafkaConnectionError
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -81,6 +82,7 @@ class KafkaLibrary(object):
             configs['max_in_flight_requests_per_connection'] = 1
             configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
+            configs['acks'] = 'all'
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
                 configs['sasl_plain_username'] = self._kafka_username
@@ -188,7 +190,7 @@ class KafkaLibrary(object):
                 "INFO"
             )
         except Exception as e:
-            self.builtin.log(traceback.format_exc(), "ERROR")
+            self.builtin.log(traceback.format_exc(), "ERROR")  # ruff: noqa: F821
             self.builtin.fail(f'Failed to produce message: "{message}" to '
                               f'topic: {topic_name} {e}')
 
@@ -377,15 +379,33 @@ class KafkaLibrary(object):
             return
         self.__delete_topics(admin, topics)
 
-    def __delete_topics(self, admin, topics):
-        try:
-            admin.delete_topics(topics)
-            logger.debug(f'Topic "{topics}" is deleted.')
-        except UnknownTopicOrPartitionError:
-            BuiltIn().log_to_console(f'Topic "{topics}" has already been deleted or does not exist.')
-            logger.debug(f'Topic "{topics}" has already been deleted or does not exist.')
-        except Exception as e:
-            self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
+    def __delete_topics(self, admin, topics, retries=15, delay=10):
+        for attempt in range(1, retries + 1):
+            try:
+                admin = self.create_admin_client()
+                admin.delete_topics(topics)
+                logger.debug(f'Topic "{topics}" is deleted.')
+                return
+            except UnknownTopicOrPartitionError:
+                BuiltIn().log_to_console(
+                    f'Topic "{topics}" has already been deleted or does not exist.'
+                )
+                logger.debug(f'Topic "{topics}" has already been deleted or does not exist.')
+                return
+            except KafkaConnectionError as e:
+                msg = (f'Attempt {attempt}/{retries}: cannot delete topic "{topics}" '
+                       f'due to KafkaConnectionError: {e}')
+                BuiltIn().log_to_console(msg)
+                logger.warn(msg)
+                if attempt == retries:
+                    self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
+                try:
+                    admin.close()
+                except Exception:
+                    pass
+                time.sleep(delay)
+            except Exception as e:
+                self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
 
     def find_out_leader_broker(self, admin, brokers, topic_name):
         """
@@ -481,7 +501,7 @@ class KafkaLibrary(object):
             admin.create_acls([acl])
             logger.debug(f'ACL {[acl]} was successfully created.')
         except Exception as e:
-            self.builtin.fail('Failed to create ACL')
+            self.builtin.fail('Failed to create ACL: {}'.format(e))
 
     def get_acls(self, admin, topic_name, host='*', resource_type='topic'):
         resource_type = self.__resolve_resource_type(resource_type)
@@ -510,7 +530,7 @@ class KafkaLibrary(object):
             admin.delete_acls([acl_filter])
             logger.debug('ACL was deleted')
         except Exception as e:
-            self.builtin.fail('Failed to delete ACL')
+            self.builtin.fail('Failed to delete ACL: {}'.format(e))
 
     def get_topic_configs(self, admin, topic):
         return admin.describe_configs(config_resources=[ConfigResource(ConfigResourceType.TOPIC, topic)])
