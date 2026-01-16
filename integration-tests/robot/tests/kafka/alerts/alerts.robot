@@ -37,7 +37,7 @@ Check That Kafka Broker Is Up
     ${replicas}=  Get Active Deployment Entities Count For Service  ${KAFKA_OS_PROJECT}  ${service_name}
     Run keyword if  "${replicas}" == "0"
     ...  Scale Up Deployment Entities By Service Name  ${service_name}  ${KAFKA_OS_PROJECT}  replicas=1  with_check=True
-    Sleep  30s
+    Sleep  90s
 
 
 *** Test Cases ***
