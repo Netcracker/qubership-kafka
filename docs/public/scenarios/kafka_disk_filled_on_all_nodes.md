@@ -80,7 +80,7 @@ set of segments whereas a segment is a collection of messages. Kafka provides re
 level instead of at message level. Hence, Kafka keeps on removing segments from its end as these 
 violate retention policies.
 
-For more information, see [Broker Configs](https://kafka.apache.org/documentation.html#brokerconfigs).
+For more information, see [Broker Configs](https://kafka.apache.org/documentation/#brokerconfigs).
 
 Looking at the broker disk, each topic partition is a directory containing the corresponding segment files and other 
 files. The name of the segment file defines the starting offset of the records in that log. The segment file with 
