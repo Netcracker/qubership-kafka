@@ -19,6 +19,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -27,7 +28,7 @@ type TestClient struct {
 	SecretData       map[string]string
 }
 
-func (tc TestClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+func (tc TestClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	switch o := obj.(type) {
 	case *v1.ConfigMap:
 		m := make(map[string]string)
@@ -78,4 +79,20 @@ func (tc TestClient) Scheme() *runtime.Scheme {
 
 func (tc TestClient) RESTMapper() meta.RESTMapper {
 	return nil
+}
+
+func (tc TestClient) Apply(ctx context.Context, obj runtime.ApplyConfiguration, opts ...client.ApplyOption) error {
+	return nil
+}
+
+func (tc TestClient) SubResource(subResource string) client.SubResourceClient {
+	return nil
+}
+
+func (tc TestClient) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, nil
+}
+
+func (tc TestClient) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return false, nil
 }

@@ -311,7 +311,7 @@ func (mmrp MirrorMakerResourceProvider) NewMirrorMakerDeploymentForCR(cluster ka
 								{ContainerPort: prometheusPort, Protocol: corev1.ProtocolTCP},
 							},
 							LivenessProbe: &corev1.Probe{
-								Handler: corev1.Handler{
+								ProbeHandler: corev1.ProbeHandler{
 									Exec: &corev1.ExecAction{Command: []string{"./bin/health.sh", "live"}},
 								},
 								InitialDelaySeconds: 50,
@@ -321,7 +321,7 @@ func (mmrp MirrorMakerResourceProvider) NewMirrorMakerDeploymentForCR(cluster ka
 								FailureThreshold:    5,
 							},
 							ReadinessProbe: &corev1.Probe{
-								Handler: corev1.Handler{
+								ProbeHandler: corev1.ProbeHandler{
 									Exec: &corev1.ExecAction{Command: []string{"./bin/health.sh", "ready"}},
 								},
 								InitialDelaySeconds: 60,

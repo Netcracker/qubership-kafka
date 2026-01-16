@@ -9,7 +9,7 @@ files_file="$2"
 
 # Use jq to filter components where any file starts with any changeset entry in the list
 
-jq -c --argjson files "$(cat $files_file)" '
+jq -c --argjson files "$(cat "$files_file")" '
   .components |
   [ .[] | select(
       . as $component |

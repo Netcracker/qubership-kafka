@@ -24,7 +24,10 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 const kafkaJobName = "kafka-service"
@@ -44,10 +47,18 @@ func (rj KafkaJob) Build(ctx context.Context, opts cfg.Cfg, apiGroup string, log
 	}
 
 	kafkaOpts := ctrl.Options{
-		Scheme:                  runScheme,
-		Namespace:               opts.OperatorNamespace,
-		MetricsBindAddress:      metricsAddr,
-		Port:                    port,
+		Scheme: runScheme,
+		Cache: cache.Options{
+			DefaultNamespaces: map[string]cache.Config{
+				opts.OperatorNamespace: {},
+			},
+		},
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddr,
+		},
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Port: port,
+		}),
 		HealthProbeBindAddress:  probeAddr,
 		LeaderElection:          opts.EnableLeaderElection,
 		LeaderElectionNamespace: opts.OperatorNamespace,
