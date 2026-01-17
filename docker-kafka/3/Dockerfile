@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -70,7 +70,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="5.12.1"
+ARG KAFKACTL_VERSION="5.17.0"
 
 RUN set -x \
     && wget \
@@ -128,6 +128,27 @@ RUN set -x \
 RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
+
+RUN rm -f ${KAFKA_HOME}/libs/jose4j-0.9.4.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/jose4j-0.9.6.jar \
+       "https://repo1.maven.org/maven2/org/jose4j/jose4j/0.9.6/jose4j-0.9.6.jar" \
+    \
+    && rm -f ${KAFKA_HOME}/libs/netty-codec-4.1.119.Final.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/netty-codec-4.1.125.Final.jar \
+       "https://repo1.maven.org/maven2/io/netty/netty-codec/4.1.125.Final/netty-codec-4.1.125.Final.jar" \
+    \
+    && rm -f ${KAFKA_HOME}/libs/lz4-java-1.8.0.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/lz4-java-1.8.1.jar \
+       "https://repo1.maven.org/maven2/org/lz4/lz4-java/1.8.1/lz4-java-1.8.1.jar" \
+    \
+    && rm -f ${KAFKA_HOME}/libs/commons-lang3-3.12.0.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/commons-lang3-3.18.0.jar \
+       "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar" \
+    \
+    && rm -f ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.4.jar \
+       "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.4/nimbus-jose-jwt-9.37.4.jar" \
+
 
 # Kafka Security OAuth dependencies
 RUN set -x \
