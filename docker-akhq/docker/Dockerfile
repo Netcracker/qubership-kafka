@@ -8,7 +8,7 @@ RUN tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1
 COPY docker/build.gradle ./build.gradle
 RUN ./gradlew shadowJar --no-daemon
 
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 USER 0:0
 

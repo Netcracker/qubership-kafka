@@ -133,9 +133,7 @@ func main() {
 		Resources: resources,
 	}
 
-	configs := &kafka.DescribeConfigsResponse{}
-
-	configs, err = client.DescribeConfigs(context.Background(), request)
+	configs, err := client.DescribeConfigs(context.Background(), request)
 	if err != nil {
 		log.Fatalf("Failed to describe configs: %s", err)
 	}
