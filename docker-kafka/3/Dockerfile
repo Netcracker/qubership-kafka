@@ -140,7 +140,7 @@ RUN rm -f ${KAFKA_HOME}/libs/jose4j-0.9.4.jar \
        "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar" \
     && rm -f ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.4.jar \
-       "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.4/nimbus-jose-jwt-9.37.4.jar" \
+       "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.4/nimbus-jose-jwt-9.37.4.jar"
 
 
 # Kafka Security OAuth dependencies
