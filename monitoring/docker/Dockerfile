@@ -39,11 +39,12 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN chmod +x /docker-entrypoint.sh
 
-# Upgrade all tools to avoid vulnerabilities
-RUN set x \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories; \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories; \
-    apk upgrade --no-cache --available
+
+
+# Set the Alpine version to 3.23
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+
 
 RUN set -x \
     && apk add --update --no-cache \
@@ -57,6 +58,9 @@ RUN set -x \
          apk-tools \
          build-base \
          librdkafka-dev
+
+# Upgrade all tools to avoid vulnerabilities
+RUN set -x && apk upgrade --no-cache --available
 
 RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
 
