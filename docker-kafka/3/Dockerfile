@@ -131,20 +131,13 @@ RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
 
 RUN rm -f ${KAFKA_HOME}/libs/jose4j-0.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/jose4j-0.9.6.jar \
-       "https://repo1.maven.org/maven2/org/jose4j/jose4j/0.9.6/jose4j-0.9.6.jar" \
-    \
+       "https://repo1.maven.org/maven2/org/bitbucket/b_c/jose4j/0.9.6/jose4j-0.9.6.jar" \
     && rm -f ${KAFKA_HOME}/libs/netty-codec-4.1.119.Final.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/netty-codec-4.1.125.Final.jar \
        "https://repo1.maven.org/maven2/io/netty/netty-codec/4.1.125.Final/netty-codec-4.1.125.Final.jar" \
-    \
-    && rm -f ${KAFKA_HOME}/libs/lz4-java-1.8.0.jar \
-    && wget -nv -O ${KAFKA_HOME}/libs/lz4-java-1.8.1.jar \
-       "https://repo1.maven.org/maven2/org/lz4/lz4-java/1.8.1/lz4-java-1.8.1.jar" \
-    \
     && rm -f ${KAFKA_HOME}/libs/commons-lang3-3.12.0.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-lang3-3.18.0.jar \
        "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar" \
-    \
     && rm -f ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.4.jar \
        "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.4/nimbus-jose-jwt-9.37.4.jar" \
