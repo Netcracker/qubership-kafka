@@ -1,6 +1,6 @@
 FROM docker.io/danielqsj/kafka-exporter:v1.9.0 AS builder
 
-FROM alpine:3.20
+FROM alpine:3.23
 
 RUN apk add --no-cache bash python3 tini curl ca-certificates
 
