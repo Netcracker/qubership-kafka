@@ -20,9 +20,9 @@ RUN set -x \
 
 WORKDIR cruise-control
 
-COPY docker/config/build.gradle build.gradle
-COPY docker/config/build/build.gradle buildSrc/build.gradle
-COPY docker/config/settings.gradle settings.gradle
+#COPY docker/config/build.gradle build.gradle
+#COPY docker/config/build/build.gradle buildSrc/build.gradle
+#COPY docker/config/settings.gradle settings.gradle
 
 RUN git init
 # Compile and remove leftover directories
