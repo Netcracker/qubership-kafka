@@ -1,8 +1,14 @@
 version: 2
 updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
   # Go modules
   - package-ecosystem: "gomod"
-    directories: 
+    directories:
       - "/operator"
       - "/monitoring"
     schedule:
@@ -10,7 +16,7 @@ updates:
 
   # Python pip dependencies
   - package-ecosystem: "pip"
-    directories: 
+    directories:
       - "/backup-daemon/docker"
       - "/crd-init/docker"
       - "/integration-tests/docker"
@@ -18,16 +24,16 @@ updates:
       - "/mirror-maker-monitoring/docker/config"
     schedule:
       interval: "weekly"
-  
+
   # Java Maven dependencies
   - package-ecosystem: "maven"
     directory: "/mirror-maker/kafka-mm2-extension"
     schedule:
       interval: "weekly"
-  
+
   # Docker images
   - package-ecosystem: "docker"
-    directories: 
+    directories:
       - "/integration-tests"
       - "/crd-init"
       - "/operator"

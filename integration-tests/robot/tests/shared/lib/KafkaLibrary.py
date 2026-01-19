@@ -82,6 +82,7 @@ class KafkaLibrary(object):
             configs['max_in_flight_requests_per_connection'] = 1
             configs['request_timeout_ms'] = 90000
             configs['connections_max_idle_ms'] = 1000000
+            configs['acks'] = 'all'
             if self._kafka_username and self._kafka_password:
                 configs['sasl_mechanism'] = 'SCRAM-SHA-512'
                 configs['sasl_plain_username'] = self._kafka_username
@@ -378,9 +379,10 @@ class KafkaLibrary(object):
             return
         self.__delete_topics(admin, topics)
 
-    def __delete_topics(self, admin, topics, retries=12, delay=5):
+    def __delete_topics(self, admin, topics, retries=15, delay=10):
         for attempt in range(1, retries + 1):
             try:
+                admin = self.create_admin_client()
                 admin.delete_topics(topics)
                 logger.debug(f'Topic "{topics}" is deleted.')
                 return
@@ -394,9 +396,13 @@ class KafkaLibrary(object):
                 msg = (f'Attempt {attempt}/{retries}: cannot delete topic "{topics}" '
                        f'due to KafkaConnectionError: {e}')
                 BuiltIn().log_to_console(msg)
-                logger.warning(msg)
+                logger.warn(msg)
                 if attempt == retries:
                     self.builtin.fail(f'Failed to delete topic "{topics}": {e}')
+                try:
+                    admin.close()
+                except Exception:
+                    pass
                 time.sleep(delay)
             except Exception as e:
                 self.builtin.fail(f'Failed to delete topic "{topics}": {e}')

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -36,7 +36,7 @@ RUN set -x \
     && useradd -s /bin/bash -r -g kafka --uid=1000 kafka \
     && usermod -a -G 0 kafka
 
-ARG KAFKA_VERSION=4.1.0
+ARG KAFKA_VERSION=4.1.1
 ARG DISTRO_NAME=kafka_2.13-${KAFKA_VERSION}
 ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
@@ -68,7 +68,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="5.12.1"
+ARG KAFKACTL_VERSION="5.17.0"
 
 RUN set -x \
     && wget \
@@ -136,7 +136,7 @@ RUN set -eux \
   && wget -nv -O ${KAFKA_HOME}/libs/jakarta.activation-${ACT_VER}.jar \
        "https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation/${ACT_VER}/jakarta.activation-${ACT_VER}.jar"
 
-ARG NIMBUS_VER=9.37.3
+ARG NIMBUS_VER=9.37.4
 ARG JSON_SMART_VER=2.4.11
 ARG ACCESSORS_SMART_VER=2.4.11
 ARG JCIP_VER=1.0
@@ -156,6 +156,10 @@ RUN set -eux \
 RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
+
+RUN rm -f ${KAFKA_HOME}/libs/log4j-core-2.24.3.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/log4j-core-2.25.3.jar \
+       "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.25.3/log4j-core-2.25.3.jar"
 
 
 

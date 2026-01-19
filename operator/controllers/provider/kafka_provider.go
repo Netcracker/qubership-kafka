@@ -238,7 +238,7 @@ func (krp KafkaResourceProvider) NewKafkaPersistentVolumeClaimForCR(brokerId int
 	}
 
 	spec.AccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce}
-	spec.Resources = corev1.ResourceRequirements{
+	spec.Resources = corev1.VolumeResourceRequirements{
 		Requests: corev1.ResourceList{
 			corev1.ResourceStorage: resource.MustParse(krp.spec.Storage.Size),
 		},
@@ -298,7 +298,7 @@ func (krp KafkaResourceProvider) NewKafkaControllerPersistentVolumeClaimForCR() 
 	}
 
 	spec.AccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce}
-	spec.Resources = corev1.ResourceRequirements{
+	spec.Resources = corev1.VolumeResourceRequirements{
 		Requests: corev1.ResourceList{
 			corev1.ResourceStorage: resource.MustParse(krp.spec.MigrationController.Storage.Size),
 		},
@@ -964,7 +964,7 @@ func (krp KafkaResourceProvider) createDeploymentContainers(envs []corev1.EnvVar
 			Args:    krp.getArgs(),
 			Ports:   ports,
 			LivenessProbe: &corev1.Probe{
-				Handler: corev1.Handler{
+				ProbeHandler: corev1.ProbeHandler{
 					Exec: krp.getExecCommand(livenessCommand),
 				},
 				InitialDelaySeconds: 60,
@@ -974,7 +974,7 @@ func (krp KafkaResourceProvider) createDeploymentContainers(envs []corev1.EnvVar
 				FailureThreshold:    20,
 			},
 			ReadinessProbe: &corev1.Probe{
-				Handler: corev1.Handler{
+				ProbeHandler: corev1.ProbeHandler{
 					Exec: krp.getExecCommand(readinessCommand),
 				},
 				InitialDelaySeconds: 60,
