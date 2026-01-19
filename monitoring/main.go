@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/segmentio/kafka-go"
+	kafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
 	"github.com/segmentio/kafka-go/sasl/scram"
 )
@@ -133,9 +133,7 @@ func main() {
 		Resources: resources,
 	}
 
-	configs := &kafka.DescribeConfigsResponse{}
-
-	configs, err = client.DescribeConfigs(context.Background(), request)
+	configs, err := client.DescribeConfigs(context.Background(), request)
 	if err != nil {
 		log.Fatalf("Failed to describe configs: %s", err)
 	}
@@ -227,7 +225,10 @@ func CalcSkewNFormMetric(topics []kafka.Topic, result map[string]string) string 
 	metrics := new(bytes.Buffer)
 	for _, metricPerBroker := range result {
 		if strings.Contains(metricPerBroker, "kafka,broker=") {
-			fmt.Fprintf(metrics, "%s\n", metricPerBroker)
+			_, err := fmt.Fprintf(metrics, "%s\n", metricPerBroker)
+			if err != nil {
+				return ""
+			}
 		}
 	}
 	return metrics.String()
@@ -249,7 +250,10 @@ func CalcCleanerNReplicaThreads(metadata kafka.MetadataResponse, client kafka.Cl
 	}
 	var cleanerVal string
 	var fetchersVal string
-	response, _ := client.DescribeConfigs(context.Background(), request)
+	response, err := client.DescribeConfigs(context.Background(), request)
+	if err != nil {
+		log.Fatalf("Failed to describe configs: %s", err)
+	}
 	for _, resource := range response.Resources {
 		brokerSignature := fmt.Sprintf("%s-%s", serviceName, resource.ResourceName)
 		for _, config := range resource.ConfigEntries {

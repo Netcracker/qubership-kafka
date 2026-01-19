@@ -1,53 +1,23 @@
-FROM seglo/kafka-lag-exporter:0.8.2 as builder
+FROM docker.io/danielqsj/kafka-exporter:v1.9.0 AS builder
 
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM alpine:3.23
 
-COPY --from=builder /opt/docker/bin /opt/docker/bin
-COPY --from=builder /opt/docker/lib /opt/docker/lib
+RUN apk add --no-cache bash python3 tini curl ca-certificates
 
-ENV LAG_EXPORTER_HOME=/opt/docker
+COPY --from=builder /bin/kafka_exporter /bin/kafka_exporter
+RUN chmod +x /bin/kafka_exporter
 
-COPY docker/logback.xml /opt/docker/conf/logback.xml
+# Upgrade tools from edge to avoid vulnerabilities
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --upgrade --no-cache \
+        pcre2 curl gnutls libcurl jq
 
-USER 0
+COPY docker/config_parser.py /opt/config_parser.py
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-RUN set -x \
-    && apk add --update --no-cache \
-        bash openssl \
-    && rm -rf /var/cache/apk/*
-
-# Upgrade all tools to avoid vulnerabilities
-RUN set -x && apk upgrade --no-cache --available
-
-# Download new jars
-
-RUN wget -O /tmp/okhttp-4.9.2.jar https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.9.2/okhttp-4.9.2.jar && \
-    wget -O /tmp/okio-2.8.0.jar https://repo1.maven.org/maven2/com/squareup/okio/okio/2.8.0/okio-2.8.0.jar && \
-    wget -O /tmp/logging-interceptor-4.9.2.jar https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor/4.9.2/logging-interceptor-4.9.2.jar && \
-    wget -O /tmp/zookeeper-3.9.1.jar https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper/3.9.1/zookeeper-3.9.1.jar && \
-    wget -O /tmp/zookeeper-jute-3.9.1.jar https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper-jute/3.9.1/zookeeper-jute-3.9.1.jar && \
-    wget -O /tmp/snakeyaml-2.0.jar https://repo1.maven.org/maven2/org/yaml/snakeyaml/2.0/snakeyaml-2.0.jar
-
-
-# Replace old with new versions
-RUN rm -f /opt/docker/lib/com.squareup.okhttp3.okhttp-3.*.jar \
-    && rm -f /opt/docker/lib/com.squareup.okhttp3.logging-interceptor-3.*.jar \
-    && rm -f /opt/docker/lib/org.apache.zookeeper.zookeeper-3.*.jar \
-    && rm -f /opt/docker/lib/org.apache.zookeeper.zookeeper-jute-3.*.jar \
-    && rm -f /opt/docker/lib/org.yaml.snakeyaml-*.jar \
-    && mv /tmp/okhttp-4.9.2.jar /opt/docker/lib/ \
-    && mv /tmp/okio-2.8.0.jar /opt/docker/lib/ \
-    && mv /tmp/logging-interceptor-4.9.2.jar /opt/docker/lib/ \
-    && mv /tmp/zookeeper-3.9.1.jar /opt/docker/lib/ \
-    && mv /tmp/zookeeper-jute-3.9.1.jar /opt/docker/lib/ \
-    && mv /tmp/snakeyaml-2.0.jar /opt/docker/lib/
-
-RUN chmod -R 777 ${LAG_EXPORTER_HOME}
-
-COPY docker/entrypoint.sh /opt/docker/bin/entrypoint.sh
-
-RUN chmod +x /opt/docker/bin/entrypoint.sh && chmod +x /opt/docker/bin/kafka-lag-exporter
-
+RUN adduser -D -u 1001 appuser
 USER 1001
 
-ENTRYPOINT ["/opt/docker/bin/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

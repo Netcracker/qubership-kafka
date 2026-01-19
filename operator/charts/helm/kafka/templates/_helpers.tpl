@@ -373,9 +373,85 @@ Find a Kafka image in various places.
     {{- printf "%s" .Values.kafka.dockerImage -}}
 {{- end -}}
 
+
 {{/*
 Find a kubectl image in various places.
 */}}
 {{- define "kubectl.image" -}}
     {{- printf "%s" .Values.groupMigration.image -}}
 {{- end -}}
+
+{{- define "kafka.imageVariant" -}}
+  {{- $img := . | default "" -}}
+  {{- if or (empty $img) (not (kindIs "string" $img)) -}}
+    unknown
+  {{- else if contains "qubership-docker-kafka-4" $img -}}
+    4
+  {{- else if contains "qubership-docker-kafka-3" $img -}}
+    3
+  {{- else if and (contains "qubership-docker-kafka" $img) (not (or (contains "qubership-docker-kafka-3" $img) (contains "qubership-docker-kafka-4" $img))) -}}
+    base
+  {{- else -}}
+    unknown
+  {{- end -}}
+{{- end }}
+
+{{- define "validateKafkaUpgrade" -}}
+  {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
+  {{- $kind := "Kafka" -}}
+  {{- $name := include "kafka.name" . -}}
+  {{- $ns   := .Release.Namespace -}}
+  {{- $desired := include "kafka.image" . -}}
+  {{- $upgradeAllowed := true -}}
+
+  {{- $desiredVar := include "kafka.imageVariant" $desired -}}
+  {{- if eq $desiredVar "4" -}}
+    {{- $cr := lookup $apiVersion $kind $ns $name -}}
+    {{- if $cr -}}
+      {{- $current := (index $cr "spec" "dockerImage") | default "" -}}
+      {{- $currentVar := include "kafka.imageVariant" $current -}}
+      {{- if or (eq $currentVar "3") (eq $currentVar "base") -}}
+        {{- $depName := printf "%s-1" $name -}}
+        {{- $dep := lookup "apps/v1" "Deployment" $ns $depName -}}
+        {{- if $dep -}}
+          {{- $found := dict "ok" false -}}
+          {{- range $c := (index $dep "spec" "template" "spec" "containers") -}}
+            {{- range $e := (index $c "env" | default (list)) -}}
+              {{- $n := (index $e "name" | default "" | trim) -}}
+              {{- $v := (index $e "value" | default "" | trim | lower) -}}
+              {{- if and (eq $n "KRAFT_ENABLED") (eq $v "true") -}}
+                {{- $_ := set $found "ok" true -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+          {{- if not (index $found "ok") -}}
+            {{- $upgradeAllowed = false -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- printf "%t" $upgradeAllowed -}}
+{{- end }}
+
+{{- define "kraftMigrationCheck" -}}
+  {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
+  {{- if $pvc }}
+    {{- if and (hasKey $pvc.metadata.labels "kraft") .Values.kafka.kraft.migration }}
+      {{- printf "%t" false -}}
+    {{- else }}
+      {{- printf "%t" true -}}
+    {{- end }}
+  {{- else }}
+    {{- printf "%t" true -}}
+  {{- end }}
+{{- end }}
+
+{{- define "kraft.enabled" -}}
+  {{- $kraftEnabled := .Values.kafka.kraft.enabled -}}
+  {{- $desiredVar := include "kafka.imageVariant" (include "kafka.image" .) -}}
+  {{- if eq $desiredVar "4" -}}
+    {{- $kraftEnabled = true -}}
+  {{- end -}}
+  {{- printf "%t" $kraftEnabled -}}
+{{- end }}

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -14,6 +14,7 @@ RUN set -x \
         bash \
         shadow \
         netcat-openbsd \
+        jq \
         tini \
         rsync \
         curl \
@@ -69,7 +70,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="5.12.1"
+ARG KAFKACTL_VERSION="5.17.0"
 
 RUN set -x \
     && wget \
@@ -128,12 +129,15 @@ RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
 
-# Kafka Security OAuth dependencies
-RUN set -x \
-    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
-        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-server/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
-    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
-        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
+RUN rm -f ${KAFKA_HOME}/libs/jose4j-0.9.4.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/jose4j-0.9.6.jar \
+       "https://repo1.maven.org/maven2/org/bitbucket/b_c/jose4j/0.9.6/jose4j-0.9.6.jar" \
+    && rm -f ${KAFKA_HOME}/libs/commons-lang3-3.12.0.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/commons-lang3-3.18.0.jar \
+       "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar" \
+    && rm -f ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.4.jar \
+       "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.4/nimbus-jose-jwt-9.37.4.jar"
 
 ARG NETTY_VER=4.1.125.Final
 RUN set -eux; \
@@ -153,8 +157,15 @@ RUN set -eux; \
     curl -fL -o "${a}-${NETTY_VER}.jar" \
       "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
   done; \
-  # 2) удалить старые 4.1.119.Final
   rm -f netty-*-4.1.119.Final.jar;
+
+
+# Kafka Security OAuth dependencies
+RUN set -x \
+    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
+        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-server/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar" \
+    && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
+        "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
 # Copy config and script files
 COPY docker/config/ ${KAFKA_HOME}/config
@@ -164,7 +175,7 @@ COPY docker/get-cluster-id.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-partitions.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-consumer-group-checker.sh ${KAFKA_HOME}/bin
 COPY docker/kafka-partition-logs.sh ${KAFKA_HOME}/bin
-COPY docker/docker-entrypoint.sh /
+COPY 3/docker-entrypoint.sh /
 
 # Adapt grants
 RUN mkdir -p "${KAFKA_HOME}" \

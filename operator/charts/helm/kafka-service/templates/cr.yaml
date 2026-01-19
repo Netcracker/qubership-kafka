@@ -1,5 +1,3 @@
-{{- $minVersion := "2.0.0" }}
-{{- $maxVersion := "3.x.x" }}
 {{- if and .Values.global.externalKafka.enabled (or (not .Values.global.externalKafka.bootstrapServers) .Values.kafka.install) }}
   {{- fail "If external Kafka is used the following fields should be filled: `global.externalKafka.bootstrapServers` and installing Kafka should be disabled." }}
 {{- end }}
@@ -26,8 +24,6 @@ spec:
   global:
     waitForPodsReady: {{ .Values.global.waitForPodsReady }}
     podReadinessTimeout: {{ .Values.global.podReadinessTimeout | default 600 }}
-    kraft:
-      enabled: {{ .Values.kafka.kraft.enabled }}
   {{- with .Values.global.customLabels }}
     customLabels:
       {{- toYaml . | nindent 6 -}}
@@ -71,8 +67,6 @@ spec:
     {{- if .Values.global.externalKafka.enabled }}
     bootstrapServers: {{ template "kafka-service.bootstrapServers" . }}
     {{- end }}
-    minVersion: {{$minVersion}}
-    maxVersion: {{$maxVersion}}
     {{- if (eq (include "monitoring.type" .) "influxdb") }}
     smDbHost: {{ coalesce .Values.global.smDbHost .Values.monitoring.smDbHost }}
     smDbName: {{ coalesce .Values.global.smDbName .Values.monitoring.smDbName }}

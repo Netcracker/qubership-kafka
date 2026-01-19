@@ -165,7 +165,7 @@ func (mrp MonitoringResourceProvider) getMonitoringContainers(cmVersion string) 
 			Args:            mrp.getArgs(),
 			SecurityContext: getDefaultContainerSecurityContext(),
 			LivenessProbe: &corev1.Probe{
-				Handler: corev1.Handler{
+				ProbeHandler: corev1.ProbeHandler{
 					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
 				},
 				InitialDelaySeconds: 30,
@@ -175,7 +175,7 @@ func (mrp MonitoringResourceProvider) getMonitoringContainers(cmVersion string) 
 				FailureThreshold:    20,
 			},
 			ReadinessProbe: &corev1.Probe{
-				Handler: corev1.Handler{
+				ProbeHandler: corev1.ProbeHandler{
 					TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8096}},
 				},
 				InitialDelaySeconds: 30,
@@ -336,19 +336,6 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvironmentVariables() []core
 			Name:  "DATA_COLLECTION_INTERVAL",
 			Value: util.DefaultIfEmpty(mrp.spec.DataCollectionInterval, "10s"),
 		},
-		{
-			Name:  "MIN_VERSION",
-			Value: mrp.spec.MinVersion,
-		},
-		{
-			Name:  "MAX_VERSION",
-			Value: mrp.spec.MaxVersion,
-		},
-	}
-	if mrp.cr.Spec.Global.Kraft.Enabled {
-		envs = append(envs, []corev1.EnvVar{
-			{Name: "KRAFT_ENABLED", Value: "true"},
-		}...)
 	}
 	return envs
 }

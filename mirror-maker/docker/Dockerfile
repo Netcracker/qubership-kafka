@@ -1,4 +1,4 @@
-FROM amazoncorretto:11-alpine AS builder
+FROM amazoncorretto:17-alpine AS builder
 
 RUN apk add --no-cache maven git
 
@@ -10,7 +10,7 @@ RUN mvn dependency:go-offline
 COPY kafka-mm2-extension /build
 RUN mvn clean package
 
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -45,8 +45,8 @@ RUN set -x \
     && useradd -s /bin/bash -r -g kafka --uid=1000 kafka \
     && usermod -a -G 0 kafka
 
-ARG KAFKA_VERSION=3.9.1
-ARG DISTRO_NAME=kafka_2.12-${KAFKA_VERSION}
+ARG KAFKA_VERSION=4.1.0
+ARG DISTRO_NAME=kafka_2.13-${KAFKA_VERSION}
 ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
 RUN set -x \
@@ -139,7 +139,7 @@ RUN set -x && apk upgrade --no-cache --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2
+        pcre2 curl gnutls libcurl jq
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}

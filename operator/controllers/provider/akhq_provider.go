@@ -269,8 +269,10 @@ func (arp AkhqResourceProvider) NewAkhqDeployment(protobufConfigMapVersion strin
 							Image: arp.spec.DockerImage,
 							Ports: ports,
 							LivenessProbe: &corev1.Probe{
-								Handler: corev1.Handler{
-									TCPSocket: &corev1.TCPSocketAction{Port: intstr.IntOrString{IntVal: 8080}},
+								ProbeHandler: corev1.ProbeHandler{
+									TCPSocket: &corev1.TCPSocketAction{
+										Port: intstr.FromInt32(8080),
+									},
 								},
 								InitialDelaySeconds: 30,
 								TimeoutSeconds:      5,
@@ -279,11 +281,11 @@ func (arp AkhqResourceProvider) NewAkhqDeployment(protobufConfigMapVersion strin
 								FailureThreshold:    5,
 							},
 							ReadinessProbe: &corev1.Probe{
-								Handler: corev1.Handler{
+								ProbeHandler: corev1.ProbeHandler{
 									HTTPGet: &corev1.HTTPGetAction{
 										Path:   "/health",
-										Port:   intstr.IntOrString{IntVal: 8081},
-										Scheme: "HTTP",
+										Port:   intstr.FromInt32(8081),
+										Scheme: corev1.URISchemeHTTP,
 									},
 								},
 								InitialDelaySeconds: 40,

@@ -360,7 +360,7 @@ func (r *ReconcileBackupDaemon) processRequest(method string, url string, body i
 	if err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	responseData, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
