@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -70,7 +70,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="5.12.1"
+ARG KAFKACTL_VERSION="5.17.0"
 
 RUN set -x \
     && wget \
@@ -129,6 +129,37 @@ RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
 
+RUN rm -f ${KAFKA_HOME}/libs/jose4j-0.9.4.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/jose4j-0.9.6.jar \
+       "https://repo1.maven.org/maven2/org/bitbucket/b_c/jose4j/0.9.6/jose4j-0.9.6.jar" \
+    && rm -f ${KAFKA_HOME}/libs/commons-lang3-3.12.0.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/commons-lang3-3.18.0.jar \
+       "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar" \
+    && rm -f ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.3.jar \
+    && wget -nv -O ${KAFKA_HOME}/libs/nimbus-jose-jwt-9.37.4.jar \
+       "https://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/9.37.4/nimbus-jose-jwt-9.37.4.jar"
+
+ARG NETTY_VER=4.1.125.Final
+RUN set -eux; \
+  KAFKA_LIB=/opt/kafka/libs; \
+  cd "$KAFKA_LIB"; \
+  for a in \
+    netty-buffer \
+    netty-codec \
+    netty-common \
+    netty-handler \
+    netty-resolver \
+    netty-transport \
+    netty-transport-classes-epoll \
+    netty-transport-native-epoll \
+    netty-transport-native-unix-common \
+  ; do \
+    curl -fL -o "${a}-${NETTY_VER}.jar" \
+      "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
+  done; \
+  rm -f netty-*-4.1.119.Final.jar;
+
+
 # Kafka Security OAuth dependencies
 RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-server-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
@@ -169,7 +200,7 @@ RUN set -x && apk upgrade --no-cache --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2
+        pcre2 curl gnutls libcurl jq
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}

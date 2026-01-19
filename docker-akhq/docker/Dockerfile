@@ -8,7 +8,7 @@ RUN tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1
 COPY docker/build.gradle ./build.gradle
 RUN ./gradlew shadowJar --no-daemon
 
-FROM eclipse-temurin:21-jdk-alpine-3.22
+FROM eclipse-temurin:21-jdk-alpine-3.23
 
 USER 0:0
 
@@ -48,7 +48,7 @@ RUN set -x && apk upgrade --no-cache --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2
+        pcre2 curl gnutls libcurl jq
 
 USER 1000:0
 WORKDIR ${AKHQ_HOME}

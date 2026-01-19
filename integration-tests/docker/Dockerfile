@@ -5,6 +5,9 @@ ENV ROBOT_OUTPUT=${ROBOT_HOME}/output \
     SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/kafka_pods_checker.py \
     SERVICE_CHECKER_SCRIPT_TIMEOUT=500
 
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+
 RUN mkdir -p ${ROBOT_HOME} \
     && mkdir -p ${ROBOT_OUTPUT}
 
