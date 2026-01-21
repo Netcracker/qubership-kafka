@@ -30,41 +30,41 @@ repositories {
 }
 
 
-dependencies {
-    implementation platform("io.netty:netty-bom:4.1.129.Final")
-    implementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
-}
-
 configurations.all {
-
     exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
     exclude group: 'org.slf4j', module: 'slf4j-reload4j'
 
     resolutionStrategy {
-        failOnVersionConflict()
+        force("org.apache.kafka:kafka-clients:" + kafkaVersion)
+        force("org.apache.kafka:kafka-streams:" + kafkaVersion)
+        force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
+        force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
+        force("com.google.protobuf:protobuf-java:3.25.2")
+        force("com.fasterxml.jackson:jackson-bom:" + jacksonVersion)
+        force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
+        force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
+        force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
+        force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
+        force 'сommons-beanutils:commons-beanutils:1.11.0'
+        force 'org.bitbucket.b_c:jose4j:0.9.6'
+        force 'com.nimbusds:nimbus-jose-jwt:9.37.4'
+        force 'io.vertx:vertx-core:4.5.24'
 
-        force(
-            "org.apache.kafka:kafka-clients:$kafkaVersion",
-            "org.apache.kafka:kafka-streams:$kafkaVersion",
-            "org.apache.kafka:kafka-server-common:$kafkaVersion",
-            "org.apache.kafka:kafka_$kafkaScalaVersion:$kafkaVersion",
+        // --- Netty ---
+        force 'io.netty:netty-codec:4.1.129.Final'
+        force 'io.netty:netty-codec-http:4.1.129.Final'
+        force 'io.netty:netty-codec-http2:4.1.129.Final'
 
-            "com.google.protobuf:protobuf-java:3.25.2",
+        // --- Vert.x ---
+        force 'io.vertx:vertx-core:4.4.8'
 
-            "org.bitbucket.b_c:jose4j:0.9.6",
-            "com.nimbusds:nimbus-jose-jwt:9.37.4",
-
-            "io.vertx:vertx-core:4.5.24",
-
-            "commons-beanutils:commons-beanutils:1.11.0",
-            "org.apache.commons:commons-lang3:3.18.0",
-
-            "org.apache.logging.log4j:log4j-api:2.23.1",
-            "org.apache.logging.log4j:log4j-core:2.23.1"
-        )
+        // --- Commons ---
+        force 'org.apache.commons:commons-lang3:3.18.0'
     }
 }
-
 
 /**********************************************************************************************************************\
  * IntelliJ IDEA
