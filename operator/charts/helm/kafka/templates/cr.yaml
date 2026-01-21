@@ -190,9 +190,11 @@ spec:
     {{- end }}
     {{- else }}
     migration: false
+    migrationTimeout: {{ .Values.kafka.kraft.migrationTimeout }}
     {{- end }}
     {{- else }}
     migration: false
+    migrationTimeout: {{ .Values.kafka.kraft.migrationTimeout }}
     {{- end }}
   {{- if .Values.kafka.migrationController }}
   migrationController:
