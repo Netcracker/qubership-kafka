@@ -4,311 +4,548 @@
 import com.linkedin.gradle.build.DistributeTask
 
 plugins {
-    id "com.jfrog.artifactory"
-    id "idea"
-    id "jacoco" // Java Code Coverage plugin
-    id "checkstyle"
+  id "com.jfrog.artifactory"
+  id "idea"
+  id "jacoco" // Java Code Coverage plugin
+  id "com.github.ben-manes.versions" version "0.42.0"
+  id "com.github.spotbugs" version "6.0.25" apply false
+  id "checkstyle"
+  id "org.openapi.generator" version "5.3.0"
 }
 
 group = 'com.linkedin.cruisecontrol'
 
 project.ext {
-    buildVersionFileName = "cruise-control-version.properties"
-    commitId = project.hasProperty('commitId') ? commitId : null
-    scalaBinaryVersion = getScalaBinaryVersion(scalaVersion)
+  pomConfig = {
+    url "https://github.com/linkedin/cruise-control"
+    licenses {
+      license {
+        name "BSD 2-CLAUSE LICENSE"
+        url "https://opensource.org/licenses/BSD-2-Clause"
+      }
+    }
+    developers {
+      developer {
+        name "Adem Efe Gencer"
+        email "efegencer@gmail.com"
+      }
+      developer {
+        name "Jiangjie (Becket) Qin"
+        email "becket.qin@gmail.com"
+      }
+      developer {
+        name "Sir Joel Koshy"
+        email "jjkoshy@yahoo.com"
+      }
+    }
+    scm {
+      url "https://github.com/linkedin/cruise-control"
+    }
+  }
+  buildVersionFileName = "cruise-control-version.properties"
+  commitId = project.hasProperty('commitId') ? commitId : null
+  scalaBinaryVersion = getScalaBinaryVersion(scalaVersion)
+
+  defaultTestJvmArgs = []
+  // "JEP 403: Strongly Encapsulate JDK Internals" causes some tests to fail when they try
+  // to access internals (often via mocking libraries). We use `--add-opens` as a workaround
+  if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16))
+    defaultTestJvmArgs.addAll(
+        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.time=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED"
+    )
 }
 
 allprojects {
 
-    repositories {
-        mavenCentral()
+  repositories {
+    mavenCentral()
+  }
+
+  apply plugin: 'com.github.ben-manes.versions'
+
+  dependencyUpdates {
+    revision="release"
+    resolutionStrategy {
+      componentSelection { rules ->
+        rules.all { ComponentSelection selection ->
+          boolean rejected = ['snap', 'alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
+            selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+          }
+          if (rejected) {
+            selection.reject('Release candidate')
+          }
+        }
+      }
+       // --- Commons ---
+       force 'org.apache.commons:commons-lang3:3.18.0'
+       force 'commons-io:commons-io:2.14.0'
     }
+  }
 }
 
 subprojects {
-    group = rootProject.group
-    version = rootProject.version
+  group = rootProject.group
+  version = rootProject.version
 
-    apply plugin: 'java'
-    apply plugin: 'java-library'
-    apply plugin: 'checkstyle'
-    apply plugin: 'maven-publish'
-    apply plugin: 'jacoco'
+  apply plugin: 'java'
+  apply plugin: 'java-library'
+  apply plugin: 'checkstyle'
+  apply plugin: 'maven-publish'
+  apply plugin: "com.github.spotbugs"
+  apply plugin: 'jacoco'
 
-    // This project requires Java 11
-    sourceCompatibility = JavaVersion.VERSION_11
+  // This project requires Java 17
+  sourceCompatibility = JavaVersion.VERSION_17
 
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        archiveClassifier.set("sources")
-        from sourceSets.main.allSource
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set("sources")
+    from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set("javadoc")
+    from javadoc.destinationDir
+  }
+
+  //code quality and inspections
+  checkstyle {
+    toolVersion = '10.0'
+    ignoreFailures = false
+    configDirectory = file("$rootDir/checkstyle")
+  }
+
+  spotbugs {
+    toolVersion = '4.8.6'
+    excludeFilter = file("$rootDir/gradle/findbugs-exclude.xml")
+    ignoreFailures = false
+    jvmArgs = [ '-Xms512m' ]
+    maxHeapSize = '768m'
+    showProgress = true
+  }
+  spotbugsMain {
+    reports {
+      xml.enabled = (project.hasProperty('xmlFindBugsReport'))
+      html.enabled = (!project.hasProperty('xmlFindBugsReport'))
     }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        archiveClassifier.set("javadoc")
-        from javadoc.destinationDir
+  }
+  spotbugsTest {
+    reports {
+      xml.enabled = (project.hasProperty('xmlFindBugsReport'))
+      html.enabled = (!project.hasProperty('xmlFindBugsReport'))
     }
+  }
+  // aggregated task for checkstyle and spotbugs static analyzers
+  task('analyze') {
+    dependsOn('checkstyleMain', 'checkstyleTest', 'spotbugsMain', 'spotbugsTest')
+    doLast {}
+  }
 
-    jar {
-        from "$rootDir/LICENSE"
-        from "$rootDir/NOTICE"
+  test.dependsOn('checkstyleMain', 'checkstyleTest', 'spotbugsMain', 'spotbugsTest')
+
+  jar {
+    from "$rootDir/LICENSE"
+    from "$rootDir/NOTICE"
+  }
+
+  test {
+    jvmArgs += defaultTestJvmArgs
+
+    useJUnit {}
+    testLogging {
+      events "passed", "failed", "skipped"
+      exceptionFormat = 'full'
     }
+    if (!project.hasProperty("maxParallelForks")) {
+      maxParallelForks = Runtime.runtime.availableProcessors()
+    }
+    finalizedBy jacocoTestReport
+  }
 
+  jacocoTestReport {
+    reports {
+      xml.required = false
+      csv.required = false
+      html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+  }
 }
 
 project(':cruise-control-core') {
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.artifactory'
+  apply plugin: 'maven-publish'
+  apply plugin: 'com.jfrog.artifactory'
 
-    dependencies {
-        configurations.all {
-            exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-            exclude group: 'log4j', module: 'log4j'
+  configurations {
+    testOutput
+  }
+
+  dependencies {
+    configurations.all {
+      exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+      exclude group: 'log4j', module: 'log4j'
+      exclude group: 'ch.qos.logback'
+    }
+    implementation "org.slf4j:slf4j-api:1.7.36"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2"
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+    api "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+
+    api "io.vertx:vertx-core:${vertxVersion}"
+    api "io.vertx:vertx-web:${vertxVersion}"
+
+    testImplementation 'junit:junit:4.13.2'
+
+    testOutput sourceSets.test.output
+  }
+
+  publishing {
+    publications {
+      java(MavenPublication) {
+        from components.java
+        artifact sourcesJar
+        artifact javadocJar
+        pom.withXml {
+          def root = asNode()
+          root.appendNode('name', 'cruise-control-core')
+          root.appendNode('description', 'cruise control core related')
+          root.children().last() + rootProject.ext.pomConfig
         }
-        implementation "org.slf4j:slf4j-api:1.7.36"
-        implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2"
-        implementation 'org.apache.commons:commons-math3:3.6.1'
-        api "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
-        implementation 'com.google.code.findbugs:jsr305:3.0.2'
+      }
+    }
+  }
 
-        api "io.vertx:vertx-core:${vertxVersion}"
-        api "io.vertx:vertx-web:${vertxVersion}"
+  artifactoryPublish.dependsOn assemble
+  artifactoryPublish.dependsOn publishToMavenLocal
 
+  sourceSets {
+    main {
+      java {
+        srcDirs = ['src/main/java']
+      }
+    }
+    test {
+      java {
+        srcDirs = ['src/test/java']
+      }
     }
 
-    publishing {
-        publications {
-            java(MavenPublication) {
-                from components.java
-                artifact sourcesJar
-                artifact javadocJar
-                pom.withXml {
-                    def root = asNode()
-                    root.appendNode('name', 'cruise-control-core')
-                    root.appendNode('description', 'cruise control core related')
-                    root.children().last() + rootProject.ext.pomConfig
-                }
-            }
-        }
-    }
-
-    artifactoryPublish.dependsOn assemble
-    artifactoryPublish.dependsOn publishToMavenLocal
-
-    sourceSets {
-        main {
-            java {
-                srcDirs = ['src/main/java']
-            }
-        }
-
-    }
+  }
 
 }
 
 project(':cruise-control') {
-    apply plugin: 'scala'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.artifactory'
+  apply plugin: 'scala'
+  apply plugin: 'maven-publish'
+  apply plugin: 'com.jfrog.artifactory'
 
-    //needed because our java classes depend on scala classes, so must be compiled by scala
-    sourceSets {
-        main {
-            java {
-                srcDirs = []
-            }
+  //needed because our java classes depend on scala classes, so must be compiled by scala
+  sourceSets {
+    main {
+      java {
+        srcDirs = []
+      }
 
-            scala {
-                srcDirs = ['src/main/java', 'src/main/scala']
-            }
-        }
+      scala {
+        srcDirs = ['src/main/java', 'src/main/scala']
+      }
     }
 
-    dependencies {
-        configurations.all {
-            exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-            exclude group: 'log4j', module: 'log4j'
-        }
-
-        api project(':cruise-control-metrics-reporter')
-        api project(':cruise-control-core')
-        implementation "org.slf4j:slf4j-api:1.7.36"
-        implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2"
-        implementation "org.apache.zookeeper:zookeeper:${zookeeperVersion}"
-        implementation "io.netty:netty-handler:${nettyVersion}"
-        implementation "io.netty:netty-transport-native-epoll:${nettyVersion}"
-        api "org.apache.kafka:kafka_$scalaBinaryVersion:$kafkaVersion"
-        api "org.apache.kafka:kafka-clients:$kafkaVersion"
-        // Add following dependency when upgrading to Kafka 3.5
-        api "org.apache.kafka:kafka-storage:$kafkaVersion"
-        implementation "org.scala-lang:scala-library:$scalaVersion"
-        implementation 'org.apache.commons:commons-math3:3.6.1'
-        implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-        implementation 'commons-codec:commons-codec:1.15'
-        implementation 'com.google.code.gson:gson:2.9.0'
-        implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
-        implementation 'io.dropwizard.metrics:metrics-jmx:4.2.9'
-        implementation 'com.nimbusds:nimbus-jose-jwt:9.24'
-        implementation 'io.swagger.parser.v3:swagger-parser-v3:2.1.16'
-        implementation 'io.github.classgraph:classgraph:4.8.141'
-        implementation 'com.google.code.findbugs:jsr305:3.0.2'
-        // Temporary pin for vulnerability
-        implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-        api "io.vertx:vertx-web-openapi:${vertxVersion}"
-        api "io.vertx:vertx-core:${vertxVersion}"
-        api "io.vertx:vertx-web:${vertxVersion}"
-        api "io.vertx:vertx-junit5:${vertxVersion}"
-        api 'io.swagger.core.v3:swagger-annotations:2.0.2'
-        api 'io.swagger.core.v3:swagger-core:2.0.2'
-        api 'com.google.guava:guava:32.1.3-jre'
-        api 'org.json:json:20231013'
-        api 'org.xerial.snappy:snappy-java:1.1.10.4'
+    test {
+      java {
+        srcDirs = []
+      }
+      scala {
+        srcDirs = ['src/test/java', 'src/test/scala']
+      }
     }
 
-    publishing {
-        publications {
-            java(MavenPublication) {
-                from components.java
-                artifact sourcesJar
-                artifact javadocJar
-                pom.withXml {
-                    def root = asNode()
-                    root.appendNode('name', 'cruise-control')
-                    root.appendNode('description', 'cruise control related')
-                    root.children().last() + rootProject.ext.pomConfig
-                }
-            }
-        }
+    integrationTest {
+      java {
+        srcDirs = ["src/integrationTest/java"]
+      }
+      resources {
+        srcDirs = ['src/integrationTest/resources']
+      }
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
     }
 
-    artifactoryPublish.dependsOn assemble
-    artifactoryPublish.dependsOn publishToMavenLocal
+  }
 
-    tasks.create(name: "copyDependantLibs", type: Copy) {
-        from (configurations.testRuntimeClasspath) {
-            include('log4j-slf4j-impl*')
-        }
-        from (configurations.runtimeClasspath) {
+  configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntime
+   }
 
-        }
-        into "$buildDir/dependant-libs"
-        duplicatesStrategy 'exclude'
+  dependencies {
+    configurations.all {
+      exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+      exclude group: 'log4j', module: 'log4j'
+      exclude group: 'ch.qos.logback'
     }
 
-    tasks.create(name: "buildFatJar", type: Jar, dependsOn: ["createVersionFile", ":cruise-control-metrics-reporter:jar", ":cruise-control-core:jar"]) {
-        archiveBaseName = project.name + '-all'
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-        manifest {
-            attributes("Multi-Release": true)
-        }
-        with jar
+    api project(':cruise-control-metrics-reporter')
+    api project(':cruise-control-core')
+    implementation "org.slf4j:slf4j-api:1.7.36"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2"
+    implementation "io.netty:netty-handler:${nettyVersion}"
+    implementation "io.netty:netty-transport-native-epoll:${nettyVersion}"
+    api "org.apache.kafka:kafka_$scalaBinaryVersion:$kafkaVersion"
+    api "org.apache.kafka:kafka-server:$kafkaVersion"
+    api "org.apache.kafka:kafka-server-common:$kafkaVersion"
+    api "org.apache.kafka:kafka-clients:$kafkaVersion"
+    // Add following dependency when upgrading to Kafka 3.5
+    api "org.apache.kafka:kafka-storage:$kafkaVersion"
+    implementation "org.scala-lang:scala-library:$scalaVersion"
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'commons-codec:commons-codec:1.15'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
+    implementation 'io.dropwizard.metrics:metrics-jmx:4.2.9'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
+    implementation 'io.swagger.parser.v3:swagger-parser-v3:2.1.16'
+    implementation 'io.github.classgraph:classgraph:4.8.141'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    // Temporary pin for vulnerability
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    api "io.vertx:vertx-web-openapi:${vertxVersion}"
+    api "io.vertx:vertx-core:${vertxVersion}"
+    api "io.vertx:vertx-web:${vertxVersion}"
+    api "io.vertx:vertx-junit5:${vertxVersion}"
+    api 'io.swagger.core.v3:swagger-annotations:2.0.2'
+    api 'io.swagger.core.v3:swagger-core:2.0.2'
+    api 'com.google.guava:guava:32.1.3-jre'
+    api 'org.json:json:20231013'
+    api 'org.xerial.snappy:snappy-java:1.1.10.5'
+
+    constraints {
+      implementation("commons-beanutils:commons-beanutils:1.11.0") {
+        because("version 1.9.4 pulled from kafa 3.9.1 has CVE-2025-48734 in it, which is fixed in 1.11.0")
+      }
     }
 
-    compileScala.finalizedBy(tasks.copyDependantLibs)
+    testImplementation project(path: ':cruise-control-metrics-reporter', configuration: 'testOutput')
+    testImplementation project(path: ':cruise-control-core', configuration: 'testOutput')
+    testImplementation "org.scala-lang:scala-library:$scalaVersion"
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.easymock:easymock:5.5.0'
+    testImplementation "org.apache.kafka:kafka_$scalaBinaryVersion:$kafkaVersion:test"
+    testImplementation "org.apache.kafka:kafka-clients:$kafkaVersion:test"
+    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.13:tests'
+    testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
+    testImplementation 'org.apache.kerby:kerb-simplekdc:2.1.0'
+    testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
+    testImplementation 'org.powermock:powermock-module-junit4:2.0.9'
+    testImplementation 'org.powermock:powermock-api-easymock:2.0.9'
+  }
 
-    task determineCommitId {
-        def takeFromHash = 40
-        if (commitId) {
-            commitId = commitId.take(takeFromHash)
-        } else if (file("$rootDir/.git/HEAD").exists()) {
-            def headRef = file("$rootDir/.git/HEAD").text
-            if (headRef.contains('ref: ')) {
-                headRef = headRef.replaceAll('ref: ', '').trim()
-                if (file("$rootDir/.git/$headRef").exists()) {
-                    commitId = file("$rootDir/.git/$headRef").text.trim().take(takeFromHash)
-                }
-            } else {
-                commitId = headRef.trim().take(takeFromHash)
-            }
-        } else {
-            commitId = "unknown"
+  publishing {
+    publications {
+      java(MavenPublication) {
+        from components.java
+        artifact sourcesJar
+        artifact javadocJar
+        pom.withXml {
+          def root = asNode()
+          root.appendNode('name', 'cruise-control')
+          root.appendNode('description', 'cruise control related')
+          root.children().last() + rootProject.ext.pomConfig
         }
+      }
     }
+  }
 
-    // Referenced similar method for getting software version in Kafka code.
-    task createVersionFile(dependsOn: determineCommitId) {
-        ext.receiptFile = file("$buildDir/cruise-control/$buildVersionFileName")
-        outputs.file receiptFile
-        outputs.upToDateWhen { false }
-        doLast {
-            def data = [
-                    commitId: commitId,
-                    version: version,
-            ]
+  artifactoryPublish.dependsOn assemble
+  artifactoryPublish.dependsOn publishToMavenLocal
 
-            receiptFile.parentFile.mkdirs()
-            def content = data.entrySet().collect { "$it.key=$it.value" }.sort().join("\n")
-            receiptFile.setText(content, "ISO-8859-1")
+  tasks.create(name: "copyDependantLibs", type: Copy) {
+    from (configurations.testRuntimeClasspath) {
+      include('log4j-slf4j-impl*')
+    }
+    from (configurations.runtimeClasspath) {
+
+    }
+    into "$buildDir/dependant-libs"
+    duplicatesStrategy 'exclude'
+  }
+
+  tasks.create(name: "buildFatJar", type: Jar, dependsOn: ["createVersionFile", ":cruise-control-metrics-reporter:jar", ":cruise-control-core:jar"]) {
+    archiveBaseName = project.name + '-all'
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest {
+      attributes("Multi-Release": true)
+    }
+    with jar
+  }
+
+  compileScala.finalizedBy(tasks.copyDependantLibs)
+
+  task determineCommitId {
+    def takeFromHash = 40
+    if (commitId) {
+      commitId = commitId.take(takeFromHash)
+    } else if (file("$rootDir/.git/HEAD").exists()) {
+      def headRef = file("$rootDir/.git/HEAD").text
+      if (headRef.contains('ref: ')) {
+        headRef = headRef.replaceAll('ref: ', '').trim()
+        if (file("$rootDir/.git/$headRef").exists()) {
+          commitId = file("$rootDir/.git/$headRef").text.trim().take(takeFromHash)
         }
+      } else {
+        commitId = headRef.trim().take(takeFromHash)
+      }
+    } else {
+      commitId = "unknown"
     }
+  }
 
-    jar {
-        dependsOn createVersionFile
-        from("$buildDir") {
-            include "cruise-control/$buildVersionFileName"
-        }
+  // Referenced similar method for getting software version in Kafka code.
+  task createVersionFile(dependsOn: determineCommitId) {
+    ext.receiptFile = file("$buildDir/cruise-control/$buildVersionFileName")
+    outputs.file receiptFile
+    outputs.upToDateWhen { false }
+    doLast {
+      def data = [
+          commitId: commitId,
+          version: version,
+      ]
+
+      receiptFile.parentFile.mkdirs()
+      def content = data.entrySet().collect { "$it.key=$it.value" }.sort().join("\n")
+      receiptFile.setText(content, "ISO-8859-1")
     }
+  }
+
+  task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    testLogging {
+      events "passed", "failed", "skipped"
+      exceptionFormat = 'full'
+    }
+  }
+
+  compileIntegrationTestJava.dependsOn copyDependantLibs
+
+  jar {
+    dependsOn createVersionFile
+    from("$buildDir") {
+      include "cruise-control/$buildVersionFileName"
+    }
+  }
+
+  task generateOpenApiJson(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    inputSpec = "$rootDir/cruise-control/src/main/resources/yaml/base.yaml"
+    generatorName = "openapi"
+    outputDir = "$rootDir/cruise-control/src/main/resources/webroot"
+  }
+
+  processResources.dependsOn generateOpenApiJson
+  compileJava.dependsOn generateOpenApiJson
 }
 
 project(':cruise-control-metrics-reporter') {
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.artifactory'
+  apply plugin: 'maven-publish'
+  apply plugin: 'com.jfrog.artifactory'
 
-    dependencies {
-        configurations.all {
-            exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-            exclude group: 'log4j', module: 'log4j'
-        }
+  configurations {
+    testOutput
+  }
 
-        implementation "org.slf4j:slf4j-api:1.7.36"
-        implementation "com.yammer.metrics:metrics-core:2.2.0"
-        implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2"
-        implementation "org.apache.kafka:kafka_$scalaBinaryVersion:$kafkaVersion"
-        implementation "org.apache.kafka:kafka-clients:$kafkaVersion"
-        implementation 'com.google.code.findbugs:jsr305:3.0.2'
-        // Temporary pin for vulnerability
-        implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+  dependencies {
+    configurations.all {
+      exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+      exclude group: 'log4j', module: 'log4j'
+      exclude group: 'ch.qos.logback'
     }
 
-    publishing {
-        publications {
-            java(MavenPublication) {
-                from components.java
-                artifact sourcesJar
-                artifact javadocJar
-                pom.withXml {
-                    def root = asNode()
-                    root.appendNode('name', 'cruise-control-metrics-reporter')
-                    root.appendNode('description', 'cruise control metrics reporter related')
-                    root.children().last() + rootProject.ext.pomConfig
-                }
-            }
-        }
-    }
+    implementation "org.slf4j:slf4j-api:1.7.36"
+    implementation "com.yammer.metrics:metrics-core:2.2.0"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2"
+    implementation "org.apache.kafka:kafka_$scalaBinaryVersion:$kafkaVersion"
+    implementation "org.apache.kafka:kafka-server:$kafkaVersion"
+    implementation "org.apache.kafka:kafka-clients:$kafkaVersion"
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    // Temporary pin for vulnerability
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
-    artifactoryPublish.dependsOn assemble
-    artifactoryPublish.dependsOn publishToMavenLocal
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
+    testImplementation 'org.powermock:powermock-module-junit4:2.0.9'
+    testImplementation 'org.powermock:powermock-api-easymock:2.0.9'
+    testImplementation "org.apache.kafka:kafka-clients:$kafkaVersion:test"
+    testImplementation "org.apache.kafka:kafka-server-common:$kafkaVersion"
+    testImplementation "org.apache.kafka:kafka-group-coordinator:$kafkaVersion"
+    testImplementation "org.apache.kafka:kafka-metadata:$kafkaVersion"
+    testImplementation "org.apache.kafka:kafka-raft:$kafkaVersion"
+    testImplementation "org.apache.kafka:kafka-storage:$kafkaVersion"
+    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation "org.testcontainers:kafka:1.21.3"
+    testOutput sourceSets.test.output
+  }
+
+  publishing {
+    publications {
+      java(MavenPublication) {
+        from components.java
+        artifact sourcesJar
+        artifact javadocJar
+        pom.withXml {
+          def root = asNode()
+          root.appendNode('name', 'cruise-control-metrics-reporter')
+          root.appendNode('description', 'cruise control metrics reporter related')
+          root.children().last() + rootProject.ext.pomConfig
+        }
+      }
+    }
+  }
+
+  artifactoryPublish.dependsOn assemble
+  artifactoryPublish.dependsOn publishToMavenLocal
 
 }
 
 artifactoryPublish.skip = true
+artifactory {
+  contextUrl = 'https://linkedin.jfrog.io/linkedin'
+  publish {
+    repoKey = 'cruise-control'
+    username = System.getenv('ARTIFACTORY_USER')
+    password = System.getenv('ARTIFACTORY_KEY')
+
+    defaults {
+      publications ('java')
+      publishBuildInfo = true
+      publishArtifacts = true
+      publishPom = true
+      publishIvy = true
+    }
+  }
+  clientConfig.setIncludeEnvVars(false)
+}
 
 task distributeBuild(type: DistributeTask) {
-    dependsOn ':artifactoryPublish', ':cruise-control:artifactoryPublish', ':cruise-control-core:artifactoryPublish', ':cruise-control-metrics-reporter:artifactoryPublish'
+  dependsOn ':artifactoryPublish', ':cruise-control:artifactoryPublish', ':cruise-control-core:artifactoryPublish', ':cruise-control-metrics-reporter:artifactoryPublish'
 }
 
 task buildApiWiki(type: Exec) {
-    workingDir '.'
-    commandLine './build_api_wiki.sh'
+  workingDir '.'
+  commandLine './build_api_wiki.sh'
 }
 
 static def getScalaBinaryVersion(versionStr) {
-    String[] versionList = versionStr.split("\\.")
-    return versionList[0] + "." + versionList[1]
+  String[] versionList = versionStr.split("\\.")
+  return versionList[0] + "." + versionList[1]
 }
 
 //wrapper generation task
 wrapper {
-    gradleVersion = '7.4'
-    distributionType = Wrapper.DistributionType.ALL
+  gradleVersion = '8.5'
+  distributionType = Wrapper.DistributionType.ALL
 }

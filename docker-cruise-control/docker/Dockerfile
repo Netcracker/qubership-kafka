@@ -20,9 +20,9 @@ RUN set -x \
 
 WORKDIR cruise-control
 
-#COPY docker/config/build.gradle build.gradle
-#COPY docker/config/build/build.gradle buildSrc/build.gradle
-#COPY docker/config/settings.gradle settings.gradle
+COPY docker/config/build.gradle build.gradle
+COPY docker/config/build/build.gradle buildSrc/build.gradle
+COPY docker/config/settings.gradle settings.gradle
 
 RUN git init
 # Compile and remove leftover directories
@@ -83,7 +83,7 @@ RUN set -x \
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq
+        pcre2 curl gnutls libcurl jq gnupg
 
 EXPOSE 9090
 USER 1001
