@@ -136,6 +136,7 @@ kafka:
     enabled: false
     maxUnavailable: 0
   dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:main
+  kafka3dockerImage: ghcr.io/netcracker/qubership-docker-kafka-3:main
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
