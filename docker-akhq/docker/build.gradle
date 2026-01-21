@@ -30,40 +30,45 @@ repositories {
 }
 
 
-dependencies {
-    implementation platform("io.netty:netty-bom:4.1.129.Final")
-    implementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
-}
-
 configurations.all {
 
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-    exclude group: 'org.slf4j', module: 'slf4j-reload4j'
-
     resolutionStrategy {
-        failOnVersionConflict()
+        eachDependency { details ->
 
-        force(
-            "org.apache.kafka:kafka-clients:$kafkaVersion",
-            "org.apache.kafka:kafka-streams:$kafkaVersion",
-            "org.apache.kafka:kafka-server-common:$kafkaVersion",
-            "org.apache.kafka:kafka_$kafkaScalaVersion:$kafkaVersion",
+            // Vert.x
+            if (details.requested.group == "io.vertx"
+                    && details.requested.name == "vertx-core") {
+                details.useVersion("4.5.24")
+                details.because("Fix CVE")
+            }
 
-            "com.google.protobuf:protobuf-java:3.25.2",
+            // jose4j
+            if (details.requested.group == "org.bitbucket.b_c"
+                    && details.requested.name == "jose4j") {
+                details.useVersion("0.9.6")
+                details.because("Fix CVE")
+            }
 
-            "org.bitbucket.b_c:jose4j:0.9.6",
-            "com.nimbusds:nimbus-jose-jwt:9.37.4",
+            // Netty
+            if (details.requested.group == "io.netty"
+                    && details.requested.name in [
+                        "netty-codec",
+                        "netty-codec-http"
+                    ]) {
+                details.useVersion("4.1.125.Final")
+                details.because("Fix CVE")
+            }
 
-            "io.vertx:vertx-core:4.5.24",
-
-            "commons-beanutils:commons-beanutils:1.11.0",
-            "org.apache.commons:commons-lang3:3.18.0",
-
-            "org.apache.logging.log4j:log4j-api:2.23.1",
-            "org.apache.logging.log4j:log4j-core:2.23.1"
-        )
+            // Commons IO
+            if (details.requested.group == "commons-io"
+                    && details.requested.name == "commons-io") {
+                details.useVersion("2.14.0")
+                details.because("Fix CVE")
+            }
+        }
     }
 }
+
 
 
 /**********************************************************************************************************************\
