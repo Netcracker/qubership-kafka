@@ -12,7 +12,8 @@ args=()
 args=("${flags[@]}")
 
 normalize_mechanism() {
-  local mech=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  local mech
+  mech=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   case "$mech" in
     scram-sha-512) echo "scram-sha512" ;;
     scram-sha-256) echo "scram-sha256" ;;
