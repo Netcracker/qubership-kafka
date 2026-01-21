@@ -25,7 +25,6 @@ if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
   [[ -f /tls/ca.crt ]] && args+=("--tls.ca-file=/tls/ca.crt")
   [[ -f /tls/tls.crt ]] && args+=("--tls.cert-file=/tls/tls.crt")
   [[ -f /tls/tls.key ]] && args+=("--tls.key-file=/tls/tls.key")
-  [[ -n "${TLS_SERVER_NAME}" ]] && args+=("--tls.server-name=${TLS_SERVER_NAME}")
 fi
 
 if [[ -n "${KAFKA_USER}" && -n "${KAFKA_PASSWORD}" ]]; then
