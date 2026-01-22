@@ -750,7 +750,7 @@ case $1 in
       fi
     done
     if [[ "$KRAFT_ENABLED" == "true" ]]; then
-      ${KAFKA_HOME}/bin/kafka-storage.sh format -t "${KRAFT_CLUSTER_ID}" -c "${KAFKA_HOME}/config/server.properties" ${KAFKA_CREDENTIALS}
+      ${KAFKA_HOME}/bin/kafka-storage.sh format -t="${KRAFT_CLUSTER_ID}" -c "${KAFKA_HOME}/config/server.properties" ${KAFKA_CREDENTIALS}
     fi
     exec ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties
     ;;
