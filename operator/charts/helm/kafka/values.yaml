@@ -11,6 +11,8 @@ global:
 
   tls:
     enabled: false
+  #  To be set if tls enabled
+  #  serverName: kafka.kafka-broker
     cipherSuites: []
     allowNonencryptedAccess: true
     generateCerts:

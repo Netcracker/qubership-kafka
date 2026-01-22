@@ -40,6 +40,7 @@ type Kraft struct {
 type KafkaSsl struct {
 	Enabled    bool   `json:"enabled"`
 	SecretName string `json:"secretName,omitempty"`
+	ServerName string `json:"serverName,omitempty"`
 }
 
 // DisasterRecovery shows Disaster Recovery configuration

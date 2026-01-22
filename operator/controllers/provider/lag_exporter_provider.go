@@ -56,7 +56,7 @@ func (lep LagExporterResourceProvider) getPorts() []corev1.ContainerPort {
 
 func (lep LagExporterResourceProvider) getEnvs(cmVersion string) []corev1.EnvVar {
 	kafkaSecretName := fmt.Sprintf("%s-services-secret", lep.cr.Name)
-	return []corev1.EnvVar{
+	envs := []corev1.EnvVar{
 		{
 			Name:      "KAFKA_USER",
 			ValueFrom: getSecretEnvVarSource(kafkaSecretName, "client-username"),
@@ -74,6 +74,16 @@ func (lep LagExporterResourceProvider) getEnvs(cmVersion string) []corev1.EnvVar
 			Value: strconv.FormatBool(lep.cr.Spec.Global.KafkaSsl.Enabled),
 		},
 	}
+
+	if lep.cr.Spec.Global.KafkaSsl.Enabled &&
+		lep.cr.Spec.Global.KafkaSsl.ServerName != "" {
+			envs = append(envs, corev1.EnvVar{
+				Name: "TLS_SERVER_NAME",
+				Value: lep.cr.Spec.Global.KafkaSsl.ServerName,
+			})
+		}
+	
+	return envs
 }
 
 func (lep LagExporterResourceProvider) getVolumeMounts() []corev1.VolumeMount {
