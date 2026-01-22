@@ -22,6 +22,7 @@ WORKDIR cruise-control
 
 COPY docker/config/build.gradle build.gradle
 COPY docker/config/build/build.gradle buildSrc/build.gradle
+COPY docker/config/gradle.properties gradle.properties
 COPY docker/config/settings.gradle settings.gradle
 
 RUN git init
