@@ -83,6 +83,7 @@ allprojects {
        // --- Commons ---
        force 'org.apache.commons:commons-lang3:3.18.0'
        force 'commons-io:commons-io:2.14.0'
+       force 'org.bitbucket.b_c:jose4j:0.9.6'
     }
   }
 }
@@ -199,52 +200,6 @@ project(':cruise-control-core') {
     testImplementation 'junit:junit:4.13.2'
 
     testOutput sourceSets.test.output
-    eachDependency { details ->
-
-                // Vert.x
-                if (details.requested.group == "io.vertx"
-                        && details.requested.name == "vertx-core") {
-                    details.useVersion("4.5.24")
-                    details.because("Fix CVE")
-                }
-
-                // jose4j
-                if (details.requested.group == "org.bitbucket.b_c"
-                        && details.requested.name == "jose4j") {
-                    details.useVersion("0.9.6")
-                    details.because("Fix CVE")
-                }
-
-                // Netty
-                if (details.requested.group == "io.netty"
-                        && details.requested.name in [
-                            "netty-codec",
-                            "netty-codec-http"
-                        ]) {
-                    details.useVersion("4.1.129.Final")
-                    details.because("Fix CVE")
-                }
-
-                // Commons IO
-                if (details.requested.group == "commons-io"
-                        && details.requested.name == "commons-io") {
-                    details.useVersion("2.14.0")
-                    details.because("Fix CVE")
-                }
-
-                // Commons
-                if (details.requested.group == "org.apache.commons" && details.requested.name == "commons-lang3") {
-                    details.useVersion("3.18.0")
-                    details.because("Fix CVE")
-                }
-
-                  // com.nimbusds
-                  if (details.requested.group == "com.nimbusds" && details.requested.name == "nimbus-jose-jwt") {
-                     details.useVersion("9.37.4")
-                     details.because("Fix CVE")
-                  }
-
-            }
   }
 
   publishing {
