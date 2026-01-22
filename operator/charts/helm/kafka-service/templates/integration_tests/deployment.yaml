@@ -75,6 +75,10 @@ spec:
               value: {{ .Values.integrationTests.kafkaPort | quote }}
             - name: KAFKA_ENABLE_SSL
               value: {{ include "kafka-service.enableTls" . | quote }}
+            {{- if and .Values.global.tls.enabled .Values.global.tls.serverName }}
+            - name: TLS_SERVER_NAME
+              value: {{ .Values.global.tls.serverName | quote }}
+            {{- end }}
             - name: KAFKA_PV_NAMES
               value: {{ .Values.integrationTests.kafkaPvNames }}
             - name: KAFKA_VOLUME_SIZE
