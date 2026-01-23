@@ -83,6 +83,7 @@ allprojects {
        // --- Commons ---
        force 'org.apache.commons:commons-lang3:3.18.0'
        force 'commons-io:commons-io:2.14.0'
+       force 'org.bitbucket.b_c:jose4j:0.9.6'
     }
   }
 }
