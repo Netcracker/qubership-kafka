@@ -31,39 +31,58 @@ repositories {
 
 
 configurations.all {
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
-    exclude group: 'org.slf4j', module: 'slf4j-reload4j'
 
     resolutionStrategy {
-        force("org.apache.kafka:kafka-clients:" + kafkaVersion)
-        force("org.apache.kafka:kafka-streams:" + kafkaVersion)
-        force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
-        force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
-        force("com.google.protobuf:protobuf-java:3.25.2")
-        force("com.fasterxml.jackson:jackson-bom:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
-        force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
-        force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
-        force 'commons-beanutils:commons-beanutils:1.11.0'
-        force 'org.bitbucket.b_c:jose4j:0.9.6'
-        force 'com.nimbusds:nimbus-jose-jwt:9.37.4'
+        eachDependency { details ->
 
-        // --- Netty ---
-        force 'io.netty:netty-codec:4.1.125.Final'
-        force 'io.netty:netty-codec-http:4.1.125.Final'
-        force 'io.netty:netty-codec-http2:4.1.125.Final'
+            // Vert.x
+            if (details.requested.group == "io.vertx"
+                    && details.requested.name == "vertx-core") {
+                details.useVersion("4.5.24")
+                details.because("Fix CVE")
+            }
 
-        // --- Vert.x ---
-        force 'io.vertx:vertx-core:4.4.8'
+            // jose4j
+            if (details.requested.group == "org.bitbucket.b_c"
+                    && details.requested.name == "jose4j") {
+                details.useVersion("0.9.6")
+                details.because("Fix CVE")
+            }
 
-        // --- Commons ---
-        force 'org.apache.commons:commons-lang3:3.18.0'
+            // Netty
+            if (details.requested.group == "io.netty"
+                    && details.requested.name in [
+                        "netty-codec",
+                        "netty-codec-http"
+                    ]) {
+                details.useVersion("4.1.129.Final")
+                details.because("Fix CVE")
+            }
+
+            // Commons IO
+            if (details.requested.group == "commons-io"
+                    && details.requested.name == "commons-io") {
+                details.useVersion("2.14.0")
+                details.because("Fix CVE")
+            }
+
+            // Commons
+            if (details.requested.group == "org.apache.commons" && details.requested.name == "commons-lang3") {
+                details.useVersion("3.18.0")
+                details.because("Fix CVE")
+            }
+
+              // com.nimbusds
+              if (details.requested.group == "com.nimbusds" && details.requested.name == "nimbus-jose-jwt") {
+                 details.useVersion("9.37.4")
+                 details.because("Fix CVE")
+              }
+
+        }
     }
 }
+
+
 
 /**********************************************************************************************************************\
  * IntelliJ IDEA
