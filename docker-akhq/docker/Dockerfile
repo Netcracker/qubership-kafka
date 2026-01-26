@@ -1,5 +1,5 @@
 FROM eclipse-temurin:17-jdk-ubi10-minimal AS builder
-RUN microdnf install -y nodejs npm gzip && microdnf clean all
+RUN microdnf install -y nodejs npm git && microdnf clean all
 WORKDIR /app
 
 RUN set -eux; \
