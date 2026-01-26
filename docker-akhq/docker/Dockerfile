@@ -1,10 +1,11 @@
 FROM eclipse-temurin:17-jdk-ubi10-minimal AS builder
-RUN microdnf install -y nodejs npm && microdnf clean all
+RUN microdnf install -y nodejs npm gzip && microdnf clean all
 WORKDIR /app
 
-RUN wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz
+RUN wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz; \
+    gunzip -c /tmp/akhq.tar.gz | tar -x -C /app --strip-components=1
 
-RUN tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1
+
 COPY docker/build.gradle ./build.gradle
 RUN ./gradlew shadowJar --no-daemon
 
