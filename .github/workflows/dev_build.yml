@@ -75,7 +75,7 @@ jobs:
         name: Load Components and Platforms
         run: |
           if [[ "$GITHUB_EVENT_NAME" == "release" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            components=$(jq -c '.components' .github/release-build-config.cfg)
+            components=$(jq -c '.components' .github/dev-build-config.cfg)
           fi
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" || "$GITHUB_EVENT_NAME" == "push" ]]; then
             all_changed_files=$(jq -c '.' .github/outputs/all_changed_files.json)
