@@ -58,7 +58,7 @@ jobs:
       platforms: ${{ steps.load.outputs.platforms }}
       tags: "${{ steps.meta.outputs.result }}"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: true
           fetch-depth: 0
