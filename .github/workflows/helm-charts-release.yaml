@@ -98,7 +98,7 @@ jobs:
           fetch-depth: 0
       - name: "Update versions in values"
         id: update-versions
-        uses: netcracker/qubership-workflow-hub/actions/charts-values-update-action@b6d2198c722564e250d985a99990230d85b0d686 # 2.0.3
+        uses: netcracker/qubership-workflow-hub/actions/charts-values-update-action@c1a5c8c2d9c2a79f548134db1d095f36ee0f28e7 # 2.0.7
         with:
           release-version: ${{ inputs.release }}
           config-file: .github/charts-values-update-config.yaml

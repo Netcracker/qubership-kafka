@@ -88,7 +88,7 @@ jobs:
           echo "platforms=$(jq -c '.platforms' .github/dev-build-config.cfg)" >> "$GITHUB_OUTPUT"
 
       - name: Create tags for images
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@3e428f45132119ce49d90f3770a45d4fe1d1078d #2.0.4
+        uses: netcracker/qubership-workflow-hub/actions/metadata-action@c1a5c8c2d9c2a79f548134db1d095f36ee0f28e7 #2.0.7
         id: meta
         with:
           default-template: "{{ref-name}}"
@@ -108,7 +108,7 @@ jobs:
         component: ${{ fromJson(needs.prepare.outputs.components) }}
     steps:
       - name: Docker
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@3e428f45132119ce49d90f3770a45d4fe1d1078d #2.0.4
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@c1a5c8c2d9c2a79f548134db1d095f36ee0f28e7 #2.0.7
         with:
           ref: ${{ github.ref }}
           dry-run: ${{ github.event.inputs.dry-run || github.event_name == 'pull_request' }}
