@@ -495,6 +495,14 @@ internal.KafkaServer {
 };
 
 EOL
+    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+external.KafkaServer {
+    org.apache.kafka.common.security.scram.ScramLoginModule required
+    username="${ADMIN_USERNAME}"
+    password="${ADMIN_PASSWORD}";
+};
+
+EOL
 
     cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
 controller.KafkaServer {
