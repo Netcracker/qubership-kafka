@@ -32,7 +32,7 @@ jobs:
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      versions_file: '.github/versions.yaml'
+      #versions_file: '.github/versions.yaml'
       #pipeline_branch: 'cee02b3e1a049e1c2b28f8566d4362247240fa5f' #this value must match the value after '@' in 'uses'
       pipeline_branch: 'feat/get_service_tag' #this value must match the value after '@' in 'uses'
     secrets:
