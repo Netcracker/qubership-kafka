@@ -35,20 +35,6 @@ configurations.all {
     resolutionStrategy {
         eachDependency { details ->
 
-            // Vert.x
-            if (details.requested.group == "io.vertx"
-                    && details.requested.name == "vertx-core") {
-                details.useVersion("4.5.24")
-                details.because("Fix CVE")
-            }
-
-            // jose4j
-            if (details.requested.group == "org.bitbucket.b_c"
-                    && details.requested.name == "jose4j") {
-                details.useVersion("0.9.6")
-                details.because("Fix CVE")
-            }
-
             // Netty
             if (details.requested.group == "io.netty"
                     && details.requested.name in [
