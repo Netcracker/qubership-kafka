@@ -77,11 +77,11 @@ configurations.all {
                 details.because("Fix CVE")
             }
 
-              // com.nimbusds
-              if (details.requested.group == "com.nimbusds" && details.requested.name == "nimbus-jose-jwt") {
-                 details.useVersion("9.37.4")
-                 details.because("Fix CVE")
-              }
+            // // com.nimbusds
+            // if (details.requested.group == "com.nimbusds" && details.requested.name == "nimbus-jose-jwt") {
+            //     details.useVersion("9.37.4")
+            //     details.because("Fix CVE")
+            // }
 
         }
     }
