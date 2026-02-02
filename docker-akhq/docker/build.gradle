@@ -49,20 +49,15 @@ configurations.all {
                 details.because("Fix CVE")
             }
 
-            // // Netty
-            // if (details.requested.group == "io.netty"
-            //         && details.requested.name in [
-            //             "netty-codec",
-            //             "netty-codec-http",
-            //             "netty-codec-http",
-            //             "netty-common",
-            //             "netty-handler",
-            //             "netty-resolver",
-            //             "netty-transport"
-            //         ]) {
-            //     details.useVersion("4.1.129.Final")
-            //     details.because("Fix CVE")
-            // }
+            // Netty
+            if (details.requested.group == "io.netty"
+                    && details.requested.name in [
+                        "netty-codec",
+                        "netty-codec-http"
+                    ]) {
+                details.useVersion("4.1.129.Final")
+                details.because("Fix CVE")
+            }
 
             // Commons IO
             if (details.requested.group == "commons-io"
