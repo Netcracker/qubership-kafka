@@ -53,7 +53,12 @@ configurations.all {
             if (details.requested.group == "io.netty"
                     && details.requested.name in [
                         "netty-codec",
-                        "netty-codec-http"
+                        "netty-codec-http",
+                        "netty-codec-http",
+                        "netty-common",
+                        "netty-handler",
+                        "netty-resolver",
+                        "netty-transport"
                     ]) {
                 details.useVersion("4.1.129.Final")
                 details.because("Fix CVE")
