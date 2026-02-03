@@ -49,6 +49,16 @@ configurations.all {
                 details.because("Fix CVE")
             }
 
+            // Netty
+            if (details.requested.group == "io.netty"
+                    && details.requested.name in [
+                        "netty-codec",
+                        "netty-codec-http"
+                    ]) {
+                details.useVersion("4.1.125.Final")
+                details.because("Fix CVE")
+            }
+
             // Commons IO
             if (details.requested.group == "commons-io"
                     && details.requested.name == "commons-io") {
@@ -59,16 +69,6 @@ configurations.all {
             // Commons
             if (details.requested.group == "org.apache.commons" && details.requested.name == "commons-lang3") {
                 details.useVersion("3.18.0")
-                details.because("Fix CVE")
-            }
-
-            // Netty
-            if (details.requested.group == "io.netty"
-                    && details.requested.name in [
-                        "netty-codec",
-                        "netty-codec-http"
-                    ]) {
-                details.useVersion("4.1.125.Final")
                 details.because("Fix CVE")
             }
         }
