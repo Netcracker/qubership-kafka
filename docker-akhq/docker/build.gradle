@@ -55,7 +55,7 @@ configurations.all {
                         "netty-codec",
                         "netty-codec-http"
                     ]) {
-                details.useVersion("4.1.129.Final")
+                details.useVersion("4.1.125.Final")
                 details.because("Fix CVE")
             }
 
@@ -71,13 +71,6 @@ configurations.all {
                 details.useVersion("3.18.0")
                 details.because("Fix CVE")
             }
-
-              // com.nimbusds
-              if (details.requested.group == "com.nimbusds" && details.requested.name == "nimbus-jose-jwt") {
-                 details.useVersion("9.37.4")
-                 details.because("Fix CVE")
-              }
-
         }
     }
 }

@@ -12,6 +12,8 @@ metadata:
   name: akhq-ingress
   labels:
     {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    deployment.netcracker.com/ingress-type: 'private-network'
+    deployment.netcracker.com/ingress-audience-type: 'ops-user'
   annotations:
     {{- if and .Values.akhq.ingress.className (not (.Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress")) }}
     kubernetes.io/ingress.class: {{ .Values.akhq.ingress.className }}
