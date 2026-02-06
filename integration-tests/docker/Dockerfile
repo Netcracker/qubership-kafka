@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:fix_increase_kube_client
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.1.20
 
 ENV ROBOT_OUTPUT=${ROBOT_HOME}/output \
     DISTR_DIR=/tmp/deps \
