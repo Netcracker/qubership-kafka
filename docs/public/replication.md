@@ -162,6 +162,87 @@ If `repeatedReplication = true`, all topics with names **dc1.topic-name** are co
 Otherwise, topics that are created via replication are not replicated anymore.  
 The default value is `false`.
 
+## Mirroring from Local to External Kafka
+
+You can mirror data from a local Kafka cluster (or an AWS managed Kafka/MSK cluster) to a customer's external Kafka
+cluster by deploying a MirrorMaker 2.0 instance in the local environment and configuring a unidirectional flow from
+`source` to `target`. In this scenario, the local/AWS Kafka is the **source** cluster, while the customer external Kafka
+is the **target** cluster. Use the Helm chart `mirrorMaker` section to set up the connection, authentication, and topics
+to replicate.
+
+Example deployment parameters:
+
+```yaml
+mirrorMaker:
+  install: true
+  heapSize: 256
+  replicas: 3
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 400m
+  transformation:
+    transforms:
+      - name: HeartbeatHeaderFilter
+        type: com.netcracker.kafka.mirror.extension.HeaderFilter
+        params:
+          filter.type: exclude
+          headers: heartbeatV1
+          topics: usage.costedevents.v1
+  regionName: target
+  repeatedReplication: true
+  clusters:
+    - name: source
+      bootstrapServers: kafka-source:9096
+      username: username
+      password: password
+      saslMechanism: SCRAM-SHA-512
+      enableSsl: true
+      sslSecretName: msksslcertificate
+    - name: target
+      bootstrapServers: kafka-target:9093
+      username: username
+      password: password
+      enableSsl: true
+      sslSecretName: sslcertificate
+  topicsToReplicate: usage.costedevents.v1,usage.rejected-events.v1,usage.costedevents.v1,usage.rejected-events.v1
+  replicationFlowEnabled: true
+  replicationPrefixEnabled: false
+  replicationFactor: 3
+  refreshTopicsIntervalSeconds: 5
+  refreshGroupsIntervalSeconds: 5
+  jolokiaPort: 9087
+  environmentVariables:
+    - SOURCE_TARGET_CONF_SYNC_GROUP_OFFSETS_ENABLED=false
+    - SOURCE_TARGET_CONF_EMIT_HEARTBEATS_ENABLED=false
+    - SOURCE_TARGET_CONF_EMIT_CHECKPOINTS_ENABLED=false
+    - TARGET_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets.control.v1
+    - TARGET_CONF_STATUS_STORAGE_TOPIC=mm2-status.control.v1
+    - TARGET_CONF_CONFIG_STORAGE_TOPIC=mm2-configs.control.v1
+mirrorMakerMonitoring:
+  install: "true"
+  securityContext:
+    runAsUser: 1000
+```
+
+This example includes extra `environmentVariables` to demonstrate how to tune MirrorMaker 2.0 behavior:
+
+* `SOURCE_TARGET_CONF_SYNC_GROUP_OFFSETS_ENABLED=false` disables consumer group offset synchronization from `source` to
+  `target`.
+* `SOURCE_TARGET_CONF_EMIT_HEARTBEATS_ENABLED=false` disables emission of heartbeat records for the `source` → `target`
+  flow.
+* `SOURCE_TARGET_CONF_EMIT_CHECKPOINTS_ENABLED=false` disables emission of checkpoint records for the `source` →
+  `target` flow.
+* `TARGET_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets.control.v1` overrides the offset storage topic name used on the target
+  cluster.
+* `TARGET_CONF_STATUS_STORAGE_TOPIC=mm2-status.control.v1` overrides the status storage topic name used on the target
+  cluster.
+* `TARGET_CONF_CONFIG_STORAGE_TOPIC=mm2-configs.control.v1` overrides the configs storage topic name used on the target
+  cluster.
+
 ## Single Message Transformation During Replication
 
 There is an ability to transform messages during replication using custom transformations.
