@@ -1,0 +1,1 @@
+Tue Feb 10 03:20:09 UTC 2026: [IBuild] Updated feature/integration-build by main to build qubership-kafka images with patched kafka from https://github.com/Netcracker/kafka-patches/releases/download/kafka-4.1.1-patched/kafka_2.13-4.1.1.tgz
