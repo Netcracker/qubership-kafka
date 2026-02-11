@@ -30,4 +30,5 @@ rules:
       - patch
       - update
       - watch
+      - create
 {{- end }}
