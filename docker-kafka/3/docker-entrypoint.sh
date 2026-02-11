@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# shellcheck disable=SC2086,SC2155,SC2223,SC2046,SC2006,SC2206,SC2196,SC2231,SC2268,SC2062,SC2004,SC2129
 # Add missing EOF at the end of the config file
 echo "" >> ${KAFKA_HOME}/config/server.properties
 
@@ -495,6 +495,14 @@ internal.KafkaServer {
 };
 
 EOL
+    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+external.KafkaServer {
+    org.apache.kafka.common.security.scram.ScramLoginModule required
+    username="${ADMIN_USERNAME}"
+    password="${ADMIN_PASSWORD}";
+};
+
+EOL
 
     cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
 controller.KafkaServer {
@@ -750,7 +758,7 @@ case $1 in
       fi
     done
     if [[ "$KRAFT_ENABLED" == "true" ]]; then
-      ${KAFKA_HOME}/bin/kafka-storage.sh format -t "${KRAFT_CLUSTER_ID}" -c "${KAFKA_HOME}/config/server.properties" ${KAFKA_CREDENTIALS}
+      ${KAFKA_HOME}/bin/kafka-storage.sh format -t="${KRAFT_CLUSTER_ID}" -c "${KAFKA_HOME}/config/server.properties" ${KAFKA_CREDENTIALS}
     fi
     exec ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties
     ;;

@@ -31,26 +31,51 @@ repositories {
 
 
 configurations.all {
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-    exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
-    exclude group: 'org.slf4j', module: 'slf4j-reload4j'
 
     resolutionStrategy {
-        force("org.apache.kafka:kafka-clients:" + kafkaVersion)
-        force("org.apache.kafka:kafka-streams:" + kafkaVersion)
-        force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
-        force("org.apache.kafka:kafka_" + kafkaScalaVersion + ":" + kafkaVersion)
-        force("com.google.protobuf:protobuf-java:3.25.2")
-        force("com.fasterxml.jackson:jackson-bom:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
-        force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
-        force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
-        force 'commons-beanutils:commons-beanutils:1.11.0'
+        eachDependency { details ->
+
+            // Vert.x
+            if (details.requested.group == "io.vertx"
+                    && details.requested.name == "vertx-core") {
+                details.useVersion("4.5.24")
+                details.because("Fix CVE")
+            }
+
+            // jose4j
+            if (details.requested.group == "org.bitbucket.b_c"
+                    && details.requested.name == "jose4j") {
+                details.useVersion("0.9.6")
+                details.because("Fix CVE")
+            }
+
+            // Netty
+            if (details.requested.group == "io.netty"
+                    && details.requested.name in [
+                        "netty-codec",
+                        "netty-codec-http"
+                    ]) {
+                details.useVersion("4.1.125.Final")
+                details.because("Fix CVE")
+            }
+
+            // Commons IO
+            if (details.requested.group == "commons-io"
+                    && details.requested.name == "commons-io") {
+                details.useVersion("2.14.0")
+                details.because("Fix CVE")
+            }
+
+            // Commons
+            if (details.requested.group == "org.apache.commons" && details.requested.name == "commons-lang3") {
+                details.useVersion("3.18.0")
+                details.because("Fix CVE")
+            }
+        }
     }
 }
+
+
 
 /**********************************************************************************************************************\
  * IntelliJ IDEA

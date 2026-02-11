@@ -68,15 +68,22 @@ func getWatchNamespace() (string, error) {
 }
 
 func configureManagerNamespaces(configMgrOptions *ctrl.Options, namespace string, ownNamespace string) {
-	if namespace == "" || namespace == ownNamespace {
-		configMgrOptions.Namespace = namespace
-	} else {
-		namespaces := strings.Split(namespace, ",")
-		if !util.Contains(ownNamespace, namespaces) {
-			namespaces = append(namespaces, ownNamespace)
-		}
-		configMgrOptions.NewCache = cache.MultiNamespacedCacheBuilder(namespaces)
+	namespaces := strings.Split(namespace, ",")
+	if !util.Contains(ownNamespace, namespaces) {
+		namespaces = append(namespaces, ownNamespace)
 	}
+	nsMap := make(map[string]cache.Config, len(namespaces))
+	for _, ns := range namespaces {
+		ns = strings.TrimSpace(ns)
+		if ns == "" {
+			continue
+		}
+		nsMap[ns] = cache.Config{}
+	}
+	if len(nsMap) == 0 {
+		return
+	}
+	configMgrOptions.Cache.DefaultNamespaces = nsMap
 }
 
 func mainApiGroup() string {
