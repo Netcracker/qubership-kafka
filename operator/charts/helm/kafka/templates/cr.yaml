@@ -164,7 +164,7 @@ spec:
     enableTwoWaySsl: {{ .Values.kafka.tls.enableTwoWaySsl }}
     allowNonencryptedAccess: {{ .Values.global.tls.allowNonencryptedAccess }}
 {{- end }}
-  rollingUpdate: {{ .Values.kafka.rollingUpdate | default false }}
+  rollingUpdate: {{ .Values.kafka.rollingUpdate | default true }}
 {{- if or .Values.global.customLabels .Values.kafka.customLabels }}
   customLabels:
     {{- .Values.global.customLabels | toYaml | nindent 6 -}}

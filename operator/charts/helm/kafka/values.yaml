@@ -226,7 +226,7 @@ kafka:
       additionalIpAddresses: []
   environmentVariables:
     - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
-  rollingUpdate: false
+  rollingUpdate: true
   customLabels: {}
   debugContainer: false
   ccMetricReporterEnabled: false
