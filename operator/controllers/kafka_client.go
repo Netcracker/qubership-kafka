@@ -18,10 +18,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/go-logr/logr"
-	Logger "log"
 	"math"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sort"
 	"strings"
 	"time"
@@ -101,19 +98,6 @@ func NewKafkaClient(
 	}, nil
 }
 
-// writer that forwards to a controller\-runtime logr.Logger
-type saramaLogWriter struct {
-	logger logr.Logger
-}
-
-func (w saramaLogWriter) Write(p []byte) (n int, err error) {
-	msg := strings.TrimSpace(string(p))
-	if msg != "" {
-		w.logger.Info(msg)
-	}
-	return len(p), nil
-}
-
 func NewKafkaAdminClient(
 	bootstrapServers string, saslSettings *SaslSettings, sslEnabled bool, sslCertificates *SslCertificates) (sarama.ClusterAdmin, error) {
 	address := strings.Split(bootstrapServers, ",")
@@ -130,7 +114,6 @@ func NewKafkaAdminClient(
 
 func NewKafkaClientConfig(saslSettings *SaslSettings, sslEnabled bool, sslCertificates *SslCertificates) (*sarama.Config, error) {
 	config := sarama.NewConfig()
-	sarama.Logger = Logger.New(saramaLogWriter{logger: logf.Log.WithName("sarama")}, "", 0)
 	if saslSettings.Username != "" && saslSettings.Password != "" {
 		log.Info("Configuring SASL...")
 
