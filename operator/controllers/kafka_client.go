@@ -19,12 +19,14 @@ import (
 	"crypto/x509"
 	"fmt"
 	"math"
+	"os"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/Netcracker/qubership-kafka/operator/util"
+	Logger "log"
 )
 
 type KafkaClient struct {
@@ -116,6 +118,7 @@ func NewKafkaClientConfig(saslSettings *SaslSettings, sslEnabled bool, sslCertif
 	config := sarama.NewConfig()
 	if saslSettings.Username != "" && saslSettings.Password != "" {
 		log.Info("Configuring SASL...")
+
 		mechanism := util.DefaultIfEmpty(saslSettings.Mechanism, sarama.SASLTypeSCRAMSHA512)
 		if mechanism != sarama.SASLTypePlaintext && mechanism != sarama.SASLTypeSCRAMSHA512 {
 			return nil, fmt.Errorf("cannot use given SASL Mechanism: %s", mechanism)
@@ -124,6 +127,8 @@ func NewKafkaClientConfig(saslSettings *SaslSettings, sslEnabled bool, sslCertif
 		config.Net.SASL.Mechanism = sarama.SASLMechanism(mechanism)
 		config.Net.SASL.User = saslSettings.Username
 		config.Net.SASL.Password = saslSettings.Password
+
+		sarama.Logger = Logger.New(os.Stdout, "[Sarama] ", Logger.LstdFlags|Logger.Lshortfile)
 		if mechanism == sarama.SASLTypeSCRAMSHA512 {
 			config.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient {
 				return &XDGSCRAMClient{HashGeneratorFcn: SHA512}
