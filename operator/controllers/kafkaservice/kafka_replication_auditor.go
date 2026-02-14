@@ -199,6 +199,7 @@ func mustBeTopicReplicated(topic string, allowTopicRegExps []string, blockTopicR
 		return false
 	}
 	for _, blockPattern := range blockTopicRegExps {
+		repLogger.Info(fmt.Sprintf("Check topic %s replicated: %s", topic, blockPattern))
 		blockRes, err := matchTopic(blockPattern, topic)
 		if err != nil {
 			repLogger.Error(err, "Regular expression from block list is invalid")
@@ -211,6 +212,7 @@ func mustBeTopicReplicated(topic string, allowTopicRegExps []string, blockTopicR
 		return true
 	}
 	for _, allowPattern := range allowTopicRegExps {
+		repLogger.Info(fmt.Sprintf("Check topic %s replicated: %s", topic, allowPattern))
 		allowRes, err := matchTopic(allowPattern, topic)
 		if err != nil {
 			repLogger.Error(err, "Regular expression from allow list is invalid")
