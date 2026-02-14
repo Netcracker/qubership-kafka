@@ -8,7 +8,6 @@ require (
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/pkg/errors v0.9.1
 	github.com/sethvargo/go-password v0.3.1
-	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
 	github.com/xdg/scram v1.0.5
 	k8s.io/api v0.35.0

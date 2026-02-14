@@ -20,9 +20,6 @@ import (
 	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/Netcracker/qubership-kafka/operator/util"
-
-	"github.com/sirupsen/logrus"
-	Logger "log"
 	"math"
 	"sort"
 	"strings"
@@ -115,12 +112,7 @@ func NewKafkaAdminClient(
 }
 
 func NewKafkaClientConfig(saslSettings *SaslSettings, sslEnabled bool, sslCertificates *SslCertificates) (*sarama.Config, error) {
-	l := logrus.New()
-	l.SetLevel(logrus.DebugLevel)
-	sarama.Logger = Logger.New(l.WriterLevel(logrus.DebugLevel), "[sarama] ", 0)
 	config := sarama.NewConfig()
-	sarama.DebugLogger = Logger.New(l.WriterLevel(logrus.DebugLevel), "[sarama] ", 0)
-
 	if saslSettings.Username != "" && saslSettings.Password != "" {
 		log.Info("Configuring SASL...")
 
