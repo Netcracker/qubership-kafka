@@ -6,13 +6,13 @@ metadata:
     crd.netcracker.com/version: 1.9.0
     controller-gen.kubebuilder.io/version: v0.11.1
   creationTimestamp: null
-  name: kafka.netcracker.com
+  name: kafkas.netcracker.com
 spec:
   group: netcracker.com
   names:
     kind: Kafka
     listKind: KafkaList
-    plural: kafka
+    plural: kafkas
     singular: kafka
   scope: Namespaced
   versions:
@@ -415,6 +415,65 @@ spec:
                   type: boolean
                 dockerImage:
                   type: string
+                livenessProbe:
+                  properties:
+                    exec:
+                      properties:
+                        command:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    failureThreshold:
+                      format: int32
+                      type: integer
+                    initialDelaySeconds:
+                      format: int32
+                      type: integer
+                    periodSeconds:
+                      format: int32
+                      type: integer
+                    successThreshold:
+                      format: int32
+                      type: integer
+                    timeoutSeconds:
+                      format: int32
+                      type: integer
+                  type: object
+                livenessProbeInitialDelay:
+                  format: int32
+                  type: integer
+                livenessProbeTimeout:
+                  format: int32
+                  type: integer
+                readinessProbe:
+                  properties:
+                    exec:
+                      properties:
+                        command:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    failureThreshold:
+                      format: int32
+                      type: integer
+                    initialDelaySeconds:
+                      format: int32
+                      type: integer
+                    periodSeconds:
+                      format: int32
+                      type: integer
+                    successThreshold:
+                      format: int32
+                      type: integer
+                    timeoutSeconds:
+                      format: int32
+                      type: integer
+                    type: object
+                  readinessProbeInitialDelay:
+                    format: int32
+                    type: integer
                 enableAuditLogs:
                   type: boolean
                 enableAuthorization:
