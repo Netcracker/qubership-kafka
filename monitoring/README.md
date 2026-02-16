@@ -101,3 +101,14 @@ Triggers for tracking following problems are included in template:
 If you have Kafka which is deployed in DR mode you need to create two hosts: 
 for left and for right side and to specify the side as value (`left`, `right`) for the macros `{$DR_SIDE}`.
 If you have Kafka without DR just leave this macros empty.
+
+### Deep alerts tuning using subchart
+
+If you want to make deep customizations on alerts (add new ones, override any alert fields, disable alerts etd) you can use v2 alerts functionality.
+To use it you need:
+
+1) Set alertsPackVersion: v2 value in monitoring section in values yaml for kafka-services.
+2) Use subchart`s values yaml (/operator/charts/helm/kafka-service/charts/prometheusrules) to set overrides for alerts. Overrides will be merged with default alerts, described in subchart helpers.tpl with higher priority.
+
+If you will set any other value for alertsPackVersion except "v2" or wont set this value at all - installation will happen on old flavour.
+Alert groups in subchart are supported in same manner as described above.
