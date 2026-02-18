@@ -470,7 +470,7 @@ spec:
                     timeoutSeconds:
                       format: int32
                       type: integer
-                    type: object
+                  type: object
                   readinessProbeInitialDelay:
                     format: int32
                     type: integer
