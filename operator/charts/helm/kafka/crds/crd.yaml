@@ -415,6 +415,65 @@ spec:
                   type: boolean
                 dockerImage:
                   type: string
+                livenessProbe:
+                  properties:
+                    exec:
+                      properties:
+                        command:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    failureThreshold:
+                      format: int32
+                      type: integer
+                    initialDelaySeconds:
+                      format: int32
+                      type: integer
+                    periodSeconds:
+                      format: int32
+                      type: integer
+                    successThreshold:
+                      format: int32
+                      type: integer
+                    timeoutSeconds:
+                      format: int32
+                      type: integer
+                  type: object
+                livenessProbeInitialDelay:
+                  format: int32
+                  type: integer
+                livenessProbeTimeout:
+                  format: int32
+                  type: integer
+                readinessProbe:
+                  properties:
+                    exec:
+                      properties:
+                        command:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    failureThreshold:
+                      format: int32
+                      type: integer
+                    initialDelaySeconds:
+                      format: int32
+                      type: integer
+                    periodSeconds:
+                      format: int32
+                      type: integer
+                    successThreshold:
+                      format: int32
+                      type: integer
+                    timeoutSeconds:
+                      format: int32
+                      type: integer
+                  type: object
+                readinessProbeInitialDelay:
+                  format: int32
+                  type: integer
                 enableAuditLogs:
                   type: boolean
                 enableAuthorization:

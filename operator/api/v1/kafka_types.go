@@ -69,6 +69,8 @@ type KafkaSpec struct {
 	CCMetricReporterEnabled bool                    `json:"ccMetricReporterEnabled,omitempty"`
 	Kraft                   Kraft                   `json:"kraft,omitempty"`
 	MigrationController     MigrationController     `json:"migrationController,omitempty"`
+	LivenessProbe           *v1.Probe               `json:"livenessProbe,omitempty"`
+	ReadinessProbe          *v1.Probe               `json:"readinessProbe,omitempty"`
 }
 
 // Kraft defines Kafka parameters for Kraft
