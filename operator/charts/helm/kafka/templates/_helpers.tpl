@@ -221,22 +221,22 @@ Kafka SASL mechanism
 Liveness Probe for Kafka
 */}}
 {{- define "kafka.livenessProbe" -}}
-initialDelaySeconds: {{ coalesce .Values.kafka.livenessProbeInitialDelay .Values.kafka.livenessProbe.initialDelaySeconds | default 60 }}
-timeoutSeconds: {{ coalesce .Values.kafka.livenessProbeTimeout .Values.kafka.livenessProbe.timeoutSeconds | default 5 }}
-periodSeconds: {{ .Values.kafka.livenessProbe.periodSeconds | default 15 }}
-successThreshold: {{ .Values.kafka.livenessProbe.successThreshold | default 1 }}
-failureThreshold: {{ .Values.kafka.livenessProbe.failureThreshold | default 20 }}
+  initialDelaySeconds: {{ coalesce .Values.kafka.livenessProbeInitialDelay .Values.kafka.livenessProbe.initialDelaySeconds | default 60 }}
+  timeoutSeconds: {{ coalesce .Values.kafka.livenessProbeTimeout .Values.kafka.livenessProbe.timeoutSeconds | default 5 }}
+  periodSeconds: {{ .Values.kafka.livenessProbe.periodSeconds | default 15 }}
+  successThreshold: {{ .Values.kafka.livenessProbe.successThreshold | default 1 }}
+  failureThreshold: {{ .Values.kafka.livenessProbe.failureThreshold | default 20 }}
 {{- end -}}
 
 {{/*
 Readiness Probe for Kafka
 */}}
 {{- define "kafka.readinessProbe" -}}
-initialDelaySeconds: {{ coalesce .Values.kafka.readinessProbeInitialDelay .Values.kafka.readinessProbe.initialDelaySeconds | default 60 }}
-timeoutSeconds: {{ coalesce .Values.kafka.readinessProbeTimeout .Values.kafka.readinessProbe.timeoutSeconds | default 30 }}
-periodSeconds: {{ .Values.kafka.readinessProbe.periodSeconds | default 30 }}
-successThreshold: {{ .Values.kafka.readinessProbe.successThreshold | default 1 }}
-failureThreshold: {{ .Values.kafka.readinessProbe.failureThreshold | default 5 }}
+  initialDelaySeconds: {{ coalesce .Values.kafka.readinessProbeInitialDelay .Values.kafka.readinessProbe.initialDelaySeconds | default 60 }}
+  timeoutSeconds: {{ coalesce .Values.kafka.readinessProbeTimeout .Values.kafka.readinessProbe.timeoutSeconds | default 30 }}
+  periodSeconds: {{ .Values.kafka.readinessProbe.periodSeconds | default 30 }}
+  successThreshold: {{ .Values.kafka.readinessProbe.successThreshold | default 1 }}
+  failureThreshold: {{ .Values.kafka.readinessProbe.failureThreshold | default 5 }}
 {{- end -}}
 
 {{/*

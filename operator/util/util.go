@@ -183,3 +183,10 @@ func JoinNames(names ...string) string {
 	}
 	return strings.Join(elems, nameSeparator)
 }
+
+func DefaultIfEmptyInt32(value *int32, defaultValue int32) int32 {
+	if value == nil {
+		return defaultValue
+	}
+	return *value
+}

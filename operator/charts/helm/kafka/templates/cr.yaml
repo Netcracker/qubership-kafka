@@ -165,8 +165,12 @@ spec:
     allowNonencryptedAccess: {{ .Values.global.tls.allowNonencryptedAccess }}
 {{- end }}
   rollingUpdate: {{ .Values.kafka.rollingUpdate | default true }}
-  livenessProbe: {{ include "kafka.livenessProbe" . }}
-  readinessProbe: {{ include "kafka.readinessProbe" . }}
+{{- if .Values.kafka.livenessProbe }}
+  livenessProbe: {{ include "kafka.livenessProbe" . | nindent 2 }}
+{{- end }}
+{{- if .Values.kafka.readinessProbe }}
+  readinessProbe: {{ include "kafka.readinessProbe" . | nindent 2 }}
+{{- end }}
 {{- if or .Values.global.customLabels .Values.kafka.customLabels }}
   customLabels:
     {{- .Values.global.customLabels | toYaml | nindent 6 -}}
