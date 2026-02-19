@@ -166,10 +166,10 @@ spec:
 {{- end }}
   rollingUpdate: {{ .Values.kafka.rollingUpdate | default true }}
 {{- if .Values.kafka.livenessProbe }}
-  livenessProbe: {{ include "kafka.livenessProbe" . | nindent 2 }}
+  livenessProbe: {{ include "kafka.livenessProbe" . | nindent 4 }}
 {{- end }}
 {{- if .Values.kafka.readinessProbe }}
-  readinessProbe: {{ include "kafka.readinessProbe" . | nindent 2 }}
+  readinessProbe: {{ include "kafka.readinessProbe" . | nindent 4 }}
 {{- end }}
 {{- if or .Values.global.customLabels .Values.kafka.customLabels }}
   customLabels:
