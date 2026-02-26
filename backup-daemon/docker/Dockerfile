@@ -12,9 +12,9 @@ COPY scripts/ ${KAFKA_HOME}/scripts/
 
 RUN set -x \
     && apk add --update --no-cache \
-    apk-tools \
     python3 \
     py3-requests \
+    && python3 -m ensurepip \
     && pip3 install setuptools \
     && pip3 install -r ${KAFKA_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
