@@ -557,6 +557,10 @@ backupDaemon:
   install: false
   dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main"
 
+  cloudBackuper:
+    useBackupDaemon: true
+    backupDaemonCredentials: true
+    excludeFromPhysicalBackup: true
   tls:
     enabled: true
     certificates:
