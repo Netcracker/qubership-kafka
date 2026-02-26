@@ -13,7 +13,6 @@ COPY scripts/ ${KAFKA_HOME}/scripts/
 RUN set -x \
     && apk add --update --no-cache \
     apk-tools \
-    pip3 \
     python3 \
     py3-requests \
     && pip3 install setuptools \
