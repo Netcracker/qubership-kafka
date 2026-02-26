@@ -14,9 +14,9 @@ RUN set -x \
     && apk add --update --no-cache \
     python3 \
     py3-requests \
-    py3-kafka-python \
-    #&& pip3 install setuptools \
-    #&& pip3 install -r ${KAFKA_HOME}/requirements.txt \
+    py3-pip \
+    && pip3 install setuptools \
+    && pip3 install -r ${KAFKA_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 
 # Upgrade all tools to avoid vulnerabilities
