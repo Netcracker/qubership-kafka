@@ -5,9 +5,12 @@ permissions:
   packages: read
   actions: read
 
+#on:
+#  schedule:
+#    - cron: '0 12 * * 2'    # runs every Tuesday at 12:00 UTC
+
 on:
-  schedule:
-    - cron: '0 12 * * 2'    # runs every Tuesday at 12:00 UTC
+  push
 
 jobs:
   Wait-for-images:
