@@ -7,7 +7,8 @@ metadata:
     {{- include "kafka-services.defaultLabels" . | nindent 4 }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    route.openshift.io/termination: edge  
+    route.openshift.io/termination: edge
+    gateway-api-converter.netcracker.com/ignore: "true"
 spec:
   rules:
     - host: {{ include "cruise-control.ingressHost" . }}
