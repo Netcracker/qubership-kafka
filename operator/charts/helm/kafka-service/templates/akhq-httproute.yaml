@@ -8,12 +8,12 @@ metadata:
   labels:
     {{- include "kafka-services.defaultLabels" . | nindent 4 }}
   annotations:
-    route.openshift.io/termination: edge  
+    route.openshift.io/termination: edge
 spec:
   parentRefs:
     - name: {{ .Values.akhq.ingress.gatewayName | default "default-external-gateway" }}
       namespace: {{ .Values.akhq.ingress.envoyNamespace | default "envoy-gateway" }}
-      port: 80
+      port: 443
   hostnames:
     - {{ include "akhq.ingressHost" . | quote }}
   rules:

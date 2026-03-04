@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "kafka-services.defaultLabels" . | nindent 4 }}
   annotations:
-    route.openshift.io/termination: edge  
+    route.openshift.io/termination: edge
 spec:
   parentRefs:
     - name: {{ .Values.cruiseControl.ingress.gatewayName | default "default-external-gateway" }}
