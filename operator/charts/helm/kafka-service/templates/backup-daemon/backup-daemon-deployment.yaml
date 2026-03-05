@@ -124,10 +124,8 @@ spec:
             mountPath: /s3Certs
         {{- end }}
           env:
-            {{- if .Values.backupDaemon.log.debug }}
             - name: LOG_LEVEL
               value: "DEBUG"
-            {{- end }}
             {{- if and .Values.global.tls.enabled .Values.backupDaemon.tls.enabled }}
             - name: TLS_ENABLED
               value: "true"

@@ -556,7 +556,6 @@ backupDaemon:
   # Enable Backup Daemon installation.
   install: true
   dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main"
-  log: debug
   storage: 1Gi
   storageClass: standard
 
