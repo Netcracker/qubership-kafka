@@ -70,42 +70,9 @@ global:
       enabled: true
       certProvider: cert-manager
       durationDays: 365
-      clusterIssuerName: ""
-    disasterRecovery:
-      tls:
-        enabled: true
-        secretName: "kafka-drd-tls-secret"
-        cipherSuites: []
-        subjectAlternativeName:
-          additionalDnsNames: []
-          additionalIpAddresses: []
-kafka:
-  tls:
-    enabled: true
-    secretName: "kafka-tls-secret"
-    cipherSuites: []
-    enableTwoWaySsl: false
-    subjectAlternativeName:
-      additionalDnsNames: []
-      additionalIpAddresses: []
-backupDaemon:
-  tls:
-    enabled: true
-    secretName: "kafka-backup-daemon-tls-secret"
-    subjectAlternativeName:
-      additionalDnsNames: [ ]
-      additionalIpAddresses: [ ]
+      clusterIssuerName: "CLUSTER_ISSUER_NAME"
 ```
-
-Minimal parameters to enable TLS are:
-
-```yaml
-global:
-  tls:
-    enabled: true
-    generateCerts:
-      certProvider: cert-manager
-```
+CLUSTER_ISSUER_NAME - is the name of pre-configured CertManager's cluster issuer with CA certificate that is added to truststore of deployer.
 
 ### SSL Configuration using parameters with manually generated Certificates
 
