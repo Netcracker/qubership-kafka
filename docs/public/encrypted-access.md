@@ -72,6 +72,7 @@ global:
       durationDays: 365
       clusterIssuerName: "CLUSTER_ISSUER_NAME"
 ```
+
 CLUSTER_ISSUER_NAME - is the name of pre-configured CertManager's cluster issuer with CA certificate that is added to truststore of deployer.
 
 ### SSL Configuration using parameters with manually generated Certificates
