@@ -554,8 +554,11 @@ integrationTests:
 # Backup Daemon is a service to manage Kafka topics configurations backups.
 backupDaemon:
   # Enable Backup Daemon installation.
-  install: false
+  install: true
   dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main"
+  log: debug
+  storage: 1Gi
+  storageClass: standard
 
   tls:
     enabled: true
@@ -573,8 +576,6 @@ backupDaemon:
   # the attached volume. storageClass is the class of storage which defaults
   # to null (the Kube cluster will pick the default).
   # If storageClass and persistentVolume are not specified the Backup Daemon is deployed with emptyDir.
-  storage: 1Gi
-  storageClass: "null"
 
   # The predefined Persistent Volume for the Backup Daemon.
   persistentVolume: "null"
