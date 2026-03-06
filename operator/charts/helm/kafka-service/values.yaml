@@ -549,6 +549,29 @@ integrationTests:
       memory: 256Mi
       cpu: 400m
   customLabels: {}
+  # ATP Storage configuration for uploading test results to S3 or S3-compatible storage
+  atpStorage:
+    # Storage provider type: 'aws', 'minio', or 's3-compatible'
+    provider: "aws"
+    # S3 endpoint URL (e.g., https://s3.us-east-1.amazonaws.com)
+    serverUrl: ""
+    # S3 Web UI URL for browsing buckets (optional)
+    serverUiUrl: ""
+    # S3 bucket name where test results will be uploaded
+    bucket: ""
+    # AWS region (e.g., us-east-1)
+    region: "us-east-1"
+    # AWS Access Key ID (recommended to use secrets)
+    username: ""
+    # AWS Secret Access Key (recommended to use secrets)
+    password: ""
+  # ATP Report View UI URL for accessing test results (optional)
+  atpReportViewUiUrl: ""
+  # Environment name to organize test results in S3 (e.g., dev, staging, prod)
+  environmentName: ""
+  # MONITORED_IMAGES - list of images to validate in kafka_images test
+  # Format: "deployment deployment-name container-name image:tag,..."
+  monitoredImages: ""
   securityContext: {}
 
 # Backup Daemon is a service to manage Kafka topics configurations backups.

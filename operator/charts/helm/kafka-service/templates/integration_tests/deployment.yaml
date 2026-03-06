@@ -156,6 +156,34 @@ spec:
             - name: CLOUD_DB
               value: {{ .Values.global.smDbName }}
             {{- end }}
+            {{- if .Values.integrationTests.atpStorage }}
+            - name: ATP_STORAGE_PROVIDER
+              value: {{ .Values.integrationTests.atpStorage.provider | quote }}
+            - name: ATP_STORAGE_SERVER_URL
+              value: {{ .Values.integrationTests.atpStorage.serverUrl | quote }}
+            - name: ATP_STORAGE_SERVER_UI_URL
+              value: {{ .Values.integrationTests.atpStorage.serverUiUrl | quote }}
+            - name: ATP_STORAGE_BUCKET
+              value: {{ .Values.integrationTests.atpStorage.bucket | quote }}
+            - name: ATP_STORAGE_REGION
+              value: {{ .Values.integrationTests.atpStorage.region | quote }}
+            - name: ATP_STORAGE_USERNAME
+              value: {{ .Values.integrationTests.atpStorage.username | quote }}
+            - name: ATP_STORAGE_PASSWORD
+              value: {{ .Values.integrationTests.atpStorage.password | quote }}
+            {{- end }}
+            {{- if .Values.integrationTests.atpReportViewUiUrl }}
+            - name: ATP_REPORT_VIEW_UI_URL
+              value: {{ .Values.integrationTests.atpReportViewUiUrl | quote }}
+            {{- end }}
+            {{- if .Values.integrationTests.environmentName }}
+            - name: ENVIRONMENT_NAME
+              value: {{ .Values.integrationTests.environmentName | quote }}
+            {{- end }}
+            {{- if .Values.integrationTests.monitoredImages }}
+            - name: MONITORED_IMAGES
+              value: {{ .Values.integrationTests.monitoredImages | quote }}
+            {{- end }}
           resources:
             requests:
               memory: {{ default "256Mi" .Values.integrationTests.resources.requests.memory }}
