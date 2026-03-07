@@ -1,0 +1,28 @@
+# HTTPRoute for AKHQ UI
+{{- if (and .Values.akhq.install (eq (include "akhq.ingressEnabled" .) "true")) }}
+{{- if and (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") (eq .Values.PAAS_PLATFORM "KUBERNETES") }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: akhq-httproute
+  labels:
+    {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+  annotations:
+    route.openshift.io/termination: edge
+spec:
+  parentRefs:
+    - name: {{ .Values.akhq.ingress.gatewayName | default "default-external-gateway" }}
+      namespace: {{ .Values.akhq.ingress.envoyNamespace | default "envoy-gateway" }}
+      port: 443
+  hostnames:
+    - {{ include "akhq.ingressHost" . | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: akhq
+          port: 8080
+{{- end }}
+{{- end }}
