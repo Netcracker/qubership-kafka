@@ -417,13 +417,6 @@ spec:
                   type: string
                 livenessProbe:
                   properties:
-                    exec:
-                      properties:
-                        command:
-                          items:
-                            type: string
-                          type: array
-                      type: object
                     failureThreshold:
                       format: int32
                       type: integer
@@ -442,13 +435,6 @@ spec:
                   type: object
                 readinessProbe:
                   properties:
-                    exec:
-                      properties:
-                        command:
-                          items:
-                            type: string
-                          type: array
-                      type: object
                     failureThreshold:
                       format: int32
                       type: integer
