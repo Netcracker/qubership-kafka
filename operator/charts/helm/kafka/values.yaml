@@ -161,20 +161,12 @@ kafka:
       memory: 800Mi
   securityContext: {}
   livenessProbe:
-    exec:
-      command:
-        - ./bin/kafka-health.sh
-        - live
     initialDelaySeconds: 60
     timeoutSeconds: 5
     periodSeconds: 15
     successThreshold: 1
     failureThreshold: 20
   readinessProbe:
-    exec:
-      command:
-        - ./bin/kafka-health.sh
-        - ready
     initialDelaySeconds: 60
     timeoutSeconds: 30
     periodSeconds: 30
