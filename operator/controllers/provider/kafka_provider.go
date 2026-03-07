@@ -956,6 +956,17 @@ func (krp KafkaResourceProvider) createDeploymentContainers(envs []corev1.EnvVar
 		livenessCommand = []string{"./bin/kafka-health.sh", "live"}
 		readinessCommand = []string{"./bin/kafka-health.sh", "ready"}
 	}
+
+	// Guard against nil probe configs in CR while still applying defaults.
+	livenessProbeCfg := krp.cr.Spec.LivenessProbe
+	if livenessProbeCfg == nil {
+		livenessProbeCfg = &corev1.Probe{}
+	}
+	readinessProbeCfg := krp.cr.Spec.ReadinessProbe
+	if readinessProbeCfg == nil {
+		readinessProbeCfg = &corev1.Probe{}
+	}
+
 	deploymentContainers := []corev1.Container{
 		{
 			Name:    "kafka",
@@ -967,21 +978,21 @@ func (krp KafkaResourceProvider) createDeploymentContainers(envs []corev1.EnvVar
 				ProbeHandler: corev1.ProbeHandler{
 					Exec: krp.getExecCommand(livenessCommand),
 				},
-				InitialDelaySeconds: util.DefaultIfEmptyInt32(&krp.cr.Spec.LivenessProbe.InitialDelaySeconds, 60),
-				TimeoutSeconds:      util.DefaultIfEmptyInt32(&krp.cr.Spec.LivenessProbe.TimeoutSeconds, 5),
-				PeriodSeconds:       util.DefaultIfEmptyInt32(&krp.cr.Spec.LivenessProbe.PeriodSeconds, 15),
-				SuccessThreshold:    util.DefaultIfEmptyInt32(&krp.cr.Spec.LivenessProbe.SuccessThreshold, 1),
-				FailureThreshold:    util.DefaultIfEmptyInt32(&krp.cr.Spec.LivenessProbe.FailureThreshold, 20),
+				InitialDelaySeconds: util.DefaultIfEmptyInt32(&livenessProbeCfg.InitialDelaySeconds, 60),
+				TimeoutSeconds:      util.DefaultIfEmptyInt32(&livenessProbeCfg.TimeoutSeconds, 5),
+				PeriodSeconds:       util.DefaultIfEmptyInt32(&livenessProbeCfg.PeriodSeconds, 15),
+				SuccessThreshold:    util.DefaultIfEmptyInt32(&livenessProbeCfg.SuccessThreshold, 1),
+				FailureThreshold:    util.DefaultIfEmptyInt32(&livenessProbeCfg.FailureThreshold, 20),
 			},
 			ReadinessProbe: &corev1.Probe{
 				ProbeHandler: corev1.ProbeHandler{
 					Exec: krp.getExecCommand(readinessCommand),
 				},
-				InitialDelaySeconds: util.DefaultIfEmptyInt32(&krp.cr.Spec.ReadinessProbe.InitialDelaySeconds, 60),
-				TimeoutSeconds:      util.DefaultIfEmptyInt32(&krp.cr.Spec.ReadinessProbe.TimeoutSeconds, 30),
-				PeriodSeconds:       util.DefaultIfEmptyInt32(&krp.cr.Spec.ReadinessProbe.PeriodSeconds, 30),
-				SuccessThreshold:    util.DefaultIfEmptyInt32(&krp.cr.Spec.ReadinessProbe.SuccessThreshold, 1),
-				FailureThreshold:    util.DefaultIfEmptyInt32(&krp.cr.Spec.ReadinessProbe.FailureThreshold, 5),
+				InitialDelaySeconds: util.DefaultIfEmptyInt32(&readinessProbeCfg.InitialDelaySeconds, 60),
+				TimeoutSeconds:      util.DefaultIfEmptyInt32(&readinessProbeCfg.TimeoutSeconds, 30),
+				PeriodSeconds:       util.DefaultIfEmptyInt32(&readinessProbeCfg.PeriodSeconds, 30),
+				SuccessThreshold:    util.DefaultIfEmptyInt32(&readinessProbeCfg.SuccessThreshold, 1),
+				FailureThreshold:    util.DefaultIfEmptyInt32(&readinessProbeCfg.FailureThreshold, 5),
 			},
 			Env:             envs,
 			Resources:       krp.cr.Spec.Resources,
