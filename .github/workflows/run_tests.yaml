@@ -6,9 +6,10 @@ permissions:
   actions: read
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [main]
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+  #   branches: [main]
+  push
 
 jobs:
   Wait-for-images:
