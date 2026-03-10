@@ -133,6 +133,8 @@ Check Restore Status
 
 Delete Backup
     [Arguments]  ${backup_id}
+    ${response}=  Get Request  backup_daemon_session  /listbackups
+    Log  ${response}
     ${response}=  Post Request  backup_daemon_session  /evict/${backup_id}
     Should Be Equal As Strings  ${response.status_code}  200
 
