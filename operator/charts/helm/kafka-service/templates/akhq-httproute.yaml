@@ -1,6 +1,7 @@
-# HTTPRoute for AKHQ UI
-{{- if (and .Values.akhq.install (eq (include "akhq.ingressEnabled" .) "true")) }}
+{{- if .Values.akhq.envoyGateway.enabled }}
 {{- if and (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") (eq .Values.PAAS_PLATFORM "KUBERNETES") }}
+{{- if (and .Values.akhq.install (eq (include "akhq.ingressEnabled" .) "true")) }}
+
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -11,11 +12,19 @@ metadata:
     route.openshift.io/termination: edge
 spec:
   parentRefs:
-    - name: {{ .Values.akhq.ingress.gatewayName | default "default-external-gateway" }}
-      namespace: {{ .Values.akhq.ingress.envoyNamespace | default "envoy-gateway" }}
+  {{- range .Values.akhq.envoyGateway.parentRefs }}
+    - name: {{ .name }}
+      namespace: {{ .namespace }}
       port: 443
+  {{- end }}
+
   hostnames:
+  {{- if .Values.akhq.envoyGateway.host }}
+    - {{ .Values.akhq.envoyGateway.host | quote }}
+  {{- else }}
     - {{ include "akhq.ingressHost" . | quote }}
+  {{- end }}
+
   rules:
     - matches:
         - path:
@@ -24,5 +33,7 @@ spec:
       backendRefs:
         - name: akhq
           port: 8080
+
+{{- end }}
 {{- end }}
 {{- end }}
