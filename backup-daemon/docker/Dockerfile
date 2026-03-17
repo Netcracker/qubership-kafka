@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:fix_hocon_fix
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:feat_api_backward_compatibility
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_BACKUP=/opt/kafka/backup-storage
