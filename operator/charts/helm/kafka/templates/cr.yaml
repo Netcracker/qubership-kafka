@@ -46,6 +46,8 @@ spec:
 {{- end }}
   disableSecurity: {{ coalesce .Values.global.secrets.kafka.disableSecurity .Values.kafka.disableSecurity | default false }}
   dockerImage: {{ template "kafka.image" . }}
+  livenessProbe: {{ include "kafka.livenessProbe" . | nindent 4}}
+  readinessProbe: {{ include "kafka.readinessProbe" . | nindent 4 }}
   heapSize: {{ .Values.kafka.heapSize }}
   replicas: {{ include "kafka.replicas" . }}
 {{- if .Values.kafka.scaling }}

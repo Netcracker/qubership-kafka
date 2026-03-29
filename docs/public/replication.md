@@ -247,7 +247,7 @@ mirrorMaker:
         params:
           filter.type: exclude
           headers: heartbeatV1
-          topics: usage.costedevents.v1
+          topics: data-topic.v1
   regionName: target
   repeatedReplication: true
   clusters:
@@ -256,15 +256,14 @@ mirrorMaker:
       username: username
       password: password
       saslMechanism: SCRAM-SHA-512
-      enableSsl: true
-      sslSecretName: msksslcertificate
+      enableSsl: false
     - name: target
       bootstrapServers: kafka-target:9093
       username: username
       password: password
       enableSsl: true
       sslSecretName: sslcertificate
-  topicsToReplicate: usage.costedevents.v1,usage.rejected-events.v1,usage.costedevents.v1,usage.rejected-events.v1
+  topicsToReplicate: usage.data.v1,usage.events.v1
   replicationFlowEnabled: true
   replicationPrefixEnabled: false
   replicationFactor: 3
