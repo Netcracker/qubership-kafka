@@ -191,16 +191,20 @@ spec:
               value: {{ .Values.global.disasterRecovery.region }}
             {{- end }}
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health/prometheus
               port: {{ template "backupDaemon.port" . }}
+              scheme: {{ template "backupDaemon.Protocol" . }}
             failureThreshold: 3
             initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health/prometheus
               port: {{ template "backupDaemon.port" . }}
+              scheme: {{ template "backupDaemon.Protocol" . }}
             failureThreshold: 3
             initialDelaySeconds: 30
             periodSeconds: 5
