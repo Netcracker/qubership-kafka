@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:main
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:fix_tests_and_remove_redundant_code
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_BACKUP=/opt/kafka/backup-storage
