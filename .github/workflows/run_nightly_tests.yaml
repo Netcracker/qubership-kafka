@@ -6,15 +6,16 @@ permissions:
   actions: read
 
 on:
-  schedule:
-    - cron: '0 1 * * *'
+  push
+#  schedule:
+#    - cron: '0 1 * * *'
 
 jobs:
   Nightly-Kafka-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@a23bed13d489e8fe6e335fe717258dea12cbb006 #v1.6.0
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@feat/kafka_atp #v1.6.0
     with:
       service_branch: 'main'
-      pipeline_branch: 'a23bed13d489e8fe6e335fe717258dea12cbb006' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'feat/kafka_atp' #this value must match the value after '@' in 'uses'
       scope: 'nightly'
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
