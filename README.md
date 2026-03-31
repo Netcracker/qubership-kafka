@@ -1,17 +1,29 @@
-[[_TOC_]]
+The following topics are covered in this chapter:
+
+<!-- TOC -->
+* [Kafka Service](#kafka-service)
+  * [Repository structure](#repository-structure)
+  * [How to start](#how-to-start)
+    * [Deploy to k8s](#deploy-to-k8s)
+      * [Pure helm](#pure-helm)
+    * [Smoke tests](#smoke-tests)
+    * [How to debug](#how-to-debug)
+      * [Kafka Operator](#kafka-operator)
+      * [Kafka-Services Operator](#kafka-services-operator)
+    * [How to troubleshoot](#how-to-troubleshoot)
+  * [Evergreen strategy](#evergreen-strategy)
+  * [Useful links](#useful-links)
+<!-- TOC -->
 
 # Kafka Service
 
 ## Repository structure
 
-* `./charts` - directory with HELM charts for Kafka and Kafka-Services components.
-* `./demo` - directory `docker-compose` to run Kafka with all related services.
-* `./docs` - directory with actual documentation for the service.
-* `./integration-tests` - directory with Robot Framework test cases.
-* `./kafka-service-operator` - directory with operator source code, which is used for running Kafka and Kafka-Services 
-  operator.
-* `./kafka-service-operator-integration-tests` - directory with HELM Chart for integration-tests and documentation.
-
+* `./charts` - directory with HELM charts for Kafka and Kafka-related components.
+* `./demo` - directory with `docker-compose` setup to run Kafka and related services locally.
+* `./docs` - directory containing project documentation.
+* `./integration-tests` - directory with Robot Framework integration test cases.
+* `./operator` - directory with operator source code used for running Kafka and related services.
 
 ## How to start
 
@@ -28,7 +40,7 @@
 
      ```sh
      # Run in /charts/helm/kafka directory
-     helm install kafke ./ -f sample.yaml -n <TARGET_NAMESPACE>
+     helm install kafka ./ -f sample.yaml -n <TARGET_NAMESPACE>
      ```
 
 7. Run the following command if you deploy Kafka's supplementary services only:
