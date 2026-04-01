@@ -574,7 +574,7 @@ integrationTests:
   # ATP Report View UI URL for accessing test results (optional)
   atpReportViewUiUrl: ""
   # Environment name to organize test results in S3 (e.g., dev, staging, prod)
-  environmentName: ""
+  environmentName: "kafka"
   # MONITORED_IMAGES - list of images to validate in kafka_images test
   # Format: "deployment deployment-name container-name image:tag,..."
   monitoredImages: ""
