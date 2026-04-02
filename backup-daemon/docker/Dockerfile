@@ -3,7 +3,7 @@ FROM ghcr.io/netcracker/qubership-backup-daemon-go:main
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_BACKUP=/opt/kafka/backup-storage
 
-# test
+
 
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
     echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
