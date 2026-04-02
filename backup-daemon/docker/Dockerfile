@@ -27,6 +27,5 @@ RUN set -x && apk upgrade --no-cache --available
 
 RUN chmod +x ${KAFKA_HOME}/scripts/*.py
 
-WORKDIR ${KAFKA_HOME}
 USER 1000:0
 VOLUME ["${KAFKA_BACKUP}"]
