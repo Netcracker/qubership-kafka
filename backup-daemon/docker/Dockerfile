@@ -21,8 +21,8 @@ RUN set -x \
        --no-cache-dir \
        --break-system-packages \
        kafka-python==2.3.0 \
-    #&& pip3 install setuptools \
-    #&& pip3 install -r ${KAFKA_HOME}/requirements.txt \
+    && pip3 install setuptools \
+    && pip3 install -r ${KAFKA_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 
 # Upgrade all tools to avoid vulnerabilities
@@ -30,6 +30,6 @@ RUN set -x && apk upgrade --no-cache --available
 
 RUN chmod +x ${KAFKA_HOME}/scripts/*.py
 
-#WORKDIR ${KAFKA_HOME}
+WORKDIR ${KAFKA_HOME}
 USER 1000:0
 VOLUME ["${KAFKA_BACKUP}"]
