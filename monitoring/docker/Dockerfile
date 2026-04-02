@@ -22,7 +22,7 @@ RUN set -x \
 # Build
 RUN GOOS=linux GOARCH=amd64 GO111MODULE=on go build -tags musl -a -o additional-metrics main.go
 
-FROM telegraf:1.37-alpine
+FROM telegraf:1.38.2-alpine
 
 ENV KAFKA_MONITORING_HOME=/opt/kafka-monitoring \
     KAFKA_CTL_CONFIG=/opt/kafka-monitoring/kafkactl.yml \
@@ -82,7 +82,7 @@ RUN set -x \
     && rm -rf /var/cache/apk/*
 
 ARG TMP_DIR="/tmp"
-ARG KAFKACTL_VERSION="5.17.0"
+ARG KAFKACTL_VERSION="5.18.0"
 RUN set -x \
     && wget \
         -nv \

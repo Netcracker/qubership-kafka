@@ -12,7 +12,10 @@ COPY scripts/ ${KAFKA_HOME}/scripts/
 
 RUN set -x \
     && apk add --update --no-cache curl apk-tools \
-    && pip3 install setuptools \
+    # Upgrade Python tooling and pin known-vulnerable packages
+    # (reported by scanners for this image).
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir "setuptools==80.10.0" "jaraco.context==6.1.0" "jaraco.text==6.1.0" "urllib3==2.6.3" \
     && pip3 install -r ${KAFKA_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 

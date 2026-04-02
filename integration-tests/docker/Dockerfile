@@ -19,7 +19,11 @@ COPY robot ${ROBOT_HOME}
 RUN set -x && apk upgrade --no-cache --available
 
 RUN set -x \
-    && pip3 install -r ${ROBOT_HOME}/requirements.txt \
+    # Upgrade Python tooling and pin known-vulnerable packages
+    # (reported by scanners for this image).
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir "setuptools==80.10.0" "jaraco.context==6.1.0" "jaraco.text==6.1.0" \
+    && pip3 install --no-cache-dir -r ${ROBOT_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 
 # Fix permissions for non-root user (1000:0)

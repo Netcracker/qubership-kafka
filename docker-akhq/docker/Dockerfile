@@ -1,15 +1,3 @@
-FROM eclipse-temurin:17-jdk-ubi10-minimal AS builder
-RUN microdnf install -y nodejs npm git && microdnf clean all
-WORKDIR /app
-
-RUN set -eux; \
-    git clone --depth 1 --branch 0.25.1 https://github.com/tchiotludo/akhq.git /tmp/akhq; \
-    mv /tmp/akhq/* /tmp/akhq/.[!.]* /app/ || true
-
-
-COPY docker/build.gradle ./build.gradle
-RUN ./gradlew shadowJar --no-daemon
-
 FROM eclipse-temurin:21-jdk-alpine-3.23
 
 USER 0:0
@@ -37,9 +25,10 @@ RUN set -x \
 
 # Download libraries and adapt grants
 # Download libraries and adapt grants
-ARG AKHQ_VERSION="0.25.1"
-COPY --from=builder /app/build/libs/akhq-*-all.jar /app/akhq.jar
+ARG AKHQ_VERSION="0.27.0"
 RUN set -x \
+    && wget -nv -O ${AKHQ_HOME}/akhq.jar \
+        "https://github.com/tchiotludo/akhq/releases/download/${AKHQ_VERSION}/akhq-${AKHQ_VERSION}-all.jar" \
     && chmod +x /docker-entrypoint.sh \
     && chmod -R 777 ${AKHQ_HOME}
 
