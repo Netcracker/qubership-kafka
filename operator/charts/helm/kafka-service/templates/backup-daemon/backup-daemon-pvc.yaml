@@ -7,9 +7,6 @@ metadata:
   name: data-{{ template "kafka.name" . }}-backup-daemon
   labels:
     {{- include "kafka-services.defaultLabels" . | nindent 4 }}
-    {{- if .Values.backupDaemon.cloudBackuper.excludeFromPhysicalBackup }}
-    cloud-backuper.netcracker.com/exclude-from-physical-backup: "true"
-    {{- end}}
   annotations:
     "helm.sh/resource-policy": keep
 spec:
