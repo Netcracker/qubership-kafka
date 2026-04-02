@@ -17,12 +17,9 @@ RUN set -x \
     python3 \
     py3-requests \
     py3-pip \
-    && pip3 install \
-       --no-cache-dir \
-       --break-system-packages \
-       kafka-python==2.3.0 \
-    && pip3 install setuptools \
-    && pip3 install -r ${KAFKA_HOME}/requirements.txt \
+    && if pip3 install --help | grep -q -- '--break-system-packages'; then PIP_BREAK_FLAG='--break-system-packages'; else PIP_BREAK_FLAG=''; fi \
+    && pip3 install --no-cache-dir ${PIP_BREAK_FLAG} setuptools \
+    && pip3 install --no-cache-dir ${PIP_BREAK_FLAG} -r ${KAFKA_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 
 # Upgrade all tools to avoid vulnerabilities
