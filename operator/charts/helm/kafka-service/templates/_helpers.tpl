@@ -433,9 +433,9 @@ Backup Daemon Protocol
 */}}
 {{- define "backupDaemon.Protocol" -}}
   {{- if and .Values.global.tls.enabled .Values.backupDaemon.tls.enabled -}}
-    {{- "HTTPS" -}}
+    {{- "https" -}}
   {{- else -}}
-    {{- "HTTP" -}}
+    {{- "http" -}}
   {{- end -}}
 {{- end -}}
 
