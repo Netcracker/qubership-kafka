@@ -1,6 +1,27 @@
-<!-- #GFCFilterMarkerStart# -->
-[[_TOC_]]
-<!-- #GFCFilterMarkerEnd# -->
+The following topics are covered in this chapter:
+
+<!-- TOC -->
+* [Overview](#overview)
+  * [Qubership Kafka Delivery and Features](#qubership-kafka-delivery-and-features)
+* [Kafka Components](#kafka-components)
+  * [Kafka Operator](#kafka-operator)
+  * [Kafka](#kafka)
+  * [Kafka Backup Daemon](#kafka-backup-daemon)
+  * [Kafka Monitoring](#kafka-monitoring)
+  * [AKHQ](#akhq)
+  * [Mirror Maker](#mirror-maker)
+  * [Cruise Control](#cruise-control)
+* [Supported Deployment Schemes](#supported-deployment-schemes)
+  * [On-Prem](#on-prem)
+    * [HA Deployment Scheme](#ha-deployment-scheme)
+    * [Non-HA Deployment Scheme](#non-ha-deployment-scheme)
+    * [DR Deployment Scheme](#dr-deployment-scheme)
+  * [Integration With Managed Services](#integration-with-managed-services)
+    * [Google Cloud](#google-cloud)
+    * [AWS Kafka MSK](#aws-kafka-msk)
+    * [Azure](#azure)
+    * [Aiven Managed Kafka](#aiven-managed-kafka)
+<!-- TOC -->
 
 # Overview
 

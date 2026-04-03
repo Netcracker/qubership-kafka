@@ -1,4 +1,15 @@
-[[_TOC_]]
+The following topics are covered in this chapter:
+
+<!-- TOC -->
+* [Introduction](#introduction)
+* [Prerequisites](#prerequisites)
+  * [Global](#global)
+  * [Preparations for Monitoring](#preparations-for-monitoring)
+  * [SSL](#ssl)
+* [Example of Deploy Parameters](#example-of-deploy-parameters)
+* [Aiven Kafka Features](#aiven-kafka-features)
+  * [Monitoring](#monitoring)
+<!-- TOC -->
 
 # Introduction
 
