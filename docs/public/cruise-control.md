@@ -1,6 +1,17 @@
 The following topics are covered in this chapter:
 
-[[_TOC_]]
+<!-- TOC -->
+* [Introduction](#introduction)
+* [REST API](#rest-api)
+  * [Change Kafka topic configuration](#change-kafka-topic-configuration)
+  * [Rebalance Cluster](#rebalance-cluster)
+  * [Kafka Broker Manipulation](#kafka-broker-manipulation)
+* [Cruise Control UI](#cruise-control-ui)
+  * [Rebalance Cluster](#rebalance-cluster-1)
+  * [Kafka Broker Manipulation](#kafka-broker-manipulation-1)
+* [Self Healing](#self-healing)
+* [External Kafka](#external-kafka)
+<!-- TOC -->
 
 # Introduction
 

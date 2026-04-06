@@ -1,6 +1,14 @@
 The following topics are covered in this chapter:
 
-[[_TOC_]]
+<!-- TOC -->
+* [General Information](#general-information)
+* [Prerequisites and limitations](#prerequisites-and-limitations)
+* [Optimization Goals](#optimization-goals)
+  * [Optimizing for Throughput](#optimizing-for-throughput)
+  * [Optimizing for Latency](#optimizing-for-latency)
+  * [Optimizing for Durability](#optimizing-for-durability)
+  * [Optimizing for Availability](#optimizing-for-availability)
+<!-- TOC -->
 
 # General Information
 
