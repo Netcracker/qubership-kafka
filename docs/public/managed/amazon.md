@@ -1,4 +1,17 @@
-[[_TOC_]]
+The following topics are covered in this chapter:
+
+<!-- TOC -->
+* [Introduction](#introduction)
+* [Prerequisites](#prerequisites)
+  * [Global](#global)
+  * [Preparations for Monitoring](#preparations-for-monitoring)
+  * [Preparations for Backup](#preparations-for-backup)
+  * [Preparation for Cruise Control](#preparation-for-cruise-control)
+* [Example of Deploy Parameters](#example-of-deploy-parameters)
+* [Amazon MSK Features](#amazon-msk-features)
+  * [Security](#security)
+  * [Monitoring](#monitoring)
+<!-- TOC -->
 
 # Introduction
 
