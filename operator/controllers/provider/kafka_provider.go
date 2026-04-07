@@ -17,6 +17,9 @@ package provider
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v1"
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
@@ -24,8 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -247,6 +248,7 @@ func (krp KafkaResourceProvider) NewKafkaPersistentVolumeClaimForCR(brokerId int
 	if krp.cr.Spec.Kraft.Enabled {
 		labels["kraft"] = "enabled"
 	}
+	labels["cloud-backuper.netcracker.com/exclude-from-physical-backup"] = "true"
 	persistentVolumeClaim := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(persistentVolumeClaimPattern, krp.cr.Name, brokerId),
