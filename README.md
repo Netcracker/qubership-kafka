@@ -108,3 +108,4 @@ To keep the component up to date, the following activities should be performed r
 * [Troubleshooting guide](/docs/public/troubleshooting.md).
 * [Architecture Guide](/docs/public/architecture.md).
 * [Internal Developer Guide](/docs/internal/developing.md).
+
