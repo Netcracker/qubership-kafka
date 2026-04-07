@@ -8,7 +8,12 @@ COPY docker/requirements.txt requirements.txt
 COPY docker/run.sh ${CRD_INIT_HOME}/run.sh
 
 RUN apk add --update --no-cache bash build-base apk-tools
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir "setuptools==80.10.1" "jaraco.context==6.1.0" "jaraco.text==4.2.0" \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Upgrade base Alpine packages to pull patched versions (e.g., binutils).
+RUN apk upgrade --no-cache --available
 
 COPY crds ${CRD_INIT_HOME}/crds
 COPY crd-init.py ${CRD_INIT_HOME}/crd-init.py

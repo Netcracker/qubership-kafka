@@ -46,6 +46,8 @@ spec:
 {{- end }}
   disableSecurity: {{ coalesce .Values.global.secrets.kafka.disableSecurity .Values.kafka.disableSecurity | default false }}
   dockerImage: {{ template "kafka.image" . }}
+  livenessProbe: {{ include "kafka.livenessProbe" . | nindent 4}}
+  readinessProbe: {{ include "kafka.readinessProbe" . | nindent 4 }}
   heapSize: {{ .Values.kafka.heapSize }}
   replicas: {{ include "kafka.replicas" . }}
 {{- if .Values.kafka.scaling }}
@@ -164,7 +166,7 @@ spec:
     enableTwoWaySsl: {{ .Values.kafka.tls.enableTwoWaySsl }}
     allowNonencryptedAccess: {{ .Values.global.tls.allowNonencryptedAccess }}
 {{- end }}
-  rollingUpdate: {{ .Values.kafka.rollingUpdate | default false }}
+  rollingUpdate: {{ .Values.kafka.rollingUpdate }}
 {{- if or .Values.global.customLabels .Values.kafka.customLabels }}
   customLabels:
     {{- .Values.global.customLabels | toYaml | nindent 6 -}}
@@ -190,9 +192,11 @@ spec:
     {{- end }}
     {{- else }}
     migration: false
+    migrationTimeout: {{ .Values.kafka.kraft.migrationTimeout }}
     {{- end }}
     {{- else }}
     migration: false
+    migrationTimeout: {{ .Values.kafka.kraft.migrationTimeout }}
     {{- end }}
   {{- if .Values.kafka.migrationController }}
   migrationController:

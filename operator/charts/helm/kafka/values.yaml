@@ -136,6 +136,7 @@ kafka:
     enabled: false
     maxUnavailable: 0
   dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:main
+  kafka3dockerImage: ghcr.io/netcracker/qubership-docker-kafka-3:main
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
@@ -159,6 +160,18 @@ kafka:
       cpu: 400m
       memory: 800Mi
   securityContext: {}
+  livenessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 20
+  readinessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 30
+    periodSeconds: 30
+    successThreshold: 1
+    failureThreshold: 5
   storage:
     size: 1Gi
 #    volumes:
@@ -225,7 +238,7 @@ kafka:
       additionalIpAddresses: []
   environmentVariables:
     - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
-  rollingUpdate: false
+  rollingUpdate: true
   customLabels: {}
   debugContainer: false
   ccMetricReporterEnabled: false

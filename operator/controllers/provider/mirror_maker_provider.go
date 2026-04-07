@@ -190,6 +190,9 @@ func (mmrp MirrorMakerResourceProvider) createReplicationFlowConfig(sourceNames 
 	}
 
 	if !repeatedReplication {
+		topicPrefixes = append(topicPrefixes, ".*\\..*-internal")
+		topicPrefixes = append(topicPrefixes, ".*\\..*\\.internal")
+		topicPrefixes = append(topicPrefixes, "__.*")
 		blackList := fmt.Sprintf("%s = %s", TopicBlackList, strings.Join(topicPrefixes, ","))
 		replicationConfig = append(replicationConfig, blackList)
 	}
