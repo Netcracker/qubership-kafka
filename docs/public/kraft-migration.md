@@ -1,7 +1,18 @@
 This guide describes how to migrate Kafka service from ZooKeeper to Kraft. 
 For more information about migration see [apache guide](https://kafka.apache.org/documentation/#kraft_zk_migration)
 
-[[_TOC_]]
+<!-- TOC -->
+* [Automatic migration](#automatic-migration)
+* [Manual migration](#manual-migration)
+  * [Initial step](#initial-step)
+  * [Creating Kraft controller](#creating-kraft-controller)
+  * [Updating Kafka brokers to do metadata migration](#updating-kafka-brokers-to-do-metadata-migration)
+  * [Removing ZooKeeper connection from Kafka brokers](#removing-zookeeper-connection-from-kafka-brokers)
+  * [Removing ZooKeeper connection from Kraft controller](#removing-zookeeper-connection-from-kraft-controller)
+  * [Create Kraft cluster with brokers and controller](#create-kraft-cluster-with-brokers-and-controller)
+  * [Removing Kraft controller](#removing-kraft-controller)
+  * [Enabling Kraft for future upgrades](#enabling-kraft-for-future-upgrades)
+<!-- TOC -->
 
 # Automatic migration
 

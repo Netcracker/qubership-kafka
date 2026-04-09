@@ -2,7 +2,15 @@ This chapter describes the security audit logging for Kafka.
 
 The following topics are covered in this chapter:
 
-[[_TOC_]]
+<!-- TOC -->
+* [Common Information](#common-information)
+* [Configuration](#configuration)
+  * [Example of Events](#example-of-events)
+    * [Unauthenticated event](#unauthenticated-event)
+    * [Unauthorized event](#unauthorized-event)
+    * [Change Password / CRUD Users](#change-password--crud-users)
+    * [Modify Grants](#modify-grants)
+<!-- TOC -->
 
 # Common Information
 
