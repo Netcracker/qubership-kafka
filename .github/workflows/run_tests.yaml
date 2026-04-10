@@ -6,27 +6,35 @@ permissions:
   actions: read
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "CODE-OF-CONDUCT.md"
-      - "CONTRIBUTING.md"
-      - "LICENSE"
-      - "README.md"
-      - "SECURITY.md"
-  push:
-    branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "CODE-OF-CONDUCT.md"
-      - "CONTRIBUTING.md"
-      - "LICENSE"
-      - "README.md"
-      - "SECURITY.md"
+  push
+#  pull_request:
+#    types: [opened, synchronize, reopened]
+#    branches: [main]
+#    paths-ignore:
+#      - "docs/**"
+#      - "CODE-OF-CONDUCT.md"
+#      - "CONTRIBUTING.md"
+#      - "LICENSE"
+#      - "README.md"
+#      - "SECURITY.md"
+#  push:
+#    branches: [main]
+#    paths-ignore:
+#      - "docs/**"
+#      - "CODE-OF-CONDUCT.md"
+#      - "CONTRIBUTING.md"
+#      - "LICENSE"
+#      - "README.md"
+#      - "SECURITY.md"
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: changes
+        id: changes
+        run: |
+          echo "run_tests=false" >> $GITHUB_ENV
   Wait-for-images:
     runs-on: ubuntu-latest
     outputs:
@@ -49,3 +57,22 @@ jobs:
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
+  final-status-check:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    needs: [ Kafka-Pipeline ]
+    steps:
+      - name: Check final status
+        run: |
+          if [[ "{{ env.ERROR_FLAG }}" == "false" ]]; then
+            echo "No dev_build run – only documentation changed. Status check passed."
+            exit 0
+          fi
+          
+          if [[ "${{ needs.Kafka-Pipeline.result }}" != "success" ]]; then
+            echo "Tests failed or were skipped (status: ${{ needs.Kafka-Pipeline.result }})"
+            exit 1
+          else
+            echo "Tests completed successfully"
+            exit 0
+          fi
