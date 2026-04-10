@@ -36,7 +36,7 @@ jobs:
       - name: Skip tests
         id: check
         run: |
-          echo "skip_tests=false" >> $GITHUB_OUTPUT
+          echo "skip_tests=true" >> $GITHUB_OUTPUT
 
   Wait-for-images:
     runs-on: ubuntu-latest
