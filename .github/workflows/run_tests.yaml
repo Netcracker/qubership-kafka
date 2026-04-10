@@ -28,51 +28,40 @@ on:
 #      - "SECURITY.md"
 
 jobs:
-  changes:
+  check-dev-build:
     runs-on: ubuntu-latest
+    outputs:
+      skip_tests: ${{ steps.check.outputs.skip_tests }}
     steps:
-      - name: changes
-        id: changes
+      - name: Skip tests
+        id: check
         run: |
-          echo "run_tests=false" >> $GITHUB_ENV
+          echo "skip_tests=true" >> $GITHUB_OUTPUT
+
   Wait-for-images:
     runs-on: ubuntu-latest
+    needs: check-dev-build
+    if: needs.check-dev-build.outputs.skip_tests == false
     outputs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
     steps:
-      - name: Wait for push.yml to complete
-        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@3e428f45132119ce49d90f3770a45d4fe1d1078d  # v2.0.4
+      - name: Wait for dev_build.yml to complete
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@3e428f45132119ce49d90f3770a45d4fe1d1078d # v2.0.4
         id: wait
         with:
           workflow: dev_build.yml
           token: ${{ secrets.GITHUB_TOKEN }}
           poll-interval: 20
+
   Kafka-Pipeline:
-    needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@0317a7311f0fdd1e6d492fb3a75d722835851b15 #v1.6.1
+    needs: [check-dev-build, Wait-for-images]
+    if: always()
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/skip_tests # v1.6.1
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: '0317a7311f0fdd1e6d492fb3a75d722835851b15' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'fix/skip_tests'
+      skip_tests: true
     secrets:
-      AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
-      AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
-  final-status-check:
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    needs: [ Kafka-Pipeline ]
-    steps:
-      - name: Check final status
-        run: |
-          if [[ "{{ env.ERROR_FLAG }}" == "false" ]]; then
-            echo "No dev_build run – only documentation changed. Status check passed."
-            exit 0
-          fi
-          
-          if [[ "${{ needs.Kafka-Pipeline.result }}" != "success" ]]; then
-            echo "Tests failed or were skipped (status: ${{ needs.Kafka-Pipeline.result }})"
-            exit 1
-          else
-            echo "Tests completed successfully"
-            exit 0
-          fi
+      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+      AWS_S3_ACCESS_KEY_SECRET: ${{ secrets.AWS_S3_ACCESS_KEY_SECRET }}
