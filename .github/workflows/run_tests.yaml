@@ -28,20 +28,41 @@ on:
 #      - "SECURITY.md"
 
 jobs:
-  check-dev-build:
+  changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
-      skip_tests: ${{ steps.check.outputs.skip_tests }}
+      code_changed: ${{ steps.filter.outputs.code_changed }}
     steps:
-      - name: Skip tests
-        id: check
-        run: |
-          echo "skip_tests=true" >> $GITHUB_OUTPUT
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            code_changed:
+              - '**'
+              - '!docs/**'
+              - '!CODE-OF-CONDUCT.md'
+              - '!CONTRIBUTING.md'
+              - '!LICENSE'
+              - '!README.md'
+              - '!SECURITY.md'
+
+  Print-param:
+    runs-on: ubuntu-latest
+    needs: changes
+    steps:
+      - name: Print param
+        run: echo ${{ needs.changes.outputs.code_changed }}
 
   Wait-for-images:
     runs-on: ubuntu-latest
-    needs: check-dev-build
-    if: needs.check-dev-build.outputs.skip_tests == 'false'
+    needs: changes
+    if: needs.changes.outputs.code_changed == 'true'
     outputs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
     steps:
@@ -54,14 +75,14 @@ jobs:
           poll-interval: 20
 
   Kafka-Pipeline:
-    needs: [check-dev-build, Wait-for-images]
+    needs: [changes, Wait-for-images]
     if: always()
     uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/skip_tests # v1.6.1
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
       pipeline_branch: 'fix/skip_tests'
-      skip_tests: ${{ fromJSON(needs.check-dev-build.outputs.skip_tests) }}
+      run_tests: ${{ fromJSON(needs.changes.outputs.code_changed) }}
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
       AWS_S3_ACCESS_KEY_SECRET: ${{ secrets.AWS_S3_ACCESS_KEY_SECRET }}
