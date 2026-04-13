@@ -11,7 +11,7 @@ RUN chmod +x /bin/kafka_exporter
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq
+        pcre2 curl gnutls libcurl jq musl-utils
 
 COPY docker/config_parser.py /opt/config_parser.py
 COPY docker/entrypoint.sh /entrypoint.sh
