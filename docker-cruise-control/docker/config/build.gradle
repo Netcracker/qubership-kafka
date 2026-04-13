@@ -202,6 +202,80 @@ project(':cruise-control-core') {
     testOutput sourceSets.test.output
   }
 
+  configurations.all {
+
+    resolutionStrategy {
+        eachDependency { details ->
+
+            // jose4j
+            if (details.requested.group == "org.bitbucket.b_c"
+                    && details.requested.name == "jose4j") {
+                details.useVersion("0.9.6")
+                details.because("Fix CVE")
+            }
+
+            // lz4-java
+            if (details.requested.group == "org.lz4"
+                    && details.requested.name == "lz4-java") {
+                details.useVersion("1.8.1")
+                details.because("Fix CVE")
+            }
+
+            // Netty
+            if (details.requested.group == "io.netty"
+                    && details.requested.name in [
+                        "netty-codec",
+                        "netty-codec-http",
+                        "netty-codec-http2"
+                    ]) {
+                details.useVersion("4.1.125.Final")
+                details.because("Fix CVE")
+            }
+
+            // Commons IO
+            if (details.requested.group == "commons-io"
+                    && details.requested.name == "commons-io") {
+                details.useVersion("2.14.0")
+                details.because("Fix CVE")
+            }
+
+            // Log4J
+            if (details.requested.group == "org.apache.logging.log4j"
+                    && details.requested.name == "log4j-core") {
+                details.useVersion("2.25.4")
+                details.because("Fix CVE")
+            }
+
+            // Log4J
+            if (details.requested.group == "org.eclipse.jetty"
+                    && details.requested.name == "jetty-http") {
+                details.useVersion("12.1.5")
+                details.because("Fix CVE")
+            }
+
+            // Log4J
+            if (details.requested.group == "com.fasterxml.jackson.core"
+                    && details.requested.name == "jackson-core") {
+                details.useVersion("2.21.1")
+                details.because("Fix CVE")
+            }
+
+            // Log4J
+            if (details.requested.group == "org.apache.commons"
+                    && details.requested.name == "commons-lang3") {
+                details.useVersion("3.18.0")
+                details.because("Fix CVE")
+            }
+
+            // Commons
+            if (details.requested.group == "org.apache.commons" && details.requested.name == "commons-lang3") {
+                details.useVersion("3.18.0")
+                details.because("Fix CVE")
+            }
+        }
+    }
+}
+
   publishing {
     publications {
       java(MavenPublication) {
