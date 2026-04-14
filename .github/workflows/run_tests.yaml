@@ -6,29 +6,15 @@ permissions:
   actions: read
 
 on:
-  push
-#  pull_request:
-#    types: [opened, synchronize, reopened]
-#    branches: [main]
-#    paths-ignore:
-#      - "docs/**"
-#      - "CODE-OF-CONDUCT.md"
-#      - "CONTRIBUTING.md"
-#      - "LICENSE"
-#      - "README.md"
-#      - "SECURITY.md"
-#  push:
-#    branches: [main]
-#    paths-ignore:
-#      - "docs/**"
-#      - "CODE-OF-CONDUCT.md"
-#      - "CONTRIBUTING.md"
-#      - "LICENSE"
-#      - "README.md"
-#      - "SECURITY.md"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  push:
+    branches: [main]
 
 jobs:
-  changes:
+
+  Wait-for-images:
     runs-on: ubuntu-latest
     outputs:
       skip_tests: ${{ steps.check.outputs.skip_tests }}
@@ -38,37 +24,36 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          SHA="${{ github.sha }}"
-          RUNS=$(gh run list --workflow dev_build.yml --repo ${{ github.repository }} --commit $SHA)
-          echo $RUNS
-          if [ -n "$RUNS" ]; then
-            echo "skip_tests=false" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            SHA="${{ github.event.pull_request.head.sha }}"
           else
-            echo "skip_tests=true" >> $GITHUB_OUTPUT
+            SHA="${{ github.sha }}"
           fi
-
-  Wait-for-images:
-    needs: changes
-    if: needs.changes.outputs.skip_tests == 'false'
-    runs-on: ubuntu-latest
-    outputs:
-      conclusion: ${{ steps.wait.outputs.conclusion }}
-    steps:
+          RUNS=$(gh run list --workflow dev_build.yml --repo ${{ github.repository }} --commit $SHA)
+          echo RUNS: $RUNS
+          SKIP_TESTS="false"
+          if [ -z "$RUNS" ]; then
+            SKIP_TESTS="true"
+          fi
+          echo SKIP_TESTS: $SKIP_TESTS
+          echo "skip_tests=$SKIP_TESTS" >> $GITHUB_OUTPUT
       - name: Wait for push.yml to complete
+        if: steps.check.outputs.skip_tests == 'false'
         uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@3e428f45132119ce49d90f3770a45d4fe1d1078d  # v2.0.4
         id: wait
         with:
           workflow: dev_build.yml
           token: ${{ secrets.GITHUB_TOKEN }}
           poll-interval: 20
+
   Kafka-Pipeline:
-    needs: [changes, Wait-for-images]
+    needs: Wait-for-images
     uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/skip_tests
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
       pipeline_branch: 'fix/skip_tests' #this value must match the value after '@' in 'uses'
-      skip_tests: ${{ fromJSON(needs.changes.outputs.skip_tests) }}
+      skip_tests: ${{ fromJSON(needs.Wait-for-images.outputs.skip_tests) }}
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
