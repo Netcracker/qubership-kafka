@@ -28,89 +28,25 @@ on:
 #      - "SECURITY.md"
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      code_changed: ${{ steps.filter.outputs.code_changed }}
-    steps:
-      - name: Get commit SHA
-        id: sha
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            SHA="${{ github.event.pull_request.head.sha }}"
-          else
-            SHA="${{ github.sha }}"
-          fi
-          echo "$SHA"
-          echo "commit_sha=$SHA" >> $GITHUB_OUTPUT
-      - name: Check if dev_build.yml was triggered for this commit
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          SHA="${{ steps.sha.outputs.commit_sha }}"
-
-#          RUNS=$(gh api repos/${{ github.repository }}/actions/workflows/dev_build.yml/runs \
-#            --paginate \
-#            --jq "[.[] | select(.head_sha == \"$SHA\")] | length")
-          echo $RUNS
-          if [[ "$RUNS" -eq 0 ]]; then
-            echo triggered=false
-            echo "triggered=false" >> $GITHUB_OUTPUT
-          else
-            echo triggered=true
-            echo "triggered=true" >> $GITHUB_OUTPUT
-          fi
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
-        id: filter
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filters: |
-            code_changed:
-              - '!docs/**'
-              - '!CODE-OF-CONDUCT.md'
-              - '!CONTRIBUTING.md'
-              - '!LICENSE'
-              - '!README.md'
-              - '!SECURITY.md'
-              - '!.github/workflows/run_tests.yaml'
-
-  Print-param:
-    runs-on: ubuntu-latest
-    needs: changes
-    steps:
-      - name: Print param
-        run: echo ${{ needs.changes.outputs.code_changed }}
-
   Wait-for-images:
     runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.code_changed == 'true'
     outputs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
     steps:
-      - name: Wait for dev_build.yml to complete
-        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@3e428f45132119ce49d90f3770a45d4fe1d1078d # v2.0.4
+      - name: Wait for push.yml to complete
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@3e428f45132119ce49d90f3770a45d4fe1d1078d  # v2.0.4
         id: wait
         with:
           workflow: dev_build.yml
           token: ${{ secrets.GITHUB_TOKEN }}
           poll-interval: 20
-
   Kafka-Pipeline:
-    needs: [changes, Wait-for-images]
-    if: always()
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/skip_tests # v1.6.1
+    needs: Wait-for-images
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/skip_tests 
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'fix/skip_tests'
-      run_tests: ${{ fromJSON(needs.changes.outputs.code_changed) }}
+      pipeline_branch: 'fix/skip_tests' #this value must match the value after '@' in 'uses'
     secrets:
-      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-      AWS_S3_ACCESS_KEY_SECRET: ${{ secrets.AWS_S3_ACCESS_KEY_SECRET }}
+      AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
+      AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
