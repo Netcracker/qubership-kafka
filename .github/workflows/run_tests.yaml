@@ -30,32 +30,26 @@ on:
 jobs:
   changes:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
     outputs:
-      code_changed: ${{ steps.filter.outputs.code_changed }}
+      skip_tests: ${{ steps.check.outputs.skip_tests }}
     steps:
-      - name: Get commit SHA
-        id: sha
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            SHA="${{ github.event.pull_request.head.sha }}"
-          else
-            SHA="${{ github.sha }}"
-          fi
-          echo "$SHA"
-          echo "commit_sha=$SHA" >> $GITHUB_OUTPUT
       - name: Check if dev_build.yml was triggered for this commit
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          SHA="${{ steps.sha.outputs.commit_sha }}"
+          SHA="${{ github.sha }}"
           RUNS=$(gh run list --workflow dev_build.yml --repo ${{ github.repository }} --commit $SHA)
           echo $RUNS
+          if [ -n "$RUNS" ]; then
+            echo "skip_tests=false" >> $GITHUB_OUTPUT
+          else
+            echo "skip_tests=true" >> $GITHUB_OUTPUT
+          fi
 
   Wait-for-images:
+    needs: changes
+    if: needs.changes.outputs.skip_tests == 'false'
     runs-on: ubuntu-latest
     outputs:
       conclusion: ${{ steps.wait.outputs.conclusion }}
@@ -68,12 +62,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           poll-interval: 20
   Kafka-Pipeline:
-    needs: Wait-for-images
+    needs: [changes, Wait-for-images]
     uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/skip_tests
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
       pipeline_branch: 'fix/skip_tests' #this value must match the value after '@' in 'uses'
+      skip_tests: ${{ fromJSON(needs.changes.outputs.skip_tests) }}
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
