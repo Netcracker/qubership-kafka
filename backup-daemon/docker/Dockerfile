@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:fix_s3_with_tls
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:fix_eviction_process_on_schedule
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_BACKUP=/opt/kafka/backup-storage
