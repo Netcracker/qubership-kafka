@@ -563,9 +563,6 @@ backupDaemon:
   install: false
   dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main"
 
-  cloudBackuper:
-    useBackupDaemon: true
-    backupDaemonCredentials: true
   tls:
     enabled: true
     certificates:
@@ -617,7 +614,7 @@ backupDaemon:
       memory: "64Mi"
       cpu: "25m"
     limits:
-      memory: "512Mi"
+      memory: "256Mi"
       cpu: "200m"
 
   # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
