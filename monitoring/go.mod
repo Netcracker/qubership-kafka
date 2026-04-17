@@ -1,6 +1,6 @@
 module mod
 
-go 1.25
+go 1.26
 
 require github.com/segmentio/kafka-go v0.4.50
 

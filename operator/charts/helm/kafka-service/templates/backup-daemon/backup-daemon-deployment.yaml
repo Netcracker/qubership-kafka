@@ -107,7 +107,7 @@ spec:
               memory: {{ default "64Mi" .Values.backupDaemon.resources.requests.memory }}
             limits:
               cpu: {{ default "200m" .Values.backupDaemon.resources.limits.cpu }}
-              memory: {{ default "512Mi" .Values.backupDaemon.resources.limits.memory }}
+              memory: {{ default "256Mi" .Values.backupDaemon.resources.limits.memory }}
           volumeMounts:
           - name: backup-storage
             mountPath: /opt/kafka/backup-storage
@@ -191,20 +191,16 @@ spec:
               value: {{ .Values.global.disasterRecovery.region }}
             {{- end }}
           livenessProbe:
-            httpGet:
-              path: /health/prometheus
+            tcpSocket:
               port: {{ template "backupDaemon.port" . }}
-              scheme: {{ include "backupDaemon.Protocol" . | upper }}
             failureThreshold: 3
             initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 5
           readinessProbe:
-            httpGet:
-              path: /health/prometheus
+            tcpSocket:
               port: {{ template "backupDaemon.port" . }}
-              scheme: {{ include "backupDaemon.Protocol" . | upper }}
             failureThreshold: 3
             initialDelaySeconds: 30
             periodSeconds: 5
