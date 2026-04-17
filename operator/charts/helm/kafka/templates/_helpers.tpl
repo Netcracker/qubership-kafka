@@ -465,15 +465,6 @@ Find a kubectl image in various places.
   {{- end -}}
 {{- end }}
 
-{{- define "kraft.migrationDisabled" -}}
-  {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
-  {{- if and $pvc (hasKey $pvc.metadata.labels "kraft") .Values.kafka.kraft.migration -}}
-    true
-  {{- else -}}
-    false
-  {{- end -}}
-{{- end }}
-
 {{- define "kraft.enabled" -}}
   {{- $kraftEnabled := .Values.kafka.kraft.enabled -}}
   {{- $desiredVar := include "kafka.imageVariant" (include "kafka.image" .) -}}
