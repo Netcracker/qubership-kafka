@@ -456,25 +456,21 @@ Find a kubectl image in various places.
   {{- printf "%t" $upgradeAllowed -}}
 {{- end }}
 
-{{- define "kraftMigrationCheck" -}}
-  {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
-  {{- if $pvc }}
-    {{- if and (hasKey $pvc.metadata.labels "kraft") .Values.kafka.kraft.migration }}
-      {{- printf "%t" false -}}
-    {{- else }}
-      {{- printf "%t" true -}}
-    {{- end }}
-  {{- else }}
-    {{- printf "%t" true -}}
-  {{- end }}
-{{- end }}
-
 {{- define "kraft.effectiveMigration" -}}
   {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
   {{- if and $pvc (hasKey $pvc.metadata.labels "kraft") -}}
     false
   {{- else -}}
     {{- printf "%t" .Values.kafka.kraft.migration -}}
+  {{- end -}}
+{{- end }}
+
+{{- define "kraft.migrationDisabled" -}}
+  {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
+  {{- if and $pvc (hasKey $pvc.metadata.labels "kraft") .Values.kafka.kraft.migration -}}
+    true
+  {{- else -}}
+    false
   {{- end -}}
 {{- end }}
 
