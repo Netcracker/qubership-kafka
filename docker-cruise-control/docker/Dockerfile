@@ -66,7 +66,7 @@ RUN chmod a+rw -R .
 ARG TMP_DIR="/tmp"
 
 # Download kafkactl
-ARG KAFKACTL_VERSION=5.17.0
+ARG KAFKACTL_VERSION=5.18.0
 ARG TARGETARCH
 
 RUN set -x \
@@ -84,7 +84,7 @@ RUN set -x \
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq gnupg
+        pcre2 curl gnutls libcurl jq gnupg libexpat musl-utils libssl3 libcrypto3 openssl libpng binutils 
 
 EXPOSE 9090
 USER 1001
