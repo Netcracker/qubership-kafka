@@ -20,9 +20,6 @@
 {{- if and (eq (include "validateKafkaUpgrade" .) "false") (not .Values.kafka.kraft.skipUpgradeCheck) -}}
 {{ fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress.\n You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
 {{- end }}
-{{- if and (eq (include "kraftMigrationCheck" .) "false") (not .Values.kafka.kraft.skipUpgradeCheck) -}}
-{{ fail (printf "Kraft Migration is forbidden on Kafka which already installed on Kraft. Disable kafka.kraft.migration and rerun the upgrade") -}}
-{{- end }}
 apiVersion: {{ .Values.operator.apiGroup }}/v1
 kind: Kafka
 metadata:
@@ -187,10 +184,10 @@ spec:
     {{- if eq (include "kraft.enabled" .) "true" }}
     {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
     {{- if $pvc }}
-    {{- if and (not (hasKey $pvc.metadata.labels "kraft")) (not .Values.kafka.kraft.migration) }}
+    {{- if and (not (hasKey $pvc.metadata.labels "kraft")) (ne (include "kraft.effectiveMigration" .) "true") }}
     {{ fail "\nError: You cannot upgrade Kafka with ZooKeeper to Kraft without migration, all data will be lost.\nFind more information in corresponding release documentation." }}
     {{- else }}
-    migration: {{ .Values.kafka.kraft.migration }}
+    migration: {{ include "kraft.effectiveMigration" . }}
     migrationTimeout: {{ .Values.kafka.kraft.migrationTimeout }}
     {{- end }}
     {{- else }}
