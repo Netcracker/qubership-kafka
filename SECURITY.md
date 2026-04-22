@@ -13,3 +13,4 @@ By default, older versions will not have security releases.
 
 If the issue doesn't affect any existing public releases, the fix for medium and high issues is performed
 in a main branch before releasing a new version. For low priority issues the fix can be planned for future releases.
+
