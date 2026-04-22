@@ -218,10 +218,48 @@ Kafka SASL mechanism
 {{- end -}}
 
 {{/*
+Liveness Probe for Kafka
+*/}}
+{{- define "kafka.livenessProbe" -}}
+initialDelaySeconds: {{ coalesce .Values.kafka.livenessProbeInitialDelay .Values.kafka.livenessProbe.initialDelaySeconds | default 60 }}
+timeoutSeconds: {{ coalesce .Values.kafka.livenessProbeTimeout .Values.kafka.livenessProbe.timeoutSeconds | default 5 }}
+periodSeconds: {{ .Values.kafka.livenessProbe.periodSeconds | default 15 }}
+successThreshold: {{ .Values.kafka.livenessProbe.successThreshold | default 1 }}
+failureThreshold: {{ .Values.kafka.livenessProbe.failureThreshold | default 20 }}
+{{- end -}}
+
+{{/*
+Readiness Probe for Kafka
+*/}}
+{{- define "kafka.readinessProbe" -}}
+initialDelaySeconds: {{ coalesce .Values.kafka.readinessProbeInitialDelay .Values.kafka.readinessProbe.initialDelaySeconds | default 60 }}
+timeoutSeconds: {{ coalesce .Values.kafka.readinessProbeTimeout .Values.kafka.readinessProbe.timeoutSeconds | default 30 }}
+periodSeconds: {{ .Values.kafka.readinessProbe.periodSeconds | default 30 }}
+successThreshold: {{ .Values.kafka.readinessProbe.successThreshold | default 1 }}
+failureThreshold: {{ .Values.kafka.readinessProbe.failureThreshold | default 5 }}
+{{- end -}}
+
+{{/*
 Whether Kafka TLS enabled
 */}}
 {{- define "kafka-service.enableTls" -}}
   {{- and .Values.kafka.tls.enabled .Values.global.tls.enabled -}}
+{{- end -}}
+
+{{/*
+Whether Kafka TLS is changed from previous installation
+*/}}
+{{- define "kafka-service.tlsChanged" -}}
+  {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
+  {{- $cr := lookup $apiVersion "Kafka" .Release.Namespace (include "kafka.name" .) }}
+  {{- if $cr }}
+    {{- $ssl := index $cr "spec" "ssl" | default dict }}
+    {{- $previous_ssl := index $ssl "enabled" | default false }}
+    {{- $current_ssl := eq (include "kafka-service.enableTls" .) "true" }}
+    {{- and (or $previous_ssl $current_ssl) (not (and $previous_ssl $current_ssl)) }}
+  {{- else }}
+    {{- false }}
+  {{- end }}
 {{- end -}}
 
 {{/*
@@ -434,17 +472,13 @@ Find a kubectl image in various places.
   {{- printf "%t" $upgradeAllowed -}}
 {{- end }}
 
-{{- define "kraftMigrationCheck" -}}
+{{- define "kraft.effectiveMigration" -}}
   {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
-  {{- if $pvc }}
-    {{- if and (hasKey $pvc.metadata.labels "kraft") .Values.kafka.kraft.migration }}
-      {{- printf "%t" false -}}
-    {{- else }}
-      {{- printf "%t" true -}}
-    {{- end }}
-  {{- else }}
-    {{- printf "%t" true -}}
-  {{- end }}
+  {{- if and $pvc (hasKey $pvc.metadata.labels "kraft") -}}
+    false
+  {{- else -}}
+    {{- printf "%t" .Values.kafka.kraft.migration -}}
+  {{- end -}}
 {{- end }}
 
 {{- define "kraft.enabled" -}}

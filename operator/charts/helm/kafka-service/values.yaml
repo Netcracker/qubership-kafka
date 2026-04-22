@@ -333,6 +333,12 @@ akhq:
   ingress:
     host: ""
     className: ""
+  envoyGateway:
+    enabled: false
+    host: ""
+    parentRefs:
+      - name: default-external-gateway
+        namespace: gateway-system
   ldap:
     enabled: false
     enableSsl: false
@@ -694,6 +700,12 @@ cruiseControl:
 
   ingress:
     host: ""
+  envoyGateway:
+    enabled: false
+    host: ""
+    parentRefs:
+      - name: default-external-gateway
+        namespace: gateway-system
 
   prometheusServerEndpoint: ""
 

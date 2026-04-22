@@ -1,14 +1,4 @@
-FROM eclipse-temurin:17-jdk-ubi10-minimal AS builder
-RUN microdnf install -y nodejs npm && microdnf clean all
-WORKDIR /app
-
-RUN wget -O /tmp/akhq.tar.gz https://github.com/tchiotludo/akhq/archive/refs/tags/0.25.1.tar.gz
-
-RUN tar -xzf /tmp/akhq.tar.gz -C /app --strip-components=1
-COPY docker/build.gradle ./build.gradle
-RUN ./gradlew shadowJar --no-daemon
-
-FROM eclipse-temurin:21-jdk-alpine-3.23
+FROM eclipse-temurin:25-jdk-alpine-3.23
 
 USER 0:0
 
@@ -34,10 +24,10 @@ RUN set -x \
         openssl
 
 # Download libraries and adapt grants
-# Download libraries and adapt grants
-ARG AKHQ_VERSION="0.25.1"
-COPY --from=builder /app/build/libs/akhq-*-all.jar /app/akhq.jar
+ARG AKHQ_VERSION="0.27.0"
 RUN set -x \
+    && wget -nv -O ${AKHQ_HOME}/akhq.jar \
+        "https://github.com/tchiotludo/akhq/releases/download/${AKHQ_VERSION}/akhq-${AKHQ_VERSION}-all.jar" \
     && chmod +x /docker-entrypoint.sh \
     && chmod -R 777 ${AKHQ_HOME}
 

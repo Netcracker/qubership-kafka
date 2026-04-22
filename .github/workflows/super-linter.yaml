@@ -51,7 +51,7 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
     - name: "Get the common linters configuration"
-      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
       id: download
       with:
         name: linter-config
@@ -78,9 +78,11 @@ jobs:
         fi
 
     - name: Lint Code Base
-      uses: super-linter/super-linter/slim@ffde3b2b33b745cb612d787f669ef9442b1339a6 # v8.1.0
+      uses: super-linter/super-linter/slim@9e863354e3ff62e0727d37183162c4a88873df41 # v8.6.0
       env:
         VALIDATE_ALL_CODEBASE: ${{ inputs.full_scan || false }}
+        VALIDATE_KUBERNETES_KUBECONFORM: false
+        VALIDATE_PYTHON_RUFF_FORMAT: false
         # To report GitHub Actions status checks
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DEFAULT_BRANCH: ${{ github.event.pull_request.base.ref || github.event.push.ref }}

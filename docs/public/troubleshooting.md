@@ -1,4 +1,38 @@
-[[_TOC_]]
+The following topics are covered in this chapter:
+
+<!-- TOC -->
+* [ZooKeeper Failure](#zookeeper-failure)
+* [Partition Leader Crash](#partition-leader-crash)
+* [Data Is Out of Space](#data-is-out-of-space)
+* [Kafka is Degraded](#kafka-is-degraded)
+* [Kafka is Down](#kafka-is-down)
+* [Kafka Mirror Maker is Degraded](#kafka-mirror-maker-is-degraded)
+* [Kafka Mirror Maker is Down](#kafka-mirror-maker-is-down)
+* [CPU Limit Reached](#cpu-limit-reached)
+* [Memory Limit Reached](#memory-limit-reached)
+* [Lag Limit Reached](#lag-limit-reached)
+* [Timed Out Waiting for ZooKeeper Connection](#timed-out-waiting-for-zookeeper-connection)
+* [ConnectionLoss Error for ZooKeeper Connection](#connectionloss-error-for-zookeeper-connection)
+* [NoAuthException for ZooKeeper Connection](#noauthexception-for-zookeeper-connection)
+* [Repeated Occurrence of Warn Log: "Resetting first dirty offset of \[Partition\] is invalid"](#repeated-occurrence-of-warn-log-resetting-first-dirty-offset-of-partition-is-invalid)
+* [Long Rebalance For Consumer Groups after Starting Kafka Brokers](#long-rebalance-for-consumer-groups-after-starting-kafka-brokers)
+* [Kafka and NFS. Performance Degradation](#kafka-and-nfs-performance-degradation)
+* [Kafka and NFS. Invalid Reading Files on Persistent Volumes](#kafka-and-nfs-invalid-reading-files-on-persistent-volumes)
+* [Kafka Pod Is Not Ready With java.lang.InternalError](#kafka-pod-is-not-ready-with-javalanginternalerror)
+* [Topics with Insufficient Replication Factor](#topics-with-insufficient-replication-factor)
+* [Kafka CPU is Overloaded only for one of the Cluster Nodes](#kafka-cpu-is-overloaded-only-for-one-of-the-cluster-nodes)
+* [Displaying Consumer Groups Fails with "This server does not host this topic-partition"](#displaying-consumer-groups-fails-with-this-server-does-not-host-this-topic-partition)
+* [Synchronization problem between Kafka and ZooKeeper cluster](#synchronization-problem-between-kafka-and-zookeeper-cluster)
+* [Restore Storage for ZooKeeper and Kafka](#restore-storage-for-zookeeper-and-kafka)
+  * [Updating partition.metadata on Kafka side](#updating-partitionmetadata-on-kafka-side)
+* [Dealing with Kafka's Under-replicated Partitions or Heaviest Partitions in Topics Due to Data Sync Issues](#dealing-with-kafkas-under-replicated-partitions-or-heaviest-partitions-in-topics-due-to-data-sync-issues)
+* [Kafka Pods Fail with "node already exists" Error](#kafka-pods-fail-with-node-already-exists-error)
+* [Kafka Works Slowly and Consumes a lot of CPU For All Nodes](#kafka-works-slowly-and-consumes-a-lot-of-cpu-for-all-nodes)
+* [Kafka Unhealthy After Cluster Scale-In](#kafka-unhealthy-after-cluster-scale-in)
+* [Container Failed with Error: container has runAsNonRoot and image will run as root](#container-failed-with-error-container-has-runasnonroot-and-image-will-run-as-root)
+* [Pod Evicted with Error: The node was low on resource: ephemeral-storage](#pod-evicted-with-error-the-node-was-low-on-resource-ephemeral-storage)
+* [CRD Creation Failed on OpenShift 3.11](#crd-creation-failed-on-openshift-311)
+<!-- TOC -->
 
 ## ZooKeeper Failure
 

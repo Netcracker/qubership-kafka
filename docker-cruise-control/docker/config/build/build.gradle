@@ -1,20 +1,21 @@
 plugins {
-    id "java-gradle-plugin"
-    id "groovy"
-    id "idea"
+  id "java-gradle-plugin"
+  id "groovy"
+  id "idea"
 }
 
 repositories {
-    mavenCentral()
+  mavenLocal()
+  mavenCentral()
 }
 
 dependencies {
-    implementation gradleApi()
-    implementation localGroovy()
+  implementation gradleApi()
+  implementation localGroovy()
 
-    implementation 'org.ajoberstar:grgit:1.7.2'
-    implementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
-    implementation('org.jfrog.buildinfo:build-info-extractor-gradle:4.24.14') {
-        exclude module: 'groovy-all'
-    }
+  implementation 'org.ajoberstar:grgit:1.7.2'
+  implementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
+  implementation('org.jfrog.buildinfo:build-info-extractor-gradle:4.24.14') {
+    exclude module: 'groovy-all'
+  }
 }

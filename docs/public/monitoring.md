@@ -276,42 +276,23 @@ An overview of Kafka Exporter dashboard is shown below.
 
 ### Metrics
 
-**All Consumer Group Lag**
+**Throughput & Lag**
 
-![All Consumer Group Lag](/docs/public/images/all_consumer_group_lag.png)
+![Throughput & Lag](/docs/public/images/throughput-and-lag.png)
 
-* `Consumer Group Max Lag Seconds` - shows max extrapolated lag in seconds for each consumer group.
-* `Consumer Group Lag Partition Seconds` - shows extrapolated lag in seconds for each partition.
-* `Consumer Group Max Lag Offsets` - shows max offset lag for each consumer group.
-* `Consumer Group Lag Partition Offsets` - shows offset lag for each consumer group per topic partition.
+* `Message produce per second` - shows the rate at which messages are being produced to Kafka topics per second.
+* `Message consume per minute` - shows the rate at which consumers are processing messages per minute.
+* `Lag by Consumer Group (offsets)` - shows the number of unprocessed messages for each consumer group.
+* `Estimated lag seconds per consumer group` - shows how long it will take each consumer group to follow up based on consumption rate.
 
-**Consumer Group Lag In Time Per Group Over Offset Lag**
+**Throughput & Lag By Partition**
 
-![Consumer Group Lag In Time Per Group Over Offset Lag](/docs/public/images/Consumer_Group_Lag_In_Time_Per_Group_Over_Offset_Lag.png)
+![Throughput & Lag By Partitions](/docs/public/images/throughput-and-lag-by-partition.png)
 
-This panel describes the consumer groups individually. Each monitored Kafka consumer group has
-own Grafana widget.
-
-* `Consumer Group Lag In Time Per Group Over Offset Lag` - shows the max lag in time on the 
-  left Y axis and max lag in offsets on the right Y axis for the current consumer group.
-
-**Consumer Group Lag in Time Per Group Over Summed Offsets**
-
-![Consumer Group Lag in Time Per Group Over Summed Offsets](/docs/public/images/Consumer_Group_Lag_in_Time_Per_Group_Over_Summed_Offsets.png)
-
-This panel describes the consumer groups individually. Each monitored Kafka consumer group has
-own Grafana widget.
-
-* `Consumer Group Lag in Time Per Group Over Summed Offsets` - shows the max lag in time on the left Y axis. 
-  The right Y axis has the sum of latest and last consumed offsets for all the current group partitions.
-
-**Kafka Exporter JVM Metrics**
-
-![Kafka Exporter JVM Metrics](/docs/public/images/Kafka_Lag_Exporter_JVM_Metrics.png)
-
-* `JVM Memory Used` - displays JVM memory usage for Kafka Exporter.
-* `JVM GC Time` - displays JVM garbage collection time for Kafka Exporter.
-* `JVM GC Rate` - displays JVM garbage collection rate for Kafka Exporter.
+* `Message produce per second` - shows the per-partition rate at which messages are being produced to Kafka topics per second.
+* `Message consume per minute` - shows the per-partition rate at which consumers are processing messages per minute.
+* `Lag by Consumer Group (offsets)` - shows the number of unprocessed messages per-partition for each consumer group.
+* `Estimated lag seconds per consumer group` - shows how long it will take each consumer group per-partition to follow up based on consumption rate.
 
 # Kafka Topics
 

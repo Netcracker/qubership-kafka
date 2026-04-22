@@ -38,7 +38,7 @@ RUN set -x \
     && useradd -s /bin/bash -r -g kafka --uid=1000 kafka \
     && usermod -a -G 0 kafka
 
-ARG KAFKA_VERSION=3.9.1
+ARG KAFKA_VERSION=3.9.2
 ARG DISTRO_NAME=kafka_2.12-${KAFKA_VERSION}
 ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
@@ -70,7 +70,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="5.17.0"
+ARG KAFKACTL_VERSION="5.18.0"
 
 RUN set -x \
     && wget \
@@ -200,7 +200,7 @@ RUN set -x && apk upgrade --no-cache --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq
+        pcre2 curl gnutls libcurl jq openssl libcrypto3 binutils libssl3
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}

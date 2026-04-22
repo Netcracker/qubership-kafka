@@ -69,6 +69,23 @@ type KafkaSpec struct {
 	CCMetricReporterEnabled bool                    `json:"ccMetricReporterEnabled,omitempty"`
 	Kraft                   Kraft                   `json:"kraft,omitempty"`
 	MigrationController     MigrationController     `json:"migrationController,omitempty"`
+	LivenessProbe           *ProbeTimingConfig      `json:"livenessProbe,omitempty"`
+	ReadinessProbe          *ProbeTimingConfig      `json:"readinessProbe,omitempty"`
+}
+
+// ProbeTimingConfig defines reusable timing/threshold fields for health probes.
+// +kubebuilder:object:generate=true
+type ProbeTimingConfig struct {
+	// +optional
+	InitialDelaySeconds *int32 `json:"initialDelaySeconds,omitempty"`
+	// +optional
+	TimeoutSeconds *int32 `json:"timeoutSeconds,omitempty"`
+	// +optional
+	PeriodSeconds *int32 `json:"periodSeconds,omitempty"`
+	// +optional
+	SuccessThreshold *int32 `json:"successThreshold,omitempty"`
+	// +optional
+	FailureThreshold *int32 `json:"failureThreshold,omitempty"`
 }
 
 // Kraft defines Kafka parameters for Kraft
