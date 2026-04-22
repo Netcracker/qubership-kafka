@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine3.23 as builder
+FROM golang:1.26-alpine3.23 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -66,7 +66,8 @@ RUN set -x && apk upgrade --no-cache --available
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq
+        pcre2 curl gnutls libcurl jq net-snmp-tools net-snmp-libs net-snmp-agent-libs musl musl-dev musl-utils libssl3 \
+        libcrypto3 binutils openssl-dev nghttp2-libs nghttp2-dev setpriv libcap2 libcap libcap-setcap libcap-utils
 
 RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
 

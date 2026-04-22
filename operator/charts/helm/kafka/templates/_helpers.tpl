@@ -247,6 +247,22 @@ Whether Kafka TLS enabled
 {{- end -}}
 
 {{/*
+Whether Kafka TLS is changed from previous installation
+*/}}
+{{- define "kafka-service.tlsChanged" -}}
+  {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
+  {{- $cr := lookup $apiVersion "Kafka" .Release.Namespace (include "kafka.name" .) }}
+  {{- if $cr }}
+    {{- $ssl := index $cr "spec" "ssl" | default dict }}
+    {{- $previous_ssl := index $ssl "enabled" | default false }}
+    {{- $current_ssl := eq (include "kafka-service.enableTls" .) "true" }}
+    {{- and (or $previous_ssl $current_ssl) (not (and $previous_ssl $current_ssl)) }}
+  {{- else }}
+    {{- false }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 Whether Kafka certificates are specified
 */}}
 {{- define "kafka.certificatesSpecified" -}}
@@ -456,17 +472,13 @@ Find a kubectl image in various places.
   {{- printf "%t" $upgradeAllowed -}}
 {{- end }}
 
-{{- define "kraftMigrationCheck" -}}
+{{- define "kraft.effectiveMigration" -}}
   {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
-  {{- if $pvc }}
-    {{- if and (hasKey $pvc.metadata.labels "kraft") .Values.kafka.kraft.migration }}
-      {{- printf "%t" false -}}
-    {{- else }}
-      {{- printf "%t" true -}}
-    {{- end }}
-  {{- else }}
-    {{- printf "%t" true -}}
-  {{- end }}
+  {{- if and $pvc (hasKey $pvc.metadata.labels "kraft") -}}
+    false
+  {{- else -}}
+    {{- printf "%t" .Values.kafka.kraft.migration -}}
+  {{- end -}}
 {{- end }}
 
 {{- define "kraft.enabled" -}}
