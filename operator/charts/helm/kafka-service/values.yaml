@@ -555,6 +555,19 @@ integrationTests:
       memory: 256Mi
       cpu: 400m
   customLabels: {}
+  atpReport:
+    enabled: false
+    atpStorage:
+      provider: "aws"
+      serverUrl: ""
+      serverUiUrl: ""
+      bucket: ""
+      region: "us-east-1"
+      username: ""
+      password: ""
+  atpReportViewUiUrl: ""
+  environmentName: "kafka"
+  monitoredImages: ""
   securityContext: {}
 
 # Backup Daemon is a service to manage Kafka topics configurations backups.
