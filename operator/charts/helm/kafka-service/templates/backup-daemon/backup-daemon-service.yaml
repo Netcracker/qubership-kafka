@@ -11,9 +11,6 @@ metadata:
     app.kubernetes.io/name: {{ template "kafka.name" . }}-backup-daemon
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-    {{- if .Values.backupDaemon.cloudBackuper.useBackupDaemon }}
-    cloud-backuper.netcracker.com/use-backup-daemon: "true"
-    {{- end }}
 spec:
   clusterIP: None
   ports:
