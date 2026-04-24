@@ -22,7 +22,7 @@ RUN set -x \
     && pip3 install --no-cache-dir ${PIP_BREAK_FLAG} -r ${KAFKA_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
 
-run echo "test"
+
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
 
