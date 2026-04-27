@@ -188,7 +188,8 @@ def _collect_metrics():
     else:
         broker_ids = [broker['node_id'] for broker
                       in admin_client.describe_cluster()['brokers']]
-        is_kraft_enabled = _is_kraft(admin_client, broker_ids[0])
+        if broker_ids:
+            is_kraft_enabled = _is_kraft(admin_client, broker_ids[0])
     args = [(idx, admin_client) for idx in broker_ids]
     metrics_func = _get_broker_metrics_simple
     collect_func = _concatenate_all_brokers_metrics_simple
