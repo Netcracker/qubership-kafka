@@ -133,7 +133,7 @@ jobs:
     permissions:
       contents: read
     needs: build
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@4487afa083e5ba0cf64690d2e93e3d8ee94fab4f  # v1.3.0
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@e73ce64071a551c21f2a1c5f9edd14d445e61ce5  # v1.7.1
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.event.client_payload.target-ref || github.head_ref || github.ref }}'

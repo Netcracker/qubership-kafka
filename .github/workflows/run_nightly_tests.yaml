@@ -11,7 +11,7 @@ on:
 
 jobs:
   Nightly-Kafka-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@103a3f3200524670f56b3a8ee88b11a1132208e7 #v1.6.2
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@e73ce64071a551c21f2a1c5f9edd14d445e61ce5 #v1.7.1
     with:
       service_branch: 'main'
       pipeline_branch: '103a3f3200524670f56b3a8ee88b11a1132208e7' #this value must match the value after '@' in 'uses'
