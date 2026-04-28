@@ -6,11 +6,12 @@ permissions:
   actions: read
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [main]
-  push:
-    branches: [main]
+  push
+#  pull_request:
+#    types: [opened, synchronize, reopened]
+#    branches: [main]
+#  push:
+#    branches: [main]
 
 jobs:
 
@@ -47,11 +48,11 @@ jobs:
 
   Kafka-Pipeline:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@e73ce64071a551c21f2a1c5f9edd14d445e61ce5 #1.7.1
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@feature/kafka-hardening-scan #1.7.1
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'e73ce64071a551c21f2a1c5f9edd14d445e61ce5' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'feature/kafka-hardening-scan' #this value must match the value after '@' in 'uses'
       skip_tests: ${{ fromJSON(needs.Wait-for-images.outputs.skip_tests) }}
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
