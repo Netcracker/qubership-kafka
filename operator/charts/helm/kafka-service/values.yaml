@@ -555,6 +555,19 @@ integrationTests:
       memory: 256Mi
       cpu: 400m
   customLabels: {}
+  atpReport:
+    enabled: false
+    atpStorage:
+      provider: "aws"
+      serverUrl: ""
+      serverUiUrl: ""
+      bucket: ""
+      region: "us-east-1"
+      username: ""
+      password: ""
+  atpReportViewUiUrl: ""
+  environmentName: "kafka"
+  monitoredImages: ""
   securityContext: {}
 
 # Backup Daemon is a service to manage Kafka topics configurations backups.
@@ -563,6 +576,9 @@ backupDaemon:
   install: false
   dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main"
 
+  cloudBackuper:
+    useBackupDaemon: true
+    backupDaemonCredentials: true
   tls:
     enabled: true
     certificates:
@@ -611,11 +627,11 @@ backupDaemon:
   # formatted as a YAML string.
   resources:
     requests:
-      memory: "64Mi"
-      cpu: "25m"
-    limits:
       memory: "256Mi"
-      cpu: "200m"
+      cpu: "125m"
+    limits:
+      memory: "768Mi"
+      cpu: "400m"
 
   # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity

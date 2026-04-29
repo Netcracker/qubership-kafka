@@ -50,6 +50,8 @@ The following topics are covered in this chapter:
      helm install kafka-service ./ -f sample.yaml -n <TARGET_NAMESPACE>
      ```
 
+Integration tests (including ATP Storage for S3-compatible report upload) are documented in the [Installation guide - Integration Tests](/docs/public/installation.md#integration-tests) section.
+
 ### Smoke tests
 
 There is no smoke tests.
@@ -104,7 +106,7 @@ To keep the component up to date, the following activities should be performed r
 
 ## Useful links
 
-* [Installation guide](/docs/public/installation.md).
+* [Installation guide](/docs/public/installation.md) (Helm parameters, including integration tests and ATP Storage).
 * [Troubleshooting guide](/docs/public/troubleshooting.md).
 * [Architecture Guide](/docs/public/architecture.md).
 * [Internal Developer Guide](/docs/internal/developing.md).
