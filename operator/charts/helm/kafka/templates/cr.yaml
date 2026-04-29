@@ -8,6 +8,9 @@
 {{- if and (not (include "kafka.zooKeeperConnect" .)) (eq (include "kraft.enabled" .) "true") .Values.kafka.kraft.migration }}
 {{ fail "\nError: You must set kafka.zookeeperConnect to migrate from Kafka with ZooKeeper to Kraft .\nFind more information in corresponding release documentation." }}
 {{- end }}
+{{- if and .Values.kafka.rollingUpdate (eq (include "kraft.enabled" .) "true") .Values.kafka.kraft.migration }}
+{{ fail "\nError: kafka.rollingUpdate must be set to false during ZooKeeper to KRaft migration." }}
+{{- end }}
 {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "pvc-%s-1" (include "kafka.name" .)) }}
 {{- if $pvc }}
 {{- if and (hasKey $pvc.metadata.labels "kraft") (not (eq (include "kraft.enabled" .) "true")) }}
