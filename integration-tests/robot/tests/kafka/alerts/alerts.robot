@@ -74,3 +74,4 @@ Kafka Is Down Alert
     ...  Run Keyword And Return Status
     ...  Check That Prometheus Alert Is Inactive  ${KAFKA_IS_DOWN_ALERT_NAME}
     [Teardown]  Check That Kafka Broker Is Up  ${KAFKA_SERVICE_NAME}
+
