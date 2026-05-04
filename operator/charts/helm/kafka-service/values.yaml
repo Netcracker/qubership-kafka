@@ -627,11 +627,11 @@ backupDaemon:
   # formatted as a YAML string.
   resources:
     requests:
-      memory: "64Mi"
-      cpu: "25m"
+      memory: "256Mi"
+      cpu: "125m"
     limits:
-      memory: "512Mi"
-      cpu: "200m"
+      memory: "768Mi"
+      cpu: "400m"
 
   # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
