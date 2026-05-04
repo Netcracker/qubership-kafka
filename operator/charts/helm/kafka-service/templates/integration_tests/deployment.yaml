@@ -1,4 +1,11 @@
 {{- if .Values.integrationTests.install }}
+{{- $s3AliasesData := fromYaml (include "backupDaemon.s3Aliases" .) }}
+{{- $defaultS3AliasName := "" }}
+{{- range $s3AliasesData.items }}
+  {{- if and .name .spec .spec.default }}
+    {{- $defaultS3AliasName = .name }}
+  {{- end }}
+{{- end }}
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -106,6 +113,10 @@ spec:
                 secretKeyRef:
                   name: {{ template "kafka.name" . }}-backup-daemon-secret
                   key: password
+            - name: S3_ALIASES_SECRET_NAME
+              value: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
+            - name: S3_DEFAULT_ALIAS_NAME
+              value: {{ default "default" $defaultS3AliasName | quote }}
             {{- end }}
             {{- if and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install }}
             - name: PROMETHEUS_URL
