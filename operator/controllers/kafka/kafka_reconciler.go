@@ -598,10 +598,14 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 		return "", err
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
+	if len(podNames) == 0 {
+        return "", nil
+    }
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
 	return strings.TrimSpace(zkClusterID), commandErr
 }
+
 func (r *ReconcileKafka) resolveClusterID() (string, error) {
 	labels := r.kafkaProvider.GetSelectorLabels()
 	podList, err := r.reconciler.FindPodList(r.cr.Namespace, labels)
@@ -617,9 +621,6 @@ func (r *ReconcileKafka) resolveClusterID() (string, error) {
 				}
 			}
 		}
-	}
-	if len(clusterIDs) > 1 {
-		return "", fmt.Errorf("cluster ID mismatch across pods: %v", clusterIDs)
 	}
 	if len(clusterIDs) == 1 {
 		for id := range clusterIDs {
