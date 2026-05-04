@@ -20,11 +20,15 @@ def check_that_parameters_are_presented(environ, *variable_names) -> bool:
 
 
 def get_excluded_tags(environ) -> list:
+    excluded_tags = []
     if not check_that_parameters_are_presented(environ,
                                                'BACKUP_DAEMON_HOST',
                                                'BACKUP_DAEMON_PORT'):
-        return ['backup']
+        excluded_tags.append('backup')
     if not check_that_parameters_are_presented(environ,
                                                'BACKUP_DAEMON_USER',
                                                'BACKUP_DAEMON_PASSWORD'):
-        return ['unauthorized_access']
+        excluded_tags.append('unauthorized_access')
+    if environ.get('S3_ENABLED') != 'true':
+        excluded_tags.append('backup_s3')
+    return excluded_tags
