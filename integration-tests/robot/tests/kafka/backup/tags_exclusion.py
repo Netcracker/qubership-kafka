@@ -31,5 +31,5 @@ def get_excluded_tags(environ) -> list:
         excluded_tags.append('unauthorized_access')
     if not check_that_parameters_are_presented(environ, 'S3_ENABLED') \
             or environ.get('S3_ENABLED') != 'true':
-        excluded_tags.append('backup_s3')
+        excluded_tags.append('backup_v2')
     return excluded_tags
