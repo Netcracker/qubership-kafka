@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:main
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:feat_optimize_memory_allocation
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_BACKUP=/opt/kafka/backup-storage
