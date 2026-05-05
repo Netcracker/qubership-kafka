@@ -117,10 +117,10 @@ Get Default S3 Alias Config
 
 Get Backup Storage Name
     ${secret_exists}=  Run Keyword And Return Status  Check Secret  ${S3_ALIASES_SECRET_NAME}  ${KAFKA_OS_PROJECT}
-    Run Keyword If  not ${secret_exists}  RETURN  ${BACKUP_STORAGE_NAME}
+    Run Keyword If  not ${secret_exists}  Return From Keyword  ${BACKUP_STORAGE_NAME}
     ${secret}=  Check Secret  ${S3_ALIASES_SECRET_NAME}  ${KAFKA_OS_PROJECT}
     ${has_alias_config}=  Evaluate  bool($secret.data) and 's3_aliases.json' in $secret.data and bool($secret.data['s3_aliases.json'])
-    Run Keyword If  not ${has_alias_config}  RETURN  ${BACKUP_STORAGE_NAME}
+    Run Keyword If  not ${has_alias_config}  Return From Keyword  ${BACKUP_STORAGE_NAME}
     ${aliases_base64}=  Set Variable  ${secret.data['s3_aliases.json']}
     ${aliases_json}=  Evaluate  base64.b64decode($aliases_base64).decode("utf-8")  modules=base64
     ${aliases}=  Convert Json ${aliases_json} To Type
