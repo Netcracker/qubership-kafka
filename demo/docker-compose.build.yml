@@ -1,0 +1,27 @@
+# Build override – replaces ghcr.io images with locally-built versions.
+#
+# Usage (build all services from source):
+#   docker-compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+#
+# Usage (build only a specific service, e.g. backup-daemon):
+#   docker-compose -f docker-compose.yml -f docker-compose.build.yml build backup-daemon
+#   docker-compose -f docker-compose.yml -f docker-compose.build.yml up -d
+
+services:
+  kafka:
+    image: qubership-docker-kafka-4:local
+    build:
+      context: ../docker-kafka
+      dockerfile: 4/Dockerfile
+
+  backup-daemon:
+    image: qubership-kafka-backup-daemon:local
+    build:
+      context: ../backup-daemon
+      dockerfile: docker/Dockerfile
+
+  integration-tests:
+    image: qubership-kafka-integration-tests:local
+    build:
+      context: ../integration-tests
+      dockerfile: docker/Dockerfile
