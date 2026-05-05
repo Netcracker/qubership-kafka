@@ -24,6 +24,7 @@ rules:
       - pods
       - pods/exec
       - services
+      - secrets
     verbs:
       - get
       - list

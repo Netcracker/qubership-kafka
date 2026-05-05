@@ -48,7 +48,8 @@ Get Track Id
 
 Create Backup V2
     [Arguments]  ${topic_name}  ${blob_path}=${BACKUP_BLOB_PATH}
-    ${data}=  Set Variable  {"storageName":"${BACKUP_STORAGE_NAME}","blobPath":"${blob_path}","databases":["${topic_name}"]}
+    ${storage_name}=  Get Backup Storage Name
+    ${data}=  Set Variable  {"storageName":"${storage_name}","blobPath":"${blob_path}","databases":["${topic_name}"]}
     ${response}=  Post Request  backup_daemon_v2_session  /api/v1/backup  data=${data}  headers=${headers}
     Should Be Equal As Strings  ${response.status_code}  200
     ${backup_id}=  Get Track Id  ${response.content}
@@ -66,7 +67,8 @@ Check Backup Status V2
 
 Restore Backup V2
     [Arguments]  ${backup_id}  ${topic_name}  ${blob_path}=${BACKUP_BLOB_PATH}
-    ${data}=  Set Variable  {"storageName":"${BACKUP_STORAGE_NAME}","blobPath":"${blob_path}","databases":[{"previousDatabaseName":"${topic_name}","databaseName":"${topic_name}"}],"dryRun":false}
+    ${storage_name}=  Get Backup Storage Name
+    ${data}=  Set Variable  {"storageName":"${storage_name}","blobPath":"${blob_path}","databases":[{"previousDatabaseName":"${topic_name}","databaseName":"${topic_name}"}],"dryRun":false}
     ${response}=  Post Request  backup_daemon_v2_session  /api/v1/restore/${backup_id}  data=${data}  headers=${headers}
     Should Be Equal As Strings  ${response.status_code}  200
     ${restore_id}=  Get Track Id  ${response.content}
@@ -112,6 +114,19 @@ Get Default S3 Alias Config
     ${default_alias}=  Evaluate  $aliases.get($default_alias_name)
     Should Not Be Equal  ${default_alias}  ${None}
     RETURN  ${default_alias}
+
+Get Backup Storage Name
+    ${secret_exists}=  Run Keyword And Return Status  Check Secret  ${S3_ALIASES_SECRET_NAME}  ${KAFKA_OS_PROJECT}
+    Run Keyword If  not ${secret_exists}  RETURN  ${BACKUP_STORAGE_NAME}
+    ${secret}=  Check Secret  ${S3_ALIASES_SECRET_NAME}  ${KAFKA_OS_PROJECT}
+    ${has_alias_config}=  Evaluate  bool($secret.data) and 's3_aliases.json' in $secret.data and bool($secret.data['s3_aliases.json'])
+    Run Keyword If  not ${has_alias_config}  RETURN  ${BACKUP_STORAGE_NAME}
+    ${aliases_base64}=  Set Variable  ${secret.data['s3_aliases.json']}
+    ${aliases_json}=  Evaluate  base64.b64decode($aliases_base64).decode("utf-8")  modules=base64
+    ${aliases}=  Convert Json ${aliases_json} To Type
+    ${default_alias_name}=  Evaluate  next((name for name, cfg in $aliases.items() if cfg.get("default") is True), None)
+    ${storage_name}=  Run Keyword If  "${default_alias_name}" == "${None}"  Set Variable  ${S3_DEFAULT_ALIAS_NAME}  ELSE  Set Variable  ${default_alias_name}
+    RETURN  ${storage_name}
 
 Check Backup Exists In Default Alias Bucket
     [Arguments]  ${backup_id}  ${blob_path}=${BACKUP_BLOB_PATH}
