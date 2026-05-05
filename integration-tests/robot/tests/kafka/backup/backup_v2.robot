@@ -27,8 +27,6 @@ Prepare
     ${auth}=  Create List  ${KAFKA_BACKUP_DAEMON_USER}  ${KAFKA_BACKUP_DAEMON_PASSWORD}
     ${verify}=  Set Variable If  '${KAFKA_BACKUP_DAEMON_PROTOCOL}' == 'https'  /backupTLS/ca.crt  ${True}
     Create Session  backup_daemon_v2_session  ${KAFKA_BACKUP_DAEMON_PROTOCOL}://${KAFKA_BACKUP_DAEMON_HOST}:${KAFKA_BACKUP_DAEMON_PORT}  auth=${auth}  verify=${verify}
-    ${postfix}=  Generate Random String  5
-    Set Suite Variable  ${KAFKA_BACKUP_V2_TOPIC}  ${KAFKA_BACKUP_V2_TOPIC}-${postfix}
     ${admin}=  Create Admin Client
     Set Suite Variable  ${admin}
     ${kafka_brokers_count}=  Get Brokers Count  ${admin}
