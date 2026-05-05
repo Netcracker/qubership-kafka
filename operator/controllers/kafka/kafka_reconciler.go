@@ -612,12 +612,12 @@ func (r *ReconcileKafka) resolveClusterID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	clusterIDs := map[string][]string{}
+	clusterIDs := make(map[string]struct{})
 	for _, pod := range podList.Items {
 		for _, c := range pod.Spec.Containers {
 			for _, env := range c.Env {
 				if env.Name == "KRAFT_CLUSTER_ID" && env.Value != "" {
-					clusterIDs[env.Value] = append(clusterIDs[env.Value], pod.Name)
+					clusterIDs[env.Value] = struct{}{}
 				}
 			}
 		}
