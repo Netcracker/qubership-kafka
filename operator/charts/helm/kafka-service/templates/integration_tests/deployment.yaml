@@ -113,6 +113,10 @@ spec:
                 secretKeyRef:
                   name: {{ template "kafka.name" . }}-backup-daemon-secret
                   key: password
+            {{- end }}
+            {{- if and .Values.backupDaemon.s3.enabled }}
+            - name: S3_ENABLED
+              value: "true"
             - name: S3_ALIASES_SECRET_NAME
               value: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
             - name: S3_DEFAULT_ALIAS_NAME
@@ -122,7 +126,7 @@ spec:
                 secretKeyRef:
                   name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
                   key: s3-key-secret
-            {{- end }}
+            {{- end }}      
             {{- if and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install }}
             - name: PROMETHEUS_URL
               value: {{ .Values.integrationTests.prometheusUrl }}
