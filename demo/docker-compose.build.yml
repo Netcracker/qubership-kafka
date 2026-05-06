@@ -20,6 +20,24 @@ services:
       context: ../backup-daemon
       dockerfile: docker/Dockerfile
 
+  akhq:
+    image: qubership-docker-akhq:local
+    build:
+      context: ../docker-akhq
+      dockerfile: docker/Dockerfile
+
+  monitoring:
+    image: qubership-kafka-monitoring:local
+    build:
+      context: ../monitoring
+      dockerfile: docker/Dockerfile
+
+  lag-exporter:
+    image: qubership-docker-kafka-lag-exporter:local
+    build:
+      context: ../lag-exporter
+      dockerfile: docker/Dockerfile
+
   integration-tests:
     image: qubership-kafka-integration-tests:local
     build:

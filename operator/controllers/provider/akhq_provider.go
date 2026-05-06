@@ -356,6 +356,8 @@ func (arp AkhqResourceProvider) getAkhqVolumes(deserializationConfigMaps []*core
 		})
 	}
 
+	volumes = append(volumes, getTmpVolume())
+
 	return volumes
 }
 
@@ -400,6 +402,7 @@ func (arp AkhqResourceProvider) getAkhqVolumeMounts(deserializationConfigMaps []
 	if arp.cr.Spec.Akhq.Ldap.Enabled {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: "ldap-config", MountPath: "/app/config/ldap"})
 	}
+	volumeMounts = append(volumeMounts, getTmpVolumeMount())
 	return volumeMounts
 }
 

@@ -403,6 +403,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 		{Name: "public-certs", VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: fmt.Sprintf("%s-public-certs", krp.cr.Name)}}},
+		getTmpVolume(),
 	}
 
 	volumeMounts := []corev1.VolumeMount{
@@ -410,6 +411,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 		{Name: "log", MountPath: "/opt/kafka/logs"},
 		{Name: "trusted-certs", MountPath: "/opt/kafka/trustcerts"},
 		{Name: "public-certs", MountPath: "/opt/kafka/public-certs"},
+		getTmpVolumeMount(),
 	}
 
 	replicationFactor := 3
@@ -582,6 +584,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 		{Name: "public-certs", VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: fmt.Sprintf("%s-public-certs", krp.cr.Name)}}},
+		getTmpVolume(),
 	}
 
 	volumeMounts := []corev1.VolumeMount{
@@ -589,6 +592,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 		{Name: "log", MountPath: "/opt/kafka/logs"},
 		{Name: "trusted-certs", MountPath: "/opt/kafka/trustcerts"},
 		{Name: "public-certs", MountPath: "/opt/kafka/public-certs"},
+		getTmpVolumeMount(),
 	}
 
 	var voters []string

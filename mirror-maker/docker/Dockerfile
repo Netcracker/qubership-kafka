@@ -112,7 +112,7 @@ RUN set -x \
 COPY --from=builder /build/target/kafka-mm2-extension-*.jar ${KAFKA_HOME}/libs
 
 # Copy config and script files
-COPY docker/config/ ${KAFKA_HOME}/config
+COPY docker/config/ ${KAFKA_HOME}/config-template
 COPY docker/health.sh ${KAFKA_HOME}/bin
 COPY docker/docker-entrypoint.sh /
 

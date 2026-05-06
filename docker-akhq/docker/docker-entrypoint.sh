@@ -2,10 +2,16 @@
 
 set -e
 
+# Initialise writable runtime directories under /tmp so the container can run
+# with readOnlyRootFilesystem: true.
+AKHQ_WORK=/tmp/akhq
+export MICRONAUT_CONFIG_FILES="${AKHQ_WORK}/application.yml"
+mkdir -p "${AKHQ_WORK}/config/descs" "${AKHQ_WORK}/tls-ks"
+
 # The section below decomposes the proto-files, that are added by operator according to the AKHQConfig CR
 # The target directories DESCS_DEFAULT_DIR & DESCS_COMRESSED_DIR was already hardcoded & defined in operator functionality.
 
-DESCS_DEFAULT_DIR="/app/config/descs"
+DESCS_DEFAULT_DIR="${AKHQ_WORK}/config/descs"
 DESCS_COMRESSED_DIR="/app/config/descs-compressed"
 
 if [[ -d "${DESCS_COMRESSED_DIR}" ]]; then
@@ -42,8 +48,8 @@ resolve_security_protocol() {
 
 # for local dev in docker compose provide the ability to specify configuration in native AKHQ way
 if [[ -n "${AKHQ_CONFIGURATION}" ]]; then
-  echo "AKHQ_CONFIGURATION is provided and ${AKHQ_HOME}/application.yml file will be overwritten with it"
-  echo "${AKHQ_CONFIGURATION}" > ${AKHQ_HOME}/application.yml
+  echo "AKHQ_CONFIGURATION is provided and ${AKHQ_WORK}/application.yml file will be overwritten with it"
+  echo "${AKHQ_CONFIGURATION}" > ${AKHQ_WORK}/application.yml
 
 else
 
@@ -77,7 +83,7 @@ else
     kafka_ca_cert_path="/tls/ca.crt"
     kafka_tls_key_path="/tls/tls.key"
     kafka_tls_cert_path="/tls/tls.crt"
-    kafka_tls_ks_dir="${AKHQ_HOME}/tls-ks"
+    kafka_tls_ks_dir="${AKHQ_WORK}/tls-ks"
     mkdir -p ${kafka_tls_ks_dir}
     if [[ -f $kafka_ca_cert_path ]]; then
       SSL_PASSWORD="changeit"
@@ -192,7 +198,7 @@ if [[ -n ${DEFAULT_USER_CONFIGURATION} || -n ${BASIC_AUTH_USERS_CONFIGURATION} |
      ${FULL_LDAP_SERVER_CONFIGURATION}"
 fi
 
-  cat > ${AKHQ_HOME}/application.yml << EOL
+  cat > ${AKHQ_WORK}/application.yml << EOL
 ${MICRONAUT_SECURITY_CONFIG}
 endpoints:
   all:
@@ -231,7 +237,7 @@ fi
 
 echo "Import trustcerts to application keystore"
 TRUST_CERTS_DIR=${AKHQ_HOME}/trustcerts
-DESTINATION_KEYSTORE_PATH=${AKHQ_HOME}/cacerts
+DESTINATION_KEYSTORE_PATH=${AKHQ_WORK}/cacerts
 KEYSTORE_PATH=${JAVA_HOME}/lib/security/cacerts
 
 echo "Copy Java cacerts to ${DESTINATION_KEYSTORE_PATH}"

@@ -40,6 +40,8 @@ spec:
             - containerPort: 8080
               protocol: TCP
           env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
             - name: RANDOM_RUN_TRIGGER
               value: "{{ randAlphaNum 10 }}"
             - name: TAGS
@@ -200,6 +202,8 @@ spec:
           volumeMounts:
             - name: output
               mountPath: /opt/robot/output
+            - name: tmp
+              mountPath: /tmp
           {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
             - name: ssl-certs
               mountPath: /tls
@@ -234,6 +238,9 @@ spec:
       volumes:
         - name: output
           emptyDir: {}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
       {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
         - name: ssl-certs
           secret:

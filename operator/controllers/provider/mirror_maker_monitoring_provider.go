@@ -195,6 +195,9 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMonitoringEnvironmentVaria
 			Name:  "KMM_COLLECTION_INTERVAL",
 			Value: util.DefaultIfEmpty(mmmrp.spec.KmmCollectionInterval, "5s"),
 		},
+		// Avoid writing __pycache__ entries under the read-only root
+		// filesystem when Python helper scripts are invoked.
+		{Name: "PYTHONDONTWRITEBYTECODE", Value: "1"},
 	}
 }
 
@@ -305,6 +308,7 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 				},
 			},
 		},
+		getTmpVolume(),
 	}
 }
 
@@ -315,6 +319,7 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 			Name:      "config",
 			MountPath: "/etc/telegraf",
 		},
+		getTmpVolumeMount(),
 	}
 	return volumeMounts
 }

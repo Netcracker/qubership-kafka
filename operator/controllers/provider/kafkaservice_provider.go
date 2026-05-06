@@ -16,10 +16,12 @@ package provider
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 func NewServiceAccount(serviceAccountName string, namespace string, labels map[string]string) *corev1.ServiceAccount {
@@ -106,12 +108,52 @@ func buildEnvs(envVars []corev1.EnvVar, additionalEnvs []string, logger logr.Log
 	return envVars
 }
 
-// getDefaultContainerSecurityContext returns default security context for containers for deployment to restricted environment
+// getDefaultContainerSecurityContext returns the default container
+// security context for deployment to a restricted environment. Workloads
+// whose entrypoint still mutates files under the image root filesystem
+// must call getContainerSecurityContext(false) and migrate to the
+// default once their writes are redirected to a writable mount.
 func getDefaultContainerSecurityContext() *corev1.SecurityContext {
+	return getContainerSecurityContext(true)
+}
+
+// getContainerSecurityContext returns a restricted container security
+// context. The readOnlyRootFs argument controls whether the root
+// filesystem is mounted read-only.
+func getContainerSecurityContext(readOnlyRootFs bool) *corev1.SecurityContext {
 	falseValue := false
-	return &corev1.SecurityContext{AllowPrivilegeEscalation: &falseValue,
+	readOnlyRoot := readOnlyRootFs
+	return &corev1.SecurityContext{
+		AllowPrivilegeEscalation: &falseValue,
+		ReadOnlyRootFilesystem:   &readOnlyRoot,
 		Capabilities: &corev1.Capabilities{
 			Drop: []corev1.Capability{"ALL"},
 		},
+	}
+}
+
+// tmpVolumeName is the name of the emptyDir volume mounted at /tmp on
+// every operator-built pod. Required when readOnlyRootFilesystem is
+// enabled so that JVM, Python and shell scratch writes succeed.
+const tmpVolumeName = "tmp"
+
+// getTmpVolume returns a small emptyDir volume to be mounted at /tmp.
+func getTmpVolume() corev1.Volume {
+	sizeLimit := resource.MustParse("100Mi")
+	return corev1.Volume{
+		Name: tmpVolumeName,
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{
+				SizeLimit: &sizeLimit,
+			},
+		},
+	}
+}
+
+// getTmpVolumeMount returns the matching VolumeMount for getTmpVolume.
+func getTmpVolumeMount() corev1.VolumeMount {
+	return corev1.VolumeMount{
+		Name:      tmpVolumeName,
+		MountPath: "/tmp",
 	}
 }

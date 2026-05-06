@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Initialise writable runtime directories under /tmp so the container can run
+# with readOnlyRootFilesystem: true.  The image stores static config under
+# ${KAFKA_HOME}/config-template; we copy it to ${MM_CONFIG} on every start.
+MM_CONFIG=/tmp/mm/config
+mkdir -p "${MM_CONFIG}"
+cp -r "${KAFKA_HOME}/config-template/." "${MM_CONFIG}/"
+
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e
 if [[ "$DEBUG" == true ]]; then
@@ -23,9 +30,9 @@ fi
 
 
 
-cp -f ${KAFKA_HOME}/config/jmx-exporter-config.yml ${KAFKA_HOME}/config/jmx-exporter.yml
+cp -f ${MM_CONFIG}/jmx-exporter-config.yml ${MM_CONFIG}/jmx-exporter.yml
 if [[ -n "$PROMETHEUS_PORT" ]]; then
-  export KAFKA_OPTS="${KAFKA_OPTS} -javaagent:/opt/kafka/libs/prometheus-jmx-exporter-1.1.0.jar=$PROMETHEUS_PORT:${KAFKA_HOME}/config/jmx-exporter.yml"
+  export KAFKA_OPTS="${KAFKA_OPTS} -javaagent:/opt/kafka/libs/prometheus-jmx-exporter-1.1.0.jar=$PROMETHEUS_PORT:${MM_CONFIG}/jmx-exporter.yml"
 fi
 
 # Configure internal config providers
@@ -84,7 +91,7 @@ for cluster_name in ${clusters[@]}; do
     echo "Configuring TLS on ${cluster_name} cluster..."
     kafka_tls_dir=${KAFKA_HOME}/tls/${cluster_name}
     if [[ -f "${kafka_tls_dir}/ca.crt" ]]; then
-      kafka_tls_ks_dir=${KAFKA_HOME}/tls-ks/${cluster_name}
+      kafka_tls_ks_dir=/tmp/mm/tls-ks/${cluster_name}
       mkdir -p ${kafka_tls_ks_dir}
 
       if [[ -f "${kafka_tls_dir}/tls.key" && -f "${kafka_tls_dir}/tls.crt" ]]; then
@@ -123,8 +130,8 @@ for cluster_name in ${clusters[@]}; do
   fi
 done
 
-mkdir -p "${KAFKA_HOME}/dumps"
-export KAFKA_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${KAFKA_HOME}/dumps/ -XX:+ExitOnOutOfMemoryError ${KAFKA_OPTS}"
+mkdir -p "/tmp/mm/dumps"
+export KAFKA_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/mm/dumps/ -XX:+ExitOnOutOfMemoryError ${KAFKA_OPTS}"
 
 # Process the argument to this container ...
 case $1 in
@@ -135,68 +142,68 @@ case $1 in
     if [[ -z "$LOG_LEVEL" ]]; then
         LOG_LEVEL="INFO"
     fi
-    sed -i -r -e "s|=INFO, stdout|=$LOG_LEVEL, stdout|g" ${KAFKA_HOME}/config/connect-log4j.properties
-    sed -i -r -e "s|^(log4j.appender.stdout.threshold)=.*|\1=${LOG_LEVEL}|g" ${KAFKA_HOME}/config/connect-log4j.properties
-    export KAFKA_LOG4J_OPTS="-Dlog4j.configuration=file:$KAFKA_HOME/config/connect-log4j.properties"
+    sed -i -r -e "s|=INFO, stdout|=$LOG_LEVEL, stdout|g" ${MM_CONFIG}/connect-log4j.properties
+    sed -i -r -e "s|^(log4j.appender.stdout.threshold)=.*|\1=${LOG_LEVEL}|g" ${MM_CONFIG}/connect-log4j.properties
+    export KAFKA_LOG4J_OPTS="-Dlog4j.configuration=file:${MM_CONFIG}/connect-log4j.properties"
     unset LOG_LEVEL
 
     #
     # Generate mm2 configuration only if it doesn't exist
     #
     additional_log=""
-    if [[ -f "${KAFKA_HOME}/config/kmm/kmm.conf" ]]; then
-      cat ${KAFKA_HOME}/config/kmm/kmm.conf > ${KAFKA_HOME}/config/mm2.properties
-      echo "" >> ${KAFKA_HOME}/config/mm2.properties
+    if [[ -f "${MM_CONFIG}/kmm/kmm.conf" ]]; then
+      cat ${MM_CONFIG}/kmm/kmm.conf > ${MM_CONFIG}/mm2.properties
+      echo "" >> ${MM_CONFIG}/mm2.properties
       additional_log="additional "
     else
-      echo "# mm2.properties" > ${KAFKA_HOME}/config/mm2.properties
-      echo "clusters = $CLUSTERS" >> ${KAFKA_HOME}/config/mm2.properties
-      echo "" >> ${KAFKA_HOME}/config/mm2.properties
+      echo "# mm2.properties" > ${MM_CONFIG}/mm2.properties
+      echo "clusters = $CLUSTERS" >> ${MM_CONFIG}/mm2.properties
+      echo "" >> ${MM_CONFIG}/mm2.properties
 
-      echo "# configure a specific source->target replication flow" >> ${KAFKA_HOME}/config/mm2.properties
+      echo "# configure a specific source->target replication flow" >> ${MM_CONFIG}/mm2.properties
       for source_cluster_name in ${clusters[@]}; do
         for target_cluster_name in ${clusters[@]}; do
           if [[ ${source_cluster_name} != ${target_cluster_name} ]]; then
-            echo "${source_cluster_name}->${target_cluster_name}.enabled = true" >> ${KAFKA_HOME}/config/mm2.properties
+            echo "${source_cluster_name}->${target_cluster_name}.enabled = true" >> ${MM_CONFIG}/mm2.properties
           fi
         done
       done
     fi
 
-    echo "" >> ${KAFKA_HOME}/config/mm2.properties
-    echo "# configure ${additional_log}common properties" >> ${KAFKA_HOME}/config/mm2.properties
+    echo "" >> ${MM_CONFIG}/mm2.properties
+    echo "# configure ${additional_log}common properties" >> ${MM_CONFIG}/mm2.properties
     for VAR in `env`; do
       env_var=`echo "$VAR" | sed -r "s/(.*)=.*/\1/g"`
       if [[ ${env_var} =~ ^CONF_ ]]; then
         prop_name=`echo "$VAR" | sed -r "s/^CONF_(.*)=.*/\1/g" | tr '[:upper:]' '[:lower:]' | tr _ .`
-        if egrep -q "(^|^#)$prop_name = " ${KAFKA_HOME}/config/mm2.properties; then
+        if egrep -q "(^|^#)$prop_name = " ${MM_CONFIG}/mm2.properties; then
           # Note that no config names or values may contain an '@' char
-          sed -r -i "s@(^|^#)($prop_name) = (.*)@\2 = ${!env_var}@g" ${KAFKA_HOME}/config/mm2.properties
+          sed -r -i "s@(^|^#)($prop_name) = (.*)@\2 = ${!env_var}@g" ${MM_CONFIG}/mm2.properties
         else
-          echo "$prop_name = ${!env_var}" >> ${KAFKA_HOME}/config/mm2.properties
+          echo "$prop_name = ${!env_var}" >> ${MM_CONFIG}/mm2.properties
         fi
       fi
     done
 
     for cluster_name in ${clusters[@]}; do
-      echo "" >> ${KAFKA_HOME}/config/mm2.properties
-      echo "# configure ${additional_log}properties for [$cluster_name] cluster" >> ${KAFKA_HOME}/config/mm2.properties
+      echo "" >> ${MM_CONFIG}/mm2.properties
+      echo "# configure ${additional_log}properties for [$cluster_name] cluster" >> ${MM_CONFIG}/mm2.properties
       for VAR in `env`; do
         env_var=`echo "$VAR" | sed -r "s/(.*)=.*/\1/g"`
         if [[ ${env_var} =~ ^${cluster_name^^}_CONF_ ]]; then
           prop_name=`echo "$VAR" | sed -r "s/^${cluster_name^^}_CONF_(.*)=.*/${cluster_name^^}_\1/g" | tr '[:upper:]' '[:lower:]' | tr _ .`
-          if egrep -q "(^|^#)$prop_name = " ${KAFKA_HOME}/config/mm2.properties; then
+          if egrep -q "(^|^#)$prop_name = " ${MM_CONFIG}/mm2.properties; then
             # Note that no config names or values may contain an '@' char
-            sed -r -i "s@(^|^#)($prop_name) = (.*)@\2 = ${!env_var}@g" ${KAFKA_HOME}/config/mm2.properties
+            sed -r -i "s@(^|^#)($prop_name) = (.*)@\2 = ${!env_var}@g" ${MM_CONFIG}/mm2.properties
           else
-            echo "$prop_name = ${!env_var}" >> ${KAFKA_HOME}/config/mm2.properties
+            echo "$prop_name = ${!env_var}" >> ${MM_CONFIG}/mm2.properties
           fi
         fi
       done
     done
 
-    echo "" >> ${KAFKA_HOME}/config/mm2.properties
-    echo "# configure connectors properties" >> ${KAFKA_HOME}/config/mm2.properties
+    echo "" >> ${MM_CONFIG}/mm2.properties
+    echo "# configure connectors properties" >> ${MM_CONFIG}/mm2.properties
     for source_cluster_name in ${clusters[@]}; do
       for target_cluster_name in ${clusters[@]}; do
         if [[ ${source_cluster_name} != ${target_cluster_name} ]]; then
@@ -204,11 +211,11 @@ case $1 in
             env_var=`echo "$VAR" | sed -r "s/(.*)=.*/\1/g"`
             if [[ ${env_var} =~ ^${source_cluster_name^^}_${target_cluster_name^^}_CONF_ ]]; then
               prop_name=`echo "$VAR" | sed -r "s/^${source_cluster_name^^}_${target_cluster_name^^}_CONF_(.*)=.*/${source_cluster_name^^}->${target_cluster_name^^}_\1/g" | tr '[:upper:]' '[:lower:]' | tr _ .`
-              if egrep -q "(^|^#)$prop_name = " ${KAFKA_HOME}/config/mm2.properties; then
+              if egrep -q "(^|^#)$prop_name = " ${MM_CONFIG}/mm2.properties; then
                 # Note that no config names or values may contain an '@' char
-                sed -r -i "s@(^|^#)($prop_name) = (.*)@\2 = ${!env_var}@g" ${KAFKA_HOME}/config/mm2.properties
+                sed -r -i "s@(^|^#)($prop_name) = (.*)@\2 = ${!env_var}@g" ${MM_CONFIG}/mm2.properties
               else
-                echo "$prop_name = ${!env_var}" >> ${KAFKA_HOME}/config/mm2.properties
+                echo "$prop_name = ${!env_var}" >> ${MM_CONFIG}/mm2.properties
               fi
             fi
           done
@@ -216,7 +223,7 @@ case $1 in
       done
     done
 
-    exec ${KAFKA_HOME}/bin/connect-mirror-maker.sh ${KAFKA_HOME}/config/mm2.properties --clusters ${CLUSTER}
+    exec ${KAFKA_HOME}/bin/connect-mirror-maker.sh ${MM_CONFIG}/mm2.properties --clusters ${CLUSTER}
     ;;
 esac
 

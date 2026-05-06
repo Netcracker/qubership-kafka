@@ -280,6 +280,7 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumes() []corev1.Volume {
 	if mrp.spec.LagExporter != nil {
 		volumes = append(volumes, mrp.lagExporterResourceProvider.getVolume())
 	}
+	volumes = append(volumes, getTmpVolume())
 	return volumes
 }
 
@@ -294,6 +295,7 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumeMounts() []corev1.Volum
 	if mrp.cr.Spec.Global.KafkaSsl.Enabled && mrp.cr.Spec.Global.KafkaSsl.SecretName != "" {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: "ssl-certs", MountPath: "/tls"})
 	}
+	volumeMounts = append(volumeMounts, getTmpVolumeMount())
 	return volumeMounts
 }
 
@@ -336,6 +338,9 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvironmentVariables() []core
 			Name:  "DATA_COLLECTION_INTERVAL",
 			Value: util.DefaultIfEmpty(mrp.spec.DataCollectionInterval, "10s"),
 		},
+		// Avoid writing __pycache__ entries under the read-only root
+		// filesystem when the image's Python helper scripts are invoked.
+		{Name: "PYTHONDONTWRITEBYTECODE", Value: "1"},
 	}
 	return envs
 }

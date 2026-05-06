@@ -32,6 +32,10 @@ spec:
         app.kubernetes.io/technology: "go"
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
       containers:
         - name: {{ template "kafka.name" . }}-operator
           securityContext:
@@ -40,6 +44,9 @@ spec:
           command:
             - /manager
           imagePullPolicy: Always
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

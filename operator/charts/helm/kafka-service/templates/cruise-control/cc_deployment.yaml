@@ -128,6 +128,8 @@ spec:
           volumeMounts:
             - name: {{ template "kafka.name" . }}-cruise-control-configmap
               mountPath: /cruise-control/additionalConfig
+            - name: tmp
+              mountPath: /tmp
           {{- if eq (include "kafka-service.enableTls" . ) "true" }}
             - name: {{ include "kafka-service.tlsSecretName" . }}
               mountPath: "/cruise-control/tls"
@@ -139,6 +141,9 @@ spec:
             items:
               - key: "cruisecontrolAdditionalProperties.conf"
                 path: cruisecontrolAdditionalProperties.conf
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
         {{- if eq (include "kafka-service.enableTls" . ) "true"}}
         - name: {{ include "kafka-service.tlsSecretName" . }}
           secret:

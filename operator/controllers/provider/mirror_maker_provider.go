@@ -367,6 +367,9 @@ func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumes() []corev1.Volume 
 		},
 		{
 			Name: "data",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
 		},
 		{
 			Name: "config",
@@ -384,6 +387,7 @@ func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumes() []corev1.Volume 
 				},
 			},
 		},
+		getTmpVolume(),
 	}
 }
 
@@ -400,8 +404,9 @@ func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumeMounts() []corev1.Vo
 		},
 		{
 			Name:      "config",
-			MountPath: "/opt/kafka/config/kmm",
+			MountPath: "/tmp/mm/config/kmm",
 		},
+		getTmpVolumeMount(),
 	}
 }
 

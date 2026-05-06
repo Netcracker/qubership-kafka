@@ -30,11 +30,17 @@ spec:
       serviceAccountName: {{ template "kafka.name" . }}-crd-init
       securityContext:
         {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
       containers:
         - name: crd-init
           image: {{ include "crd-init.image" . }}
           imagePullPolicy: "Always"
           env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
             - name: IGNORE_CRD_FAILURE
               value: {{ .Values.IGNORE_CRD_FAILURE | toString | default "true"  | quote }}
             - name: CRD_UPGRADE_WAITING_TIME
@@ -52,6 +58,9 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "100m"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           securityContext:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
 {{- end }}

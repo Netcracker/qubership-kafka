@@ -31,8 +31,10 @@ spec:
         app.kubernetes.io/technology: "go"
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
-      {{- if and .Values.global.tls.enabled (or .Values.global.disasterRecovery.tls.enabled .Values.backupDaemon.tls.enabled) }}
       volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 100Mi
       {{- if and (eq (include "disasterRecovery.enableTls" .) "true") (eq (include "kafka-service.enableDisasterRecovery" .) "true") }}
       - name: drd-ssl-certs
         secret:
@@ -43,7 +45,6 @@ spec:
         secret:
           secretName: {{ template "backupDaemon.tlsSecretName" . }}
       {{- end }}
-      {{- end }}
       containers:
         - name: {{ template "kafka.name" . }}-service-operator
           securityContext:
@@ -52,8 +53,10 @@ spec:
           command:
             - /manager
           imagePullPolicy: Always
-          {{- if and .Values.global.tls.enabled .Values.backupDaemon.install .Values.backupDaemon.tls.enabled }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          {{- if and .Values.global.tls.enabled .Values.backupDaemon.install .Values.backupDaemon.tls.enabled }}
             - name: backup-daemon-ssl-certs
               mountPath: /backupTLS
           {{- end }}
@@ -139,8 +142,10 @@ spec:
         - name: {{ template "kafka.name" . }}-disaster-recovery
           image: {{ template "disasterRecovery.image" . }}
           imagePullPolicy: Always
-          {{- if eq (include "disasterRecovery.enableTls" .) "true" }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          {{- if eq (include "disasterRecovery.enableTls" .) "true" }}
             - name: drd-ssl-certs
               mountPath: /tls
           {{- end }}
