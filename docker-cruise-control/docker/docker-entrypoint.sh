@@ -16,16 +16,16 @@ EOL
 }
 
 function enrich_kafkactl_yml_with_ssl_configs() {
-  if [[ "${KAFKA_ENABLE_SSL}" == "true" && -f "/tls/ca.crt" ]]; then
+  if [[ "${KAFKA_ENABLE_SSL}" == "true" && -f "/cruise-control/tls/ca.crt" ]]; then
     cat >> ${KAFKA_CTL_CONFIG} << EOL
     tls:
       enabled: true
-      ca: /tls/ca.crt
+      ca: /cruise-control/tls/ca.crt
 EOL
-    if [[ -f "/tls/tls.crt" && -f "/tls/tls.key" ]]; then
+    if [[ -f "/cruise-control/tls/tls.crt" && -f "/cruise-control/tls/tls.key" ]]; then
       cat >> ${KAFKA_CTL_CONFIG} << EOL
-      cert: /tls/tls.crt
-      certKey: /tls/tls.key
+      cert: /cruise-control/tls/tls.crt
+      certKey: /cruise-control/tls/tls.key
 EOL
     fi
   fi
@@ -123,19 +123,26 @@ cat >> config/capacityConfigFile.json << EOL
 EOL
 
 if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
-    kafka_ca_cert_path="tls/ca.crt"
-    kafka_tls_key_path="tls/tls.key"
-    kafka_tls_cert_path="tls/tls.crt"
+    kafka_ca_cert_path="/cruise-control/tls/ca.crt"
+    kafka_tls_key_path="/cruise-control/tls/tls.key"
+    kafka_tls_cert_path="/cruise-control/tls/tls.crt"
     kafka_tls_ks_dir="tls-ks"
     mkdir -p ${kafka_tls_ks_dir}
-    if [[ -f $kafka_ca_cert_path ]]; then
+    trust_cert_path="${kafka_ca_cert_path}"
+    # Some cert-manager TLS secrets do not include ca.crt.
+    # In that case trust the mounted certificate chain from tls.crt.
+    if [[ ! -f "${trust_cert_path}" && -f "${kafka_tls_cert_path}" ]]; then
+      echo "ca.crt is not found, using tls.crt for truststore generation"
+      trust_cert_path="${kafka_tls_cert_path}"
+    fi
+    if [[ -f "${trust_cert_path}" ]]; then
     SSL_PASSWORD="changeit"
     if [[ -f $kafka_tls_key_path && -f $kafka_tls_cert_path ]]; then
       SSL_KEYSTORE_LOCATION="${kafka_tls_ks_dir}/kafka.keystore.jks"
       openssl pkcs12 -export -in $kafka_tls_cert_path -inkey $kafka_tls_key_path -out ${kafka_tls_ks_dir}/kafka.keystore.p12 -passout pass:${SSL_PASSWORD}
       keytool -importkeystore -destkeystore ${SSL_KEYSTORE_LOCATION} -deststorepass ${SSL_PASSWORD} \
         -srckeystore ${kafka_tls_ks_dir}/kafka.keystore.p12 -srcstoretype PKCS12 -srcstorepass ${SSL_PASSWORD}
-      keytool -import -trustcacerts -keystore ${SSL_KEYSTORE_LOCATION} -storepass ${SSL_PASSWORD} -noprompt -alias ca-cert -file $kafka_ca_cert_path
+      keytool -import -trustcacerts -keystore ${SSL_KEYSTORE_LOCATION} -storepass ${SSL_PASSWORD} -noprompt -alias ca-cert -file "${trust_cert_path}"
       SSL_CONFIGURATION="ssl.keystore.location = \"${SSL_KEYSTORE_LOCATION}\"\n        ssl.keystore.password = \"${SSL_PASSWORD}\"\n        ssl.key.password = \"${SSL_PASSWORD}\""
     cat >> config/cruisecontrol.properties <<EOF
 ssl.keystore.type=JKS
@@ -146,7 +153,7 @@ EOF
     fi
 
     SSL_TRUSTSTORE_LOCATION="${kafka_tls_ks_dir}/kafka.truststore.jks"
-    keytool -import -trustcacerts -keystore ${SSL_TRUSTSTORE_LOCATION} -storepass ${SSL_PASSWORD} -noprompt -alias ca -file $kafka_ca_cert_path
+    keytool -import -trustcacerts -keystore ${SSL_TRUSTSTORE_LOCATION} -storepass ${SSL_PASSWORD} -noprompt -alias ca -file "${trust_cert_path}"
     cat >> config/cruisecontrol.properties <<EOF
 ssl.truststore.type=JKS
 ssl.truststore.location=$SSL_TRUSTSTORE_LOCATION
