@@ -367,7 +367,16 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err != nil {
 		return err
 	}
-	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, "")
+     
+	var clusterID string
+    if kraft {
+        clusterID, err = r.resolveClusterID()
+        if err != nil {
+            return err
+        }
+    }
+
+	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, clusterID)
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
@@ -592,9 +601,36 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 		return "", err
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
+	if len(podNames) == 0 {
+        return "", fmt.Errorf("no Kafka pods found to retrieve ZooKeeper cluster ID")
+    }
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
 	return strings.TrimSpace(zkClusterID), commandErr
+}
+
+func (r *ReconcileKafka) resolveClusterID() (string, error) {
+	labels := r.kafkaProvider.GetSelectorLabels()
+	podList, err := r.reconciler.FindPodList(r.cr.Namespace, labels)
+	if err != nil {
+		return "", err
+	}
+	clusterIDs := make(map[string]struct{})
+	for _, pod := range podList.Items {
+		for _, c := range pod.Spec.Containers {
+			for _, env := range c.Env {
+				if env.Name == "KRAFT_CLUSTER_ID" && env.Value != "" {
+					clusterIDs[env.Value] = struct{}{}
+				}
+			}
+		}
+	}
+	if len(clusterIDs) == 1 {
+		for id := range clusterIDs {
+			return id, nil
+		}
+	}
+	return r.getZooKeeperClusterID()
 }
 
 func (r ReconcileKafka) getMigrationStatus() bool {
