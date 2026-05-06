@@ -33,7 +33,6 @@ EOL
 
 function prepare_secured_config_files() {
   cat > ${KAFKA_CTL_CONFIG} << EOL
-current-context: default
 contexts:
   default:
     brokers: [${BOOTSTRAP_SERVERS}]
@@ -47,7 +46,6 @@ EOL
 
 function prepare_unsecured_config_files() {
   cat > ${KAFKA_CTL_CONFIG} << EOL
-current-context: default
 contexts:
   default:
     brokers: [${BOOTSTRAP_SERVERS}]
@@ -87,6 +85,10 @@ if [[ -n ${KAFKA_AUTH_USERNAME} && -n ${KAFKA_AUTH_PASSWORD} ]]; then
 else
   prepare_unsecured_config_files
 fi
+# kafkactl >=5.18 stores the active context in a dedicated file.
+cat > /cruise-control/current-context.yml << EOL
+current-context: default
+EOL
 enrich_kafkactl_yml_with_ssl_configs
 
 
@@ -169,6 +171,8 @@ for VAR in `env`; do
 done
 
 if [[ "${EXTERNAL_KAFKA_ENABLED}" == "false" ]]; then
+  # Some static Go binaries need USER set when running under numeric UID.
+  export USER="${USER:-kafka}"
   kafkactl create topic __CruiseControlMetrics --partitions=-1 --replication-factor=-1
 fi
 
