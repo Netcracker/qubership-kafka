@@ -17,7 +17,7 @@ monitoring.resources.requests.cpu: 50m
 monitoring.resources.requests.memory: 128Mi
 monitoring.resources.limits.cpu: 100m
 monitoring.resources.limits.memory: 256Mi
-backupDaemon.resources.requests.cpu: 50m
+backupDaemon.resources.requests.cpu: 125m
 backupDaemon.resources.requests.memory: 128Mi
-backupDaemon.resources.limits.cpu: 100m
-backupDaemon.resources.limits.memory: 256Mi
+backupDaemon.resources.limits.cpu: 400m
+backupDaemon.resources.limits.memory: 450Mi
