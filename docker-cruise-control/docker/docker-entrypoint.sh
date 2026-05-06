@@ -178,8 +178,6 @@ for VAR in `env`; do
 done
 
 if [[ "${EXTERNAL_KAFKA_ENABLED}" == "false" ]]; then
-  # Some static Go binaries need USER set when running under numeric UID.
-  export USER="${USER:-kafka}"
   kafkactl create topic __CruiseControlMetrics --partitions=-1 --replication-factor=-1
 fi
 
