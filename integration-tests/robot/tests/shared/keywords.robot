@@ -1,6 +1,7 @@
 *** Variables ***
 ${KAFKA_BOOTSTRAP_SERVERS}      %{KAFKA_BOOTSTRAP_SERVERS}
 ${KAFKA_HOST}                   %{KAFKA_HOST}
+${KAFKA_OS_PROJECT}             %{KAFKA_OS_PROJECT}
 
 *** Settings ***
 Library  String
@@ -14,3 +15,8 @@ Library  ./lib/KafkaLibrary.py  bootstrap_servers=${KAFKA_BOOTSTRAP_SERVERS}
 ...                             enable_ssl=%{KAFKA_ENABLE_SSL}
 Library  PlatformLibrary  managed_by_operator=%{KAFKA_IS_MANAGED_BY_OPERATOR}
 
+*** Keywords ***
+Check Secret
+    [Arguments]  ${secret_name}  ${KAFKA_OS_PROJECT}
+    ${response}=  Get Secret  ${secret_name}  ${KAFKA_OS_PROJECT}
+    RETURN  ${response}

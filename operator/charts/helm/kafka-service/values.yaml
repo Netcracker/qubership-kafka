@@ -609,6 +609,18 @@ backupDaemon:
     sslCert: ""
     url: ""
     bucket: ""
+  s3Aliases: []
+  # - name: default
+  #   spec:
+  #     default: true
+  #     storageBucket: backup-restore-bucket
+  #     storageProvider: aws
+  #     storageRegion: us-east-1
+  #     storageServerUrl: "https://s3.example.com"
+  #     storageUsername: name
+  #     storageSecret: storage-location-default
+  #   secretContent:
+  #     storagePassword: pass
 
   # Specifies the cron-like backup schedule. If this parameter is empty,
   # the default schedule "0 0 * * *" is used.
@@ -627,10 +639,10 @@ backupDaemon:
   # formatted as a YAML string.
   resources:
     requests:
-      memory: "256Mi"
+      memory: "128Mi"
       cpu: "125m"
     limits:
-      memory: "768Mi"
+      memory: "450Mi"
       cpu: "400m"
 
   # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
