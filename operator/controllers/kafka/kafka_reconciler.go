@@ -367,10 +367,13 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err != nil {
 		return err
 	}
-
-	clusterID, err := r.resolveClusterID()
-    if err != nil {
-	    return err
+     
+	var clusterID string
+    if kraft {
+        clusterID, err = r.resolveClusterID()
+        if err != nil {
+            return err
+        }
     }
 
 	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, clusterID)
@@ -599,7 +602,7 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
 	if len(podNames) == 0 {
-        return "", nil
+        return "", fmt.Errorf("no Kafka pods found to retrieve ZooKeeper cluster ID")
     }
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
