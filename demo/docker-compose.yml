@@ -1,43 +1,75 @@
-version: '2'
 services:
-  zookeeper:
-    image: zookeeper:3.9.2
-    ports:
-      - 2181:2181
   kafka:
-    image: kafka:4.1.0
+    image: ghcr.io/netcracker/qubership-docker-kafka-4:main
     ports:
-      - 9092:9092
-    links:
-      - zookeeper
+      - "9092:9092"
     environment:
-      - BROKER_ID=1
-      - REPLICATION_FACTOR=1
-      - ZOOKEEPER_CONNECT=zookeeper:2181
-      - DISABLE_SECURITY=true
-      - ADMIN_USERNAME=
-      - ADMIN_PASSWORD=
-      - CLIENT_USERNAME=
-      - CLIENT_PASSWORD=
-  kafka-integration-tests:
-    build:
-      context: ../
-      dockerfile: ./integration-tests/docker/Dockerfile
+      BROKER_ID: "1"
+      REPLICATION_FACTOR: "1"
+      KRAFT_ENABLED: "true"
+      PROCESS_ROLES: "broker,controller"
+      VOTERS: "1@kafka:9096"
+      KRAFT_CLUSTER_ID: "q1Ws4gGZR42fOd89V5pZJQ"
+      DISABLE_SECURITY: "false"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin"
+      CLIENT_USERNAME: "client"
+      CLIENT_PASSWORD: "client"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-health.sh live"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+  backup-daemon:
+    image: ghcr.io/netcracker/qubership-kafka-backup-daemon:main
+    user: "0:0"
     ports:
-      - 8090:8080
-    links:
-      - kafka
+      - "8080:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      KAFKA_ENABLE_SSL: "false"
+      KAFKA_USERNAME: "admin"
+      KAFKA_PASSWORD: "admin"
+      BACKUP_DAEMON_API_CREDENTIALS_USERNAME: "backup"
+      BACKUP_DAEMON_API_CREDENTIALS_PASSWORD: "backup"
+      BROADCAST_ADDRESS: "0.0.0.0"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/prometheus > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  integration-tests:
+    user: "0:0"
+    image: ghcr.io/netcracker/qubership-kafka-integration-tests:main
+    ports:
+      - "8090:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      backup-daemon:
+        condition: service_healthy
     volumes:
       - ./../integration-tests/robot/tests:/opt/robot/tests
       - ./output:/opt/robot/output
     environment:
-      - ZOOKEEPER_OS_PROJECT=
-      - ZOOKEEPER_HOST=zookeeper
-      - ZOOKEEPER_PORT=2181
-      - KAFKA_OS_PROJECT=
-      - KAFKA_HOST=kafka
-      - KAFKA_PORT=9092
-      - KAFKA_USER=
-      - KAFKA_PASSWORD=
-      - OS_URL=
+      KAFKA_HOST: "kafka"
+      KAFKA_PORT: "9092"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      KAFKA_OS_PROJECT: ""
+      KAFKA_USER: "admin"
+      KAFKA_PASSWORD: "admin"
+      KAFKA_ENABLE_SSL: "false"
+      KAFKA_IS_MANAGED_BY_OPERATOR: "false"
+      BACKUP_DAEMON_HOST: "backup-daemon"
+      BACKUP_DAEMON_PORT: "8080"
+      BACKUP_DAEMON_PROTOCOL: "http"
+      BACKUP_DAEMON_USER: "backup"
+      BACKUP_DAEMON_PASSWORD: "backup"
     command: ["run-ttyd"]
