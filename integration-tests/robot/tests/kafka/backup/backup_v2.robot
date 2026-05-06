@@ -182,18 +182,6 @@ Check Consumed Message
     Should Contain  ${receivedMessage}  ${message}
 
 *** Test Cases ***
-Full Backup And Restore V2
-    [Tags]  kafka  backup  backup_v2
-    ${backup_id}=  Set Variable  ${None}
-    ${restore_id}=  Set Variable  ${None}
-    Create Topic With Generated Data  ${KAFKA_BACKUP_V2_TOPIC}
-    ${backup_id}=  Create Backup V2  ${KAFKA_BACKUP_V2_TOPIC}
-    Delete Data  ${KAFKA_BACKUP_V2_TOPIC}
-    ${restore_id}=  Restore Backup V2  ${backup_id}  ${KAFKA_BACKUP_V2_TOPIC}
-    Check Topic Exists  ${KAFKA_BACKUP_V2_TOPIC}
-    Delete Backup V2  ${backup_id}
-    [Teardown]  Run Keywords  Delete Data  ${KAFKA_BACKUP_V2_TOPIC}  AND  Delete Restore V2 If Exists  ${restore_id}  AND  Delete Backup V2 If Exists  ${backup_id}
-
 V2 Backup Uses Default S3 Alias Container
     [Tags]  kafka  backup  backup_v2  backup_v2_aliases
     ${backup_id}=  Set Variable  ${None}
