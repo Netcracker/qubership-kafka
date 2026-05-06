@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2086,SC2223,SC2034,SC2006,SC2196
 
 # Resolve security protocol.
 #
