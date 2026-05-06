@@ -639,10 +639,10 @@ backupDaemon:
   # formatted as a YAML string.
   resources:
     requests:
-      memory: "256Mi"
+      memory: "128Mi"
       cpu: "125m"
     limits:
-      memory: "768Mi"
+      memory: "450Mi"
       cpu: "400m"
 
   # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
