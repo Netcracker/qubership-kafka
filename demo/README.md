@@ -1,13 +1,39 @@
-# How to run demo
+# Local Testing Environment
 
-You need to perform the following commands in terminal:
-```
+Kafka 4.x (KRaft) + backup-daemon + Robot Framework test runner.
+
+## Start
+
+```bash
+cd demo
 docker-compose up -d
 ```
 
-You can open web terminal using the link `http://localhost:8090` and run integration tests using 
-the following command:
+To build a service from source instead of pulling the published image:
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
-robot ./tests
+
+## Run Tests
+
+```bash
+# Smoke tests
+docker-compose exec integration-tests robot -i kafka_crud ./tests
+
+# Backup tests
+docker-compose exec integration-tests robot -i backup ./tests
+
+# Full suite
+docker-compose exec integration-tests robot ./tests
 ```
-Result of running tests can be found in `./output` folder.
+
+## Results
+
+HTML report and XML log are written to `demo/output/` on the host.
+
+## Stop
+
+```bash
+docker-compose down -v
+```
