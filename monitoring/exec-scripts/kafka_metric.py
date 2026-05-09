@@ -183,6 +183,7 @@ def _is_kraft(admin_client, broker_id):
 
 def _collect_metrics():
     admin_client = _create_admin_client()
+    is_kraft_enabled = False
     if not admin_client:
         broker_ids = []
     else:
