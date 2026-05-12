@@ -642,7 +642,7 @@ backupDaemon:
       memory: "128Mi"
       cpu: "125m"
     limits:
-      memory: "450Mi"
+      memory: "500Mi"
       cpu: "400m"
 
   # Affinity Settings for Backup Daemon pod, formatted as a JSON string.
