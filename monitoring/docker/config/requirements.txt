@@ -1,2 +1,2 @@
-requests==2.33.0
+requests==2.34.0
 kafka-python-ng==2.2.3
