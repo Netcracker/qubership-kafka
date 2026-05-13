@@ -70,9 +70,9 @@ EOL
 cat >> ${CC_WORK}/config/cruisecontrol.properties <<EOF
 bootstrap.servers=$BOOTSTRAP_SERVERS
 self.healing.enabled=$SELF_HEALING_ENABLED
-capacity.config.file=config/capacityConfigFile.json
+capacity.config.file=${CC_WORK}/config/capacityConfigFile.json
 kafka.broker.failure.detection.enable=true
-webserver.auth.credentials.file=config/ui-credentianals
+webserver.auth.credentials.file=${CC_WORK}/config/ui-credentianals
 webserver.security.enable=true
 EOF
 
@@ -97,8 +97,8 @@ if [[ -n ${KAFKA_AUTH_USERNAME} && -n ${KAFKA_AUTH_PASSWORD} ]]; then
 else
   prepare_unsecured_config_files
 fi
-# kafkactl >=5.18 stores the active context in a dedicated file.
-cat > /cruise-control/current-context.yml << EOL
+# kafkactl >=5.18 stores the active context next to KAFKA_CTL_CONFIG (must be writable under readOnlyRootFilesystem).
+cat > "${CC_WORK}/current-context.yml" << EOL
 current-context: default
 EOL
 enrich_kafkactl_yml_with_ssl_configs
@@ -136,8 +136,8 @@ if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
     kafka_ca_cert_path="/cruise-control/tls/ca.crt"
     kafka_tls_key_path="/cruise-control/tls/tls.key"
     kafka_tls_cert_path="/cruise-control/tls/tls.crt"
-    kafka_tls_ks_dir="tls-ks"
-    mkdir -p ${kafka_tls_ks_dir}
+    kafka_tls_ks_dir="${CC_WORK}/tls-ks"
+    mkdir -p "${kafka_tls_ks_dir}"
     trust_cert_path="${kafka_ca_cert_path}"
     # Some cert-manager TLS secrets do not include ca.crt.
     # In that case trust the mounted certificate chain from tls.crt.
@@ -198,6 +198,11 @@ cat /cruise-control/additionalConfig/cruisecontrolAdditionalProperties.conf >> $
 if [[ "${UI_ENABLED}" != "false" ]]; then
   echo "webserver.ui.diskpath=${CC_WORK}/cruise-control-ui/dist" >> ${CC_WORK}/config/cruisecontrol.properties
 fi
+
+# kafka-cruise-control-start.sh defaults LOG_DIR to /cruise-control/logs (read-only with readOnlyRootFilesystem).
+# LinkedIn start.sh passes -Dkafka.logs.dir=$LOG_DIR to the JVM; keep logs under CC_WORK (/tmp).
+export LOG_DIR="${CC_WORK}/logs"
+mkdir -p "${LOG_DIR}"
 
 /cruise-control/kafka-cruise-control-start.sh ${CC_WORK}/config/cruisecontrol.properties 9090
 

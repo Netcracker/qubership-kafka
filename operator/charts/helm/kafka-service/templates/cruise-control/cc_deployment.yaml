@@ -143,7 +143,7 @@ spec:
                 path: cruisecontrolAdditionalProperties.conf
         - name: tmp
           emptyDir:
-            sizeLimit: 32Mi
+            sizeLimit: 256Mi
         {{- if eq (include "kafka-service.enableTls" . ) "true"}}
         - name: {{ include "kafka-service.tlsSecretName" . }}
           secret:
