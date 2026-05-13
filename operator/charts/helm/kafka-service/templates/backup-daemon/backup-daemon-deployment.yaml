@@ -1,6 +1,8 @@
 {{- if .Values.backupDaemon.install }}
 {{ $persistentVolume := eq (include "backupDaemon.persistentVolumeDefined" .) "true" }}
 {{ $storageClass := eq (include "backupDaemon.storageClassDefined" .) "true" }}
+{{- $s3AliasesData := fromYaml (include "backupDaemon.s3Aliases" .) }}
+{{- $hasS3Aliases := not (empty $s3AliasesData.items) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -93,6 +95,11 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 16Mi
+      {{- if $hasS3Aliases }}
+        - name: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
+          secret:
+            secretName: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
+      {{- end }}
       {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
         - name: ssl-certs
           secret:
@@ -128,6 +135,11 @@ spec:
           - name: s3-ssl-certs
             mountPath: /s3Certs
         {{- end }}
+        {{- if $hasS3Aliases }}
+          - name: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
+            mountPath: /aliases/
+            readOnly: true
+        {{- end }}
           env:
             - name: PYTHONDONTWRITEBYTECODE
               value: "1"
@@ -153,6 +165,8 @@ spec:
                 secretKeyRef:
                   name: {{ template "kafka.name" . }}-services-secret
                   key: client-password
+            - name: S3_ALIASES_USED
+              value: {{ $hasS3Aliases | quote }}
             - name: BACKUP_DAEMON_API_CREDENTIALS_USERNAME
               valueFrom:
                 secretKeyRef:
