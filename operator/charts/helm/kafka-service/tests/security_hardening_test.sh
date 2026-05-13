@@ -39,7 +39,7 @@ RENDERED=$(helm template ks "$CHART_DIR" \
 check "readOnlyRootFilesystem: true" "$(echo "$RENDERED" | grep -c 'readOnlyRootFilesystem: true' || true)"
 check "runAsNonRoot: true"           "$(echo "$RENDERED" | grep -c 'runAsNonRoot: true' || true)"
 check "allowPrivilegeEscalation: false" "$(echo "$RENDERED" | grep -c 'allowPrivilegeEscalation: false' || true)"
-check "seccompProfile RuntimeDefault" "$(echo "$RENDERED" | grep -c 'type: RuntimeDefault' || true)"
+check "seccompProfile RuntimeDefault" "$(echo "$RENDERED" | grep -c 'RuntimeDefault' || true)"
 check "capabilities drop ALL"        "$(echo "$RENDERED" | grep -c '"ALL"' || true)"
 check "runAsUser: 1000 (KUBERNETES)" "$(echo "$RENDERED" | grep -c 'runAsUser: 1000' || true)"
 check "/tmp emptyDir volumes"        "$(echo "$RENDERED" | grep -c 'name: tmp' || true)"

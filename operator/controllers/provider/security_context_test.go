@@ -64,7 +64,9 @@ func TestGetContainerSecurityContextReadWrite(t *testing.T) {
 }
 
 func TestGetTmpVolume(t *testing.T) {
-	vol := getTmpVolume()
+	// Representative ledger value for JVM Kafka broker /tmp scratch.
+	const ledgerQuantity = "32Mi"
+	vol := getTmpVolume(ledgerQuantity)
 
 	if vol.Name != tmpVolumeName {
 		t.Errorf("expected volume name %q, got %q", tmpVolumeName, vol.Name)
@@ -72,9 +74,9 @@ func TestGetTmpVolume(t *testing.T) {
 	if vol.EmptyDir == nil {
 		t.Fatal("expected EmptyDir volume source")
 	}
-	limit := resource.MustParse("100Mi")
+	limit := resource.MustParse(ledgerQuantity)
 	if vol.EmptyDir.SizeLimit == nil || !vol.EmptyDir.SizeLimit.Equal(limit) {
-		t.Errorf("expected SizeLimit=100Mi, got %v", vol.EmptyDir.SizeLimit)
+		t.Errorf("expected SizeLimit=%s, got %v", ledgerQuantity, vol.EmptyDir.SizeLimit)
 	}
 }
 

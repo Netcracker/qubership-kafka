@@ -308,7 +308,7 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 				},
 			},
 		},
-		getTmpVolume(),
+		getTmpVolume("16Mi"), // Telegraf + sidecar scripts
 	}
 }
 

@@ -92,7 +92,7 @@ spec:
           {{- end }}
         - name: tmp
           emptyDir:
-            sizeLimit: 100Mi
+            sizeLimit: 16Mi
       {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
         - name: ssl-certs
           secret:

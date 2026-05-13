@@ -280,7 +280,7 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumes() []corev1.Volume {
 	if mrp.spec.LagExporter != nil {
 		volumes = append(volumes, mrp.lagExporterResourceProvider.getVolume())
 	}
-	volumes = append(volumes, getTmpVolume())
+	volumes = append(volumes, getTmpVolume("32Mi")) // Telegraf + optional Python lag-exporter share /tmp
 	return volumes
 }
 

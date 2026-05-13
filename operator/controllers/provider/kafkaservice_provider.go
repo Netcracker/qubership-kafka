@@ -137,9 +137,10 @@ func getContainerSecurityContext(readOnlyRootFs bool) *corev1.SecurityContext {
 // enabled so that JVM, Python and shell scratch writes succeed.
 const tmpVolumeName = "tmp"
 
-// getTmpVolume returns a small emptyDir volume to be mounted at /tmp.
-func getTmpVolume() corev1.Volume {
-	sizeLimit := resource.MustParse("100Mi")
+// getTmpVolume builds the standard /tmp emptyDir. sizeLimitQuantity must be
+// derived per workload (Dockerfile + entrypoint baseline × 3, then floor for JVM, etc.).
+func getTmpVolume(sizeLimitQuantity string) corev1.Volume {
+	sizeLimit := resource.MustParse(sizeLimitQuantity)
 	return corev1.Volume{
 		Name: tmpVolumeName,
 		VolumeSource: corev1.VolumeSource{

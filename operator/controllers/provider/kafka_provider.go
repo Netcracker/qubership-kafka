@@ -403,7 +403,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 		{Name: "public-certs", VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: fmt.Sprintf("%s-public-certs", krp.cr.Name)}}},
-		getTmpVolume(),
+		getTmpVolume("32Mi"), // JVM Kafka broker: /tmp for config copy, keystores, hsperfdata
 	}
 
 	volumeMounts := []corev1.VolumeMount{
@@ -584,7 +584,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 		{Name: "public-certs", VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: fmt.Sprintf("%s-public-certs", krp.cr.Name)}}},
-		getTmpVolume(),
+		getTmpVolume("32Mi"), // JVM Kafka broker: /tmp for config copy, keystores, hsperfdata
 	}
 
 	volumeMounts := []corev1.VolumeMount{

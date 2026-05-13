@@ -33,7 +33,7 @@ spec:
       volumes:
         - name: tmp
           emptyDir:
-            sizeLimit: 100Mi
+            sizeLimit: 16Mi
       containers:
         - name: crd-init
           image: {{ include "crd-init.image" . }}

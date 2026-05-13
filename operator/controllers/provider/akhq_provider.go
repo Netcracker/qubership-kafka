@@ -356,7 +356,7 @@ func (arp AkhqResourceProvider) getAkhqVolumes(deserializationConfigMaps []*core
 		})
 	}
 
-	volumes = append(volumes, getTmpVolume())
+	volumes = append(volumes, getTmpVolume("32Mi")) // JVM UI
 
 	return volumes
 }

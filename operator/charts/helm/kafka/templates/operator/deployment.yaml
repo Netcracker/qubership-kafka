@@ -35,7 +35,7 @@ spec:
       volumes:
         - name: tmp
           emptyDir:
-            sizeLimit: 100Mi
+            sizeLimit: 8Mi
       containers:
         - name: {{ template "kafka.name" . }}-operator
           securityContext:

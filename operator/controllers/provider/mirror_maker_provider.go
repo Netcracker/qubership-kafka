@@ -387,7 +387,7 @@ func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumes() []corev1.Volume 
 				},
 			},
 		},
-		getTmpVolume(),
+		getTmpVolume("32Mi"), // JVM Connect / MM2
 	}
 }
 
