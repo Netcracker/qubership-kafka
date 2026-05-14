@@ -13,6 +13,7 @@ charts:
       - ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:${release}
       - ghcr.io/netcracker/qubership-docker-cruise-control:${release}
       - ghcr.io/netcracker/qubership-kafka-mirror-maker-monitoring:${release}
+      - ghcr.io/netcracker/qubership-docker-kafka-mirror-maker:${release}
       - ghcr.io/netcracker/qubership-docker-akhq:${release}
       - ghcr.io/netcracker/qubership-disaster-recovery-daemon:#latest
       - ghcr.io/netcracker/qubership-docker-kubectl:#latest
