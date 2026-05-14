@@ -58,11 +58,11 @@ jobs:
 
   Hardening-Tests:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@main
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@feature/kafka-hardening-scan
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'main' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'feature/kafka-hardening-scan' #this value must match the value after '@' in 'uses'
       skip_tests: false
       scope: 'hardening'
     secrets:
