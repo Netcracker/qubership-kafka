@@ -168,9 +168,8 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 
 	r.logger.Info(fmt.Sprintf("Update brokers set: current replicas count is [%d], new replicas count is [%d].", currentReplicas, kafkaSpec.Replicas))
 	kraft := r.cr.Spec.Kraft.Enabled
-	migration := r.cr.Spec.Kraft.Migration
 
-	if migration {
+	if r.cr.Spec.Kraft.Migration {
 		var status *kafka.KafkaStatus
 		status, err = r.reconciler.StatusUpdater.GetStatus()
 		if err != nil {
@@ -269,7 +268,7 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		log.Info("ZooKeeper to Kraft migration finished succesfully or not needed")
 	}
 
-	if err := r.rolloutBrokers(kafkaSpec.Replicas, kraft, migration, kafkaSecret); err != nil {
+	if err := r.rolloutBrokers(kafkaSpec.Replicas, kraft, kafkaSecret); err != nil {
 		return err
 	}
 
@@ -291,10 +290,10 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 	return nil
 }
 
-func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, migration bool, kafkaSecret *corev1.Secret) error {
+func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *corev1.Secret) error {
 	r.logger.Info("Perform brokers rollout procedure")
 	for brokerId := 1; brokerId <= replicas; brokerId++ {
-		if err := r.rolloutBroker(brokerId, kraft, migration, kafkaSecret); err != nil {
+		if err := r.rolloutBroker(brokerId, kraft, kafkaSecret); err != nil {
 			return err
 		}
 		if r.cr.Spec.RollingUpdate {
@@ -348,7 +347,7 @@ func (r ReconcileKafka) Status() error {
 	return r.reconciler.updateConditions(NewCondition(statusTrue, typeReady, kafkaConditionReason, "Kafka pods are ready"))
 }
 
-func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, migration bool, kafkaSecret *corev1.Secret) error {
+func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *corev1.Secret) error {
 	brokerService := r.kafkaProvider.NewKafkaBrokerServiceForCR(brokerId)
 	if err := r.reconciler.SetControllerReference(r.cr, brokerService, r.reconciler.Scheme); err != nil {
 		return err
@@ -370,10 +369,13 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, migration bool,
 	}
      
 	var clusterID string
-    if kraft && migration{
+    if kraft {
         clusterID, err = r.resolveClusterID()
         if err != nil {
-            return err
+			if err.Error() != "no kafka pods found" {
+                return err
+			}
+		    clusterID = ""
         }
     }
 
@@ -603,7 +605,7 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
 	if len(podNames) == 0 {
-        return "", fmt.Errorf("no Kafka pods found to retrieve ZooKeeper cluster ID")
+        return "", fmt.Errorf("no Kafka pods found")
     }
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
@@ -616,7 +618,10 @@ func (r *ReconcileKafka) resolveClusterID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if len(podList.Items) > 0 && len(podList.Items[0].Spec.Containers) > 0 {
+	if len(podList.Items) == 0 {
+		return "", fmt.Errorf("no kafka pods found")
+	}
+	if len(podList.Items[0].Spec.Containers) > 0 {
 		for _, env := range podList.Items[0].Spec.Containers[0].Env {
 			if env.Name == "KRAFT_CLUSTER_ID" && env.Value != "" {
 				return env.Value, nil
