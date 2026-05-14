@@ -404,7 +404,7 @@ func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumeMounts() []corev1.Vo
 		},
 		{
 			Name:      "config",
-			MountPath: "/tmp/mm/config/kmm",
+			MountPath: "/opt/kafka/config/kmm",
 		},
 		getTmpVolumeMount(),
 	}

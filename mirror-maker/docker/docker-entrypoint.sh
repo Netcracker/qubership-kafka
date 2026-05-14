@@ -4,6 +4,8 @@
 # with readOnlyRootFilesystem: true.  The image stores static config under
 # ${KAFKA_HOME}/config-template; we copy it to ${MM_CONFIG} on every start.
 MM_CONFIG=/tmp/mm/config
+# ConfigMap key `config` → kmm.conf is mounted at KMM_CONF_INJECT (outside /tmp).
+KMM_CONF_INJECT="${KAFKA_HOME}/config/kmm/kmm.conf"
 mkdir -p "${MM_CONFIG}"
 cp -r "${KAFKA_HOME}/config-template/." "${MM_CONFIG}/"
 
@@ -151,8 +153,10 @@ case $1 in
     # Generate mm2 configuration only if it doesn't exist
     #
     additional_log=""
-    if [[ -f "${MM_CONFIG}/kmm/kmm.conf" ]]; then
-      cat ${MM_CONFIG}/kmm/kmm.conf > ${MM_CONFIG}/mm2.properties
+    if [[ -f "${KMM_CONF_INJECT}" ]]; then
+      mkdir -p "${MM_CONFIG}/kmm"
+      cp -f "${KMM_CONF_INJECT}" "${MM_CONFIG}/kmm/kmm.conf"
+      cat "${MM_CONFIG}/kmm/kmm.conf" > ${MM_CONFIG}/mm2.properties
       echo "" >> ${MM_CONFIG}/mm2.properties
       additional_log="additional "
     else
