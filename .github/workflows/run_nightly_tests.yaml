@@ -6,14 +6,15 @@ permissions:
   actions: read
 
 on:
-  schedule:
-    - cron: '0 1 * * *'
+#  schedule:
+#    - cron: '0 1 * * *'
+  push
 
 jobs:
   Nightly-Kafka-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@103a3f3200524670f56b3a8ee88b11a1132208e7 #v1.6.2
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/update_monitoring_version
     with:
-      service_branch: 'main'
+      service_branch: 'fix/update_monitoring_version'
       pipeline_branch: '103a3f3200524670f56b3a8ee88b11a1132208e7' #this value must match the value after '@' in 'uses'
       scope: 'nightly'
     secrets:
