@@ -16,6 +16,7 @@ package kafka
 
 import (
 	"bytes"
+	stderrors "errors"
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sort"
@@ -36,6 +37,8 @@ import (
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
+
+var ErrNoKafkaPods = stderrors.New("no Kafka pods found")
 
 const (
 	kafkaConditionReason              = "KafkaReadinessStatus"
@@ -367,7 +370,16 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err != nil {
 		return err
 	}
-	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, "")
+     
+	var clusterID string
+    if kraft {
+        clusterID, err = r.resolveClusterID()
+        if err != nil && err != ErrNoKafkaPods {
+		   return err
+	    }
+    }
+
+	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, clusterID)
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
@@ -592,9 +604,31 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 		return "", err
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
+	if len(podNames) == 0 {
+        return "", ErrNoKafkaPods
+    }
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
 	return strings.TrimSpace(zkClusterID), commandErr
+}
+
+func (r *ReconcileKafka) resolveClusterID() (string, error) {
+	labels := r.kafkaProvider.GetSelectorLabels()
+	podList, err := r.reconciler.FindPodList(r.cr.Namespace, labels)
+	if err != nil {
+		return "", err
+	}
+	if len(podList.Items) == 0 {
+		return "", ErrNoKafkaPods
+	}
+	if len(podList.Items[0].Spec.Containers) > 0 {
+		for _, env := range podList.Items[0].Spec.Containers[0].Env {
+			if env.Name == "KRAFT_CLUSTER_ID" && env.Value != "" {
+				return env.Value, nil
+			}
+		}
+	}
+	return r.getZooKeeperClusterID()
 }
 
 func (r ReconcileKafka) getMigrationStatus() bool {
