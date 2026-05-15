@@ -46,7 +46,7 @@ func NewMirrorMakerMonitoringResourceProvider(cr *kafkaservice.KafkaService, log
 		cr:          cr,
 		spec:        cr.Spec.MirrorMakerMonitoring,
 		logger:      logger,
-		serviceName: fmt.Sprintf("%s-kafka-mirror-maker-monitoring", cr.Name),
+		serviceName: fmt.Sprintf("%s-mirror-maker-monitoring", cr.Name),
 	}
 }
 
