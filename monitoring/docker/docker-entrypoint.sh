@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2223,SC2004,SC2155,SC2116,SC2086,SC2162
 
 # Initialise writable runtime directories under /tmp so the container can run
 # with readOnlyRootFilesystem: true.

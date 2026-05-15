@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2086,SC2162,SC2153,SC2068,SC2129,SC2006,SC2196,SC2053
 
 # Initialise writable runtime directories under /tmp so the container can run
 # with readOnlyRootFilesystem: true.  The image stores static config under
