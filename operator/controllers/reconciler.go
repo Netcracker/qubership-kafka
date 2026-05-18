@@ -17,10 +17,11 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"strings"
 
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
@@ -304,13 +305,17 @@ func (r *Reconciler) FindKafkaDeployments(cr metav1.Object) (*appsv1.DeploymentL
 }
 
 func (r *Reconciler) GetDeploymentParameter(deployment appsv1.Deployment, parameterName string) string {
+	return r.GetDeploymentParameterWithDefault(deployment, parameterName, "")
+}
+
+func (r *Reconciler) GetDeploymentParameterWithDefault(deployment appsv1.Deployment, parameterName string, defaultValue string) string {
 	envVars := deployment.Spec.Template.Spec.Containers[0].Env
 	for _, envVar := range envVars {
 		if envVar.Name == parameterName {
 			return envVar.Value
 		}
 	}
-	return ""
+	return defaultValue
 }
 
 // IsDeploymentReady checks if all deployment replicas are available

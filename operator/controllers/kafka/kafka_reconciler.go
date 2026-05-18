@@ -18,10 +18,12 @@ import (
 	"bytes"
 	stderrors "errors"
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -164,9 +166,15 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		return err
 	}
 
-	if currentReplicas < 3 {
-		r.logger.Info("RollingUpdate value is set to false")
-		r.cr.Spec.RollingUpdate = false
+	if r.cr.Spec.RollingUpdate {
+		isRollingUpdateApplicable, err := r.isRollingUpdateApplicable(currentReplicas)
+		if err != nil {
+			return err
+		}
+		if !isRollingUpdateApplicable {
+			r.logger.Info("RollingUpdate value is set to false")
+			r.cr.Spec.RollingUpdate = false
+		}
 	}
 
 	r.logger.Info(fmt.Sprintf("Update brokers set: current replicas count is [%d], new replicas count is [%d].", currentReplicas, kafkaSpec.Replicas))
@@ -291,6 +299,26 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 	}
 
 	return nil
+}
+
+func (r *ReconcileKafka) isRollingUpdateApplicable(currentReplicas int) (bool, error) {
+	if currentReplicas < 3 {
+		return false, nil
+	}
+	deployments, err := r.reconciler.FindKafkaDeployments(r.cr)
+	if err != nil {
+		return true, err
+	}
+	// check whether TLS is changed
+	previousTLSEnabledValue := r.reconciler.GetDeploymentParameterWithDefault(deployments.Items[0], "ENABLE_SSL", "false")
+	previousTLSEnabled, err := strconv.ParseBool(previousTLSEnabledValue)
+	if err != nil {
+		return true, err
+	}
+	if previousTLSEnabled != r.cr.Spec.Ssl.Enabled {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *corev1.Secret) error {
