@@ -462,7 +462,7 @@ data:
     # Read metrics from one or many prometheus clients
     [[inputs.prometheus]]
       ## An array of urls to scrape metrics from.
-      urls = ["$PROMETHEUS_URLS"]
+      urls = [$PROMETHEUS_URLS]
 
       ## Metric version controls the mapping from Prometheus metrics into
       ## Telegraf metrics.  When using the prometheus_client output, use the same
