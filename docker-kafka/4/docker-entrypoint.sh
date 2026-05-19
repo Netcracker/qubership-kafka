@@ -127,8 +127,9 @@ if [[ "$DISABLE_SECURITY" == false ]]; then
   SECURITY_PROTOCOL=$(resolve_security_protocol "SASL_PLAINTEXT" "SASL_SSL")
   NONENCRYPTED_SECURITY_PROTOCOL=SASL_PLAINTEXT
 else
-  SECURITY_PROTOCOL=$(resolve_security_protocol "SASL_PLAINTEXT" "SSL")
+  SECURITY_PROTOCOL=$(resolve_security_protocol "PLAINTEXT" "SSL")
   NONENCRYPTED_SECURITY_PROTOCOL=PLAINTEXT
+  SECURITY_INTER_BROKER_PROTOCOL=$(resolve_security_protocol "SASL_PLAINTEXT" "SASL_SSL")
 fi
 
 : ${INTERNAL_PORT:=${CLIENT_PORT:-9092}}
@@ -681,6 +682,9 @@ contexts:
       enabled: false
 EOL
   enrich_kafkactl_yml_with_ssl_configs
+  cat >> ${KAFKA_HOME}/config/server.properties << EOL
+  security.inter.broker.protocol=SASL_PLAINTEXT
+  EOL
 }
 
 # Prepare Cruise Control Metric Reporter configuration
