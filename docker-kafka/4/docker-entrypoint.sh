@@ -659,6 +659,9 @@ contexts:
       password: ${CLIENT_PASSWORD}
 EOL
   enrich_kafkactl_yml_with_ssl_configs
+    cat >> ${KAFKA_HOME}/config/server.properties << EOL
+security.inter.broker.protocol=SASL_PLAINTEXT
+EOL
 }
 
 function prepare_unsecured_config_files() {
@@ -682,9 +685,6 @@ contexts:
       enabled: false
 EOL
   enrich_kafkactl_yml_with_ssl_configs
-  cat >> ${KAFKA_HOME}/config/server.properties << EOL
-security.inter.broker.protocol=SASL_PLAINTEXT
-EOL
 }
 
 # Prepare Cruise Control Metric Reporter configuration
