@@ -59,6 +59,7 @@ export KAFKA_OPTS="${KAFKA_OPTS} -javaagent:/opt/kafka/libs/jmx_prometheus_javaa
 
 if [[ "$KRAFT_ENABLED" == "true" ]]; then
   export CONF_KAFKA_PROCESS_ROLES=${PROCESS_ROLES}
+  export CONF_KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS=localhost:9096
   export CONF_KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
   export CONF_KAFKA_CONTROLLER_QUORUM_VOTERS=${VOTERS}
   export CONF_KAFKA_NODE_ID=${BROKER_ID}
@@ -129,7 +130,6 @@ if [[ "$DISABLE_SECURITY" == false ]]; then
 else
   SECURITY_PROTOCOL=$(resolve_security_protocol "SASL_PLAINTEXT" "SSL")
   NONENCRYPTED_SECURITY_PROTOCOL=PLAINTEXT
-  SECURITY_INTER_BROKER_PROTOCOL=$(resolve_security_protocol "SASL_PLAINTEXT" "SASL_SSL")
 fi
 
 : ${INTERNAL_PORT:=${CLIENT_PORT:-9092}}
@@ -190,6 +190,7 @@ if [[ "$MIGRATION_BROKER" == "true" ]]; then
   LISTENER_SECURITY_PROTOCOL_MAP=${LISTENER_SECURITY_PROTOCOL_MAP},CONTROLLER:${SECURITY_PROTOCOL}
   export CONF_KAFKA_CONTROLLER_QUORUM_VOTERS=${VOTERS}
   export CONF_KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+  export CONF_KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS=localhost:9096
 fi
 
 export CONF_KAFKA_LISTENERS=${LISTENERS}
@@ -547,7 +548,6 @@ EOL
 
   export KAFKA_OPTS="${KAFKA_OPTS} -Djava.security.auth.login.config=${KAFKA_HOME}/config/kafka_jaas.conf"
 
-  export CONF_KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-512
   export CONF_KAFKA_SECURITY_INTER_BROKER_PROTOCOL=SASL_PLAINTEXT
   echo "Using CONF_KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL=$CONF_KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL"
   if [[ "$KRAFT_ENABLED" == "true" || "$MIGRATION_BROKER" == "true" ]]; then
@@ -660,9 +660,6 @@ contexts:
       password: ${CLIENT_PASSWORD}
 EOL
   enrich_kafkactl_yml_with_ssl_configs
-    cat >> ${KAFKA_HOME}/config/server.properties << EOL
-security.inter.broker.protocol=SASL_PLAINTEXT
-EOL
 }
 
 function prepare_unsecured_config_files() {
