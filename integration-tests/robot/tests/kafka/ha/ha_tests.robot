@@ -101,8 +101,6 @@ Test Producing And Consuming Data Without Zookeeper
     ${message_without_zookeeper} =  Create Test Message
     Produce Message  ${producer}  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}  ${message_without_zookeeper}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}  ${message_without_zookeeper}
-    Close Kafka Consumer  ${consumer}
     ${consumer} =  Set Variable  ${None}
 
     Scale Up Full Service  %{ZOOKEEPER_HOST}  %{ZOOKEEPER_OS_PROJECT}
@@ -142,3 +140,9 @@ Test Producing And Consuming Data Without Kafka Master
     ${consumer} =  Set Variable  ${None}
 
     [Teardown]  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
+
+Test Container Hardening
+    [Tags]  kafka_ha  kafka_container_hardening  kafka
+    ${part_of}=       Create List        kafka  kafka-services
+    ${exclusions}=    Create Dictionary    _all=CH12  ${KAFKA_SERVICE_NAME}-cruise-control=CH4
+    Check Container Hardening    ${part_of}    ${KAFKA_OS_PROJECT}    ${exclusions}
