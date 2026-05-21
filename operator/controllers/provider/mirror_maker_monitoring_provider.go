@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v7"
 	"github.com/Netcracker/qubership-kafka/operator/util"
@@ -258,15 +259,15 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getContainerPorts() []corev1.
 }
 
 func (mmmrp MirrorMakerMonitoringResourceProvider) getPrometheusUrls() string {
-	var urlList = buildPrometheusUrlsByMirrorMakerConfig(mmmrp)
-	for i, prometheusUrl := range urlList {
-		urlList[i] = fmt.Sprintf("'%s'", prometheusUrl)
-	}
-	result := strings.Join(urlList, ",")
-	result = fmt.Sprintf("[%s]", result)
-	return result
+	urlList := buildPrometheusUrlsByMirrorMakerConfig(mmmrp)
 
-}
+	result, err := json.Marshal(urlList)
+	if err != nil {
+		return "[]"
+	}
+
+	return string(result)
+}	
 
 func buildPrometheusUrlsByMirrorMakerConfig(mmmrp MirrorMakerMonitoringResourceProvider) []string {
 	var urlList []string
