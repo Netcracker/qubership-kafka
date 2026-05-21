@@ -36,5 +36,5 @@ RUN set -x \
 USER 1000:0
 WORKDIR ${KMM_MONITORING_HOME}
 
-ENTRYPOINT ["/sbin/tini", "--", "${KMM_MONITORING_HOME}/entrypoint-wrapper.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/opt/kafka-mirror-maker-monitoring/entrypoint-wrapper.sh"]
 CMD ["telegraf"]
