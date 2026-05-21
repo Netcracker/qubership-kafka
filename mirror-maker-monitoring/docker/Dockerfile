@@ -6,7 +6,7 @@ RUN mkdir -p ${KMM_MONITORING_HOME}
 
 COPY docker/config/requirements.txt ${KMM_MONITORING_HOME}/requirements.txt
 COPY exec-scripts/ ${KMM_MONITORING_HOME}/exec-scripts/
-COPY docker/config/entrypoint-wrapper.sh /${KMM_MONITORING_HOME}/entrypoint-wrapper.sh
+COPY docker/entrypoint-wrapper.sh ${KMM_MONITORING_HOME}/entrypoint-wrapper.sh
 
 # Set the Alpine version to 3.23
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
