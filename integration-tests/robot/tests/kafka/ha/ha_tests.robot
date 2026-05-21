@@ -142,7 +142,7 @@ Test Producing And Consuming Data Without Kafka Master
     [Teardown]  Scale Up Full Service  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
 
 Test Container Hardening
-    [Tags]  kafka_ha  kafka_container_hardening  kafka
+    [Tags]  kafka_container_hardening  kafka
     ${part_of}=       Create List        kafka  kafka-services
     ${exclusions}=    Create Dictionary    _all=CH12  ${KAFKA_SERVICE_NAME}-cruise-control=CH4
     Check Container Hardening    ${part_of}    ${KAFKA_OS_PROJECT}    ${exclusions}
