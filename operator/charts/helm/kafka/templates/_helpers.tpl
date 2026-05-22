@@ -52,19 +52,6 @@ capabilities:
 {{- end -}}
 
 {{/*
-Container security context for workloads whose entrypoint still mutates
-files under the image root filesystem. Should be replaced with
-"kafka-service.globalContainerSecurityContext" once the corresponding
-image refactors its writes to a writable mount (e.g. /tmp).
-*/}}
-{{- define "kafka-service.globalContainerSecurityContextRWRootFs" -}}
-allowPrivilegeEscalation: false
-readOnlyRootFilesystem: false
-capabilities:
-  drop: ["ALL"]
-{{- end -}}
-
-{{/*
 Common labels
 */}}
 {{- define "kafka-service.labels" -}}

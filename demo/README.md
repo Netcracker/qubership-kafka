@@ -8,7 +8,7 @@ security-hardened images start cleanly under a read-only root filesystem.
 ## Services
 
 | Service | Port | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | kafka | 9092 | Kafka broker (KRaft mode) |
 | backup-daemon | 8080 | Topic / ACL backup REST API |
 | akhq | 8081 | Kafka UI |

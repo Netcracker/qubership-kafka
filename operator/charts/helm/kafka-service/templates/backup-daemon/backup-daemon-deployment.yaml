@@ -121,8 +121,6 @@ spec:
           volumeMounts:
           - name: backup-storage
             mountPath: /opt/kafka/backup-storage
-          - name: tmp
-            mountPath: /tmp
         {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
           - name: ssl-certs
             mountPath: /tls
