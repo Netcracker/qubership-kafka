@@ -101,6 +101,8 @@ Test Producing And Consuming Data Without Zookeeper
     ${message_without_zookeeper} =  Create Test Message
     Produce Message  ${producer}  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}  ${message_without_zookeeper}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Check Consumed Message  ${consumer}  ${ZOOKEEPER_SHUTDOWN_TOPIC_NAME}  ${message_without_zookeeper}
+    Close Kafka Consumer  ${consumer}
     ${consumer} =  Set Variable  ${None}
 
     Scale Up Full Service  %{ZOOKEEPER_HOST}  %{ZOOKEEPER_OS_PROJECT}
