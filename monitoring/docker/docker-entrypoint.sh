@@ -1,4 +1,10 @@
 #!/bin/bash
+# shellcheck disable=SC2223,SC2004,SC2155,SC2116,SC2086,SC2162
+
+# Initialise writable runtime directories under /tmp so the container can run
+# with readOnlyRootFilesystem: true.
+mkdir -p /tmp/monitoring
+export KAFKA_CTL_CONFIG=/tmp/monitoring/kafkactl.yml
 
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e

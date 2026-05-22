@@ -19,8 +19,11 @@ spec:
       restartPolicy: OnFailure
       {{- if .Values.groupMigration.runAsNonRoot }}
       securityContext:
-        runAsNonRoot: true
-        seccompProfile: { type: RuntimeDefault }
+        {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 8Mi
       {{- end }}
       containers:
         - name: migrator
@@ -96,8 +99,9 @@ spec:
               memory: {{ .Values.groupMigration.resources.requests.memory }}
           {{- if .Values.groupMigration.runAsNonRoot }}
           securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities: { drop: ["ALL"] }
+            {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           {{- end }}
 {{- end }}

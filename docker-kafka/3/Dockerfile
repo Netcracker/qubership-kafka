@@ -168,7 +168,7 @@ RUN set -x \
         "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
 # Copy config and script files
-COPY docker/config/ ${KAFKA_HOME}/config
+COPY docker/config/ ${KAFKA_HOME}/config-template
 COPY docker/kafka-health.sh ${KAFKA_HOME}/bin
 COPY docker/get-kraft-migration-status.sh ${KAFKA_HOME}/bin
 COPY docker/get-cluster-id.sh ${KAFKA_HOME}/bin
@@ -192,6 +192,16 @@ RUN mkdir -p "${KAFKA_HOME}" \
     && find "${KAFKA_LOG_DIRS}" -type d -exec chmod g+x {} + \
     && chmod +x ${KAFKA_HOME}/bin/*.sh \
     && chmod +x /docker-entrypoint.sh
+
+# Symlink runtime-generated CLI config files from the classic bin/ location to
+# their actual runtime path under /tmp/kafka/bin/ (populated by the entrypoint).
+# The symlinks themselves are read-only image data; only their targets need a
+# writable mount (the /tmp emptyDir).  This keeps all documented CLI commands
+# like --command-config bin/adminclient.properties working without modification.
+RUN ln -s /tmp/kafka/bin/adminclient.properties ${KAFKA_HOME}/bin/adminclient.properties \
+    && ln -s /tmp/kafka/bin/kcat.properties ${KAFKA_HOME}/bin/kcat.properties \
+    && ln -s /tmp/kafka/bin/kafkacat.properties ${KAFKA_HOME}/bin/kafkacat.properties \
+    && ln -s /tmp/kafka/bin/kafkactl.yml ${KAFKA_HOME}/bin/kafkactl.yml
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available

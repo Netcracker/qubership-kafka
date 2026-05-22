@@ -1,6 +1,20 @@
 # Local Testing Environment
 
-Kafka 4.x (KRaft) + backup-daemon + Robot Framework test runner.
+Kafka 4.x (KRaft) + backup-daemon + AKHQ + monitoring + lag-exporter + Robot Framework test runner.
+
+All services run with `read_only: true` and `tmpfs: [/tmp]` to verify that the
+security-hardened images start cleanly under a read-only root filesystem.
+
+## Services
+
+| Service | Port | Purpose |
+|---|---|---|
+| kafka | 9092 | Kafka broker (KRaft mode) |
+| backup-daemon | 8080 | Topic / ACL backup REST API |
+| akhq | 8081 | Kafka UI |
+| monitoring | — | Telegraf + JMX Prometheus scraper |
+| lag-exporter | 9308 | Kafka consumer-lag Prometheus exporter |
+| integration-tests | 8090 | Robot Framework web terminal |
 
 ## Start
 
@@ -13,6 +27,16 @@ To build a service from source instead of pulling the published image:
 
 ```bash
 docker-compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+```
+
+## Verify all services started
+
+```bash
+docker-compose ps
+# All services should show status "healthy" or "running".
+# lag-exporter metrics:  http://localhost:9308/metrics
+# AKHQ UI:               http://localhost:8081
+# Backup daemon health:  http://localhost:8080/health/prometheus
 ```
 
 ## Run Tests

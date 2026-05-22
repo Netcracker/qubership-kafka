@@ -26,12 +26,13 @@ FROM telegraf:1.38.2-alpine
 
 ENV KAFKA_MONITORING_HOME=/opt/kafka-monitoring \
     KAFKA_CTL_CONFIG=/opt/kafka-monitoring/kafkactl.yml \
-    USER=1000
+    USER=1000 \
+    MONITORING_LOGS=/tmp/monitoring/logs
 
 WORKDIR /
 COPY --from=builder --chown=${USER_UID} /workspace/additional-metrics .
 
-RUN mkdir -p ${KAFKA_MONITORING_HOME}
+RUN mkdir -p ${KAFKA_MONITORING_HOME} ${MONITORING_LOGS}
 
 COPY docker/config/requirements.txt ${KAFKA_MONITORING_HOME}/requirements.txt
 COPY exec-scripts/ ${KAFKA_MONITORING_HOME}/exec-scripts/

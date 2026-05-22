@@ -1,5 +1,8 @@
 services:
   kafka:
+    read_only: true
+    tmpfs:
+      - /tmp
     image: ghcr.io/netcracker/qubership-docker-kafka-4:main
     ports:
       - "9092:9092"
@@ -23,6 +26,9 @@ services:
       start_period: 30s
 
   backup-daemon:
+    read_only: true
+    tmpfs:
+      - /tmp
     image: ghcr.io/netcracker/qubership-kafka-backup-daemon:main
     user: "0:0"
     ports:
@@ -45,8 +51,86 @@ services:
       retries: 6
       start_period: 30s
 
+  akhq:
+    read_only: true
+    tmpfs:
+      - /tmp
+    image: ghcr.io/netcracker/qubership-docker-akhq:main
+    ports:
+      - "8081:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            kafka:
+              properties:
+                bootstrap.servers: "kafka:9092"
+                security.protocol: SASL_PLAINTEXT
+                sasl.mechanism: SCRAM-SHA-512
+                sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="client" password="client";
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+  monitoring:
+    read_only: true
+    tmpfs:
+      - /tmp
+    image: ghcr.io/netcracker/qubership-kafka-monitoring:main
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_TOTAL_BROKERS_COUNT: "1"
+      KAFKA_ADDRESSES: "kafka:9092"
+      PROMETHEUS_ADDRESSES: "kafka:8080"
+      KAFKA_USER: "admin"
+      KAFKA_PASSWORD: "admin"
+      KAFKA_MONITORING_INTERVAL: "30s"
+      KAFKA_EXEC_PLUGIN_TIMEOUT: "10s"
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ./monitoring/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep telegraf > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  lag-exporter:
+    read_only: true
+    tmpfs:
+      - /tmp
+    image: ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main
+    ports:
+      - "9308:9308"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_USER: "client"
+      KAFKA_PASSWORD: "client"
+      KAFKA_SASL_MECHANISM: "SCRAM-SHA-512"
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ./lag-exporter/application.conf:/opt/docker/src/application.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9308/metrics > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+
   integration-tests:
     user: "0:0"
+    read_only: true
     image: ghcr.io/netcracker/qubership-kafka-integration-tests:main
     ports:
       - "8090:8080"
@@ -59,6 +143,7 @@ services:
       - ./../integration-tests/robot/tests:/opt/robot/tests
       - ./output:/opt/robot/output
     environment:
+      PYTHONDONTWRITEBYTECODE: "1"
       KAFKA_HOST: "kafka"
       KAFKA_PORT: "9092"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"

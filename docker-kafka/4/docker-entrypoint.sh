@@ -1,7 +1,18 @@
 #!/bin/bash
 # shellcheck disable=SC2086,SC2155,SC2223,SC2046,SC2006,SC2206,SC2196,SC2231,SC2268,SC2062,SC2004,SC2129
+
+# Initialise writable runtime directories under /tmp so the container can run
+# with readOnlyRootFilesystem: true.  The image stores static config under
+# ${KAFKA_HOME}/config-template; we copy it to ${KAFKA_CONFIG} on every start.
+KAFKA_CONFIG=/tmp/kafka/config
+KAFKA_RUNTIME_BIN=/tmp/kafka/bin
+export KAFKA_CTL_CONFIG="${KAFKA_RUNTIME_BIN}/kafkactl.yml"
+export KCAT_CONFIG="${KAFKA_RUNTIME_BIN}/kcat.properties"
+mkdir -p "${KAFKA_CONFIG}" "${KAFKA_RUNTIME_BIN}"
+cp -r "${KAFKA_HOME}/config-template/." "${KAFKA_CONFIG}/"
+
 # Add missing EOF at the end of the config file
-echo "" >> ${KAFKA_HOME}/config/server.properties
+echo "" >> ${KAFKA_CONFIG}/server.properties
 
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e
@@ -48,14 +59,14 @@ fi
 
 : ${BROKER_HOST_NAME:=${HOSTNAME}}
 : ${EXTENDED_JMX_CONFIG:=false}
-jmx_config="${KAFKA_HOME}/config/jmx-exporter-config.yml"
+jmx_config="${KAFKA_CONFIG}/jmx-exporter-config.yml"
 if [[ "$EXTENDED_JMX_CONFIG" == true ]]; then
-  jmx_config="${KAFKA_HOME}/config/extended-jmx-exporter-config.yml"
+  jmx_config="${KAFKA_CONFIG}/extended-jmx-exporter-config.yml"
 fi
-cp -f ${jmx_config} ${KAFKA_HOME}/config/jmx-exporter.yml
-sed -i -e "s/\${BROKER_HOST_NAME}/$BROKER_HOST_NAME/g" ${KAFKA_HOME}/config/jmx-exporter.yml
+cp -f ${jmx_config} ${KAFKA_CONFIG}/jmx-exporter.yml
+sed -i -e "s/\${BROKER_HOST_NAME}/$BROKER_HOST_NAME/g" ${KAFKA_CONFIG}/jmx-exporter.yml
 
-export KAFKA_OPTS="${KAFKA_OPTS} -javaagent:/opt/kafka/libs/jmx_prometheus_javaagent-1.1.0.jar=8080:${KAFKA_HOME}/config/jmx-exporter.yml"
+export KAFKA_OPTS="${KAFKA_OPTS} -javaagent:/opt/kafka/libs/jmx_prometheus_javaagent-1.1.0.jar=8080:${KAFKA_CONFIG}/jmx-exporter.yml"
 
 if [[ "$KRAFT_ENABLED" == "true" ]]; then
   export CONF_KAFKA_PROCESS_ROLES=${PROCESS_ROLES}
@@ -244,7 +255,7 @@ export KAFKA_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${KAFKA_DATA
 echo "Import trustcerts to application keystore"
 
 TRUST_CERTS_DIR=${KAFKA_HOME}/trustcerts
-DESTINATION_TRUSTSTORE_PATH=${KAFKA_HOME}/config/cacerts
+DESTINATION_TRUSTSTORE_PATH=${KAFKA_CONFIG}/cacerts
 
 KEYSTORE_PATH=${JAVA_HOME}/lib/security/cacerts
 
@@ -262,10 +273,10 @@ if [[ "$(ls ${TRUST_CERTS_DIR})" ]]; then
     done;
 fi
 
-export KAFKA_OPTS="${KAFKA_OPTS} -Djavax.net.ssl.trustStore=${KAFKA_HOME}/config/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
+export KAFKA_OPTS="${KAFKA_OPTS} -Djavax.net.ssl.trustStore=${KAFKA_CONFIG}/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
 
 PUBLIC_CERTS_DIR=${KAFKA_HOME}/public-certs
-JWK_KEYSTORE_PATH=${KAFKA_HOME}/config/public_certs.jks
+JWK_KEYSTORE_PATH=${KAFKA_CONFIG}/public_certs.jks
 
 if [[ "$(ls ${PUBLIC_CERTS_DIR})" ]]; then
     for filename in ${PUBLIC_CERTS_DIR}/*; do
@@ -282,7 +293,7 @@ if [[ "${ENABLE_SSL}" == "true" ]]; then
   SSL_KEY_LOCATION=${kafka_tls_dir}/tls.key
   SSL_CERTIFICATE_LOCATION=${kafka_tls_dir}/tls.crt
   SSL_CA_LOCATION=${kafka_tls_dir}/ca.crt
-  kafka_tls_ks_dir=${KAFKA_HOME}/tls-ks
+  kafka_tls_ks_dir=/tmp/kafka/tls-ks
   SSL_KEYSTORE_LOCATION=${kafka_tls_ks_dir}/kafka.keystore.jks
   SSL_TRUSTSTORE_LOCATION=${kafka_tls_ks_dir}/kafka.truststore.jks
 
@@ -308,12 +319,12 @@ fi
 
 if [[ "${ENABLE_ZOOKEEPER_SSL}" == "true" ]]; then
   echo "Configuring ZooKeeper TLS..."
-  cat > ${KAFKA_HOME}/bin/zk-tls-config.properties << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/zk-tls-config.properties << EOL
 zookeeper.ssl.client.enable=true
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
 EOL
   export CONF_KAFKA_ZOOKEEPER_SSL_CLIENT_ENABLE=true
-  echo "zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty" >> ${KAFKA_HOME}/config/server.properties
+  echo "zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty" >> ${KAFKA_CONFIG}/server.properties
 
   zookeeper_tls_dir=${KAFKA_HOME}/zookeeper-tls
   zookeeper_ca_cert_path=${zookeeper_tls_dir}/ca.crt
@@ -323,7 +334,7 @@ EOL
   keystore_path=
   truststore_path=
   if [[ -f ${zookeeper_ca_cert_path} ]]; then
-    zookeeper_tls_ks_dir=${KAFKA_HOME}/zookeeper-tls-ks
+    zookeeper_tls_ks_dir=/tmp/kafka/zookeeper-tls-ks
     mkdir -p ${zookeeper_tls_ks_dir}
     if [[ -f $zookeeper_tls_key_path && -f $zookeeper_tls_cert_path ]]; then
       keystore_path=${zookeeper_tls_ks_dir}/zookeeper.keystore.jks
@@ -355,13 +366,13 @@ EOL
   fi
   export CONF_KAFKA_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION=${truststore_path}
   export CONF_KAFKA_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD=changeit
-  cat >> ${KAFKA_HOME}/bin/zk-tls-config.properties << EOL
+  cat >> ${KAFKA_RUNTIME_BIN}/zk-tls-config.properties << EOL
 zookeeper.ssl.truststore.location=${truststore_path}
 zookeeper.ssl.truststore.password=changeit
 EOL
   echo "ZooKeeper TLS configuration is applied"
 else
-  cat > ${KAFKA_HOME}/bin/zk-tls-config.properties << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/zk-tls-config.properties << EOL
 zookeeper.ssl.client.enable=false
 EOL
   export CONF_KAFKA_ZOOKEEPER_SSL_CLIENT_ENABLE=false
@@ -376,7 +387,7 @@ function create_user() {
   # Move the logic to Kafka Operator after Kafka upgrading to v.2.7.0 to remove dependency on ZooKeeper
   ${KAFKA_HOME}/bin/kafka-configs.sh \
     --zookeeper "$CONF_KAFKA_ZOOKEEPER_CONNECT" \
-    --zk-tls-config-file ${KAFKA_HOME}/bin/zk-tls-config.properties \
+    --zk-tls-config-file ${KAFKA_RUNTIME_BIN}/zk-tls-config.properties \
     --alter \
     --add-config "SCRAM-SHA-512=[password=${2}]" \
     --entity-type users \
@@ -399,21 +410,21 @@ function configure_sasl_mechanisms_on_listener() {
   keystorePath=\"${JWK_KEYSTORE_PATH}\" \
   keystorePassword=\"changeit\" \
   auditLogsEnabled=\"${ENABLE_AUDIT_LOGS}\" \
-  auditCefConfigPath=\"${KAFKA_HOME}/config/cef-configuration.xml\" \
+  auditCefConfigPath=\"${KAFKA_CONFIG}/cef-configuration.xml\" \
   tokenRolesPath=\"$TOKEN_ROLES_PATH\";" \
-    >> ${KAFKA_HOME}/config/server.properties
+    >> ${KAFKA_CONFIG}/server.properties
   echo "listener.name.$listener_name.scram-sha-512.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required \
   username=\"${CLIENT_USERNAME}\" \
   password=\"${CLIENT_PASSWORD}\";" \
-    >> ${KAFKA_HOME}/config/server.properties
+    >> ${KAFKA_CONFIG}/server.properties
   if [[ "${ENABLE_SSL}" == "true" ]]; then
     if [[ ${listener_name} != "nonencrypted" ]]; then
       echo "listener.name.$listener_name.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
   \"user_${CLIENT_USERNAME}\"=\"${CLIENT_PASSWORD}\";" \
-        >> ${KAFKA_HOME}/config/server.properties
+        >> ${KAFKA_CONFIG}/server.properties
     else
       echo "listener.name.$listener_name.sasl.enabled.mechanisms=SCRAM-SHA-512,OAUTHBEARER" \
-        >> ${KAFKA_HOME}/config/server.properties
+        >> ${KAFKA_CONFIG}/server.properties
     fi
   fi
 }
@@ -450,7 +461,7 @@ if [[ "$KRAFT_ENABLED" != "true" || "$MIGRATION_CONTROLLER" == "true" ]]; then
     if [[ ${ZOOKEEPER_SET_ACL}  == "true" ]]; then
       export CONF_KAFKA_ZOOKEEPER_SET_ACL=true
     fi
-    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+    cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 Client {
        org.apache.zookeeper.server.auth.DigestLoginModule required
        username="${ZOOKEEPER_CLIENT_USERNAME}"
@@ -458,7 +469,7 @@ Client {
 };
 EOL
     if [[ ${KAFKA_OPTS} != *"-Djava.security.auth.login.config"* ]]; then
-      export KAFKA_OPTS="${KAFKA_OPTS} -Djava.security.auth.login.config=${KAFKA_HOME}/config/kafka_jaas.conf"
+      export KAFKA_OPTS="${KAFKA_OPTS} -Djava.security.auth.login.config=${KAFKA_CONFIG}/kafka_jaas.conf"
     fi
   else
     export KAFKA_OPTS="${KAFKA_OPTS} -Dzookeeper.sasl.client=false"
@@ -477,7 +488,7 @@ if [[ "$DISABLE_SECURITY" == false ]]; then
     create_user ${CLIENT_USERNAME} ${CLIENT_PASSWORD}
   fi
   echo "Create jaas config file"
-  cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+  cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 KafkaServer {
     org.apache.kafka.common.security.scram.ScramLoginModule required
     username="${ADMIN_USERNAME}"
@@ -486,7 +497,7 @@ KafkaServer {
 
 EOL
 
-  cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+  cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 inter_broker.KafkaServer {
     org.apache.kafka.common.security.scram.ScramLoginModule required
     username="${ADMIN_USERNAME}"
@@ -496,7 +507,7 @@ inter_broker.KafkaServer {
 EOL
 
   if [[ "$KRAFT_ENABLED" == "true" || "$MIGRATION_BROKER" == "true" ]]; then
-    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+    cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 KafkaClient {
     org.apache.kafka.common.security.scram.ScramLoginModule required
     username="${ADMIN_USERNAME}"
@@ -505,7 +516,7 @@ KafkaClient {
 
 EOL
 
-    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+    cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 Controller {
     org.apache.kafka.common.security.plain.PlainLoginModule required
     username="${ADMIN_USERNAME}"
@@ -515,7 +526,7 @@ Controller {
 
 EOL
 
-    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+    cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 internal.KafkaServer {
     org.apache.kafka.common.security.scram.ScramLoginModule required
     username="${ADMIN_USERNAME}"
@@ -524,7 +535,7 @@ internal.KafkaServer {
 
 EOL
 
-    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+    cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 controller.KafkaServer {
     org.apache.kafka.common.security.plain.PlainLoginModule required
     username="${ADMIN_USERNAME}"
@@ -534,7 +545,7 @@ controller.KafkaServer {
 
 EOL
 
-    cat >> ${KAFKA_HOME}/config/kafka_jaas.conf << EOL
+    cat >> ${KAFKA_CONFIG}/kafka_jaas.conf << EOL
 external.KafkaServer {
     org.apache.kafka.common.security.scram.ScramLoginModule required
     username="${ADMIN_USERNAME}"
@@ -544,7 +555,7 @@ external.KafkaServer {
 EOL
   fi
 
-  export KAFKA_OPTS="${KAFKA_OPTS} -Djava.security.auth.login.config=${KAFKA_HOME}/config/kafka_jaas.conf"
+  export KAFKA_OPTS="${KAFKA_OPTS} -Djava.security.auth.login.config=${KAFKA_CONFIG}/kafka_jaas.conf"
 
   export CONF_KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-512
   echo "Using CONF_KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL=$CONF_KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL"
@@ -586,12 +597,12 @@ fi
 
 function enrich_adminclient_properties_with_ssl_configs() {
   if [[ "${ENABLE_SSL}" == "true" ]]; then
-    cat >> ${KAFKA_HOME}/bin/adminclient.properties << EOL
+    cat >> ${KAFKA_RUNTIME_BIN}/adminclient.properties << EOL
 ssl.truststore.location=${SSL_TRUSTSTORE_LOCATION}
 ssl.truststore.password=changeit
 EOL
     if [[ "${ENABLE_2WAY_SSL}" == "true" ]]; then
-      cat >> ${KAFKA_HOME}/bin/adminclient.properties << EOL
+      cat >> ${KAFKA_RUNTIME_BIN}/adminclient.properties << EOL
 ssl.keystore.location=${SSL_KEYSTORE_LOCATION}
 ssl.keystore.password=changeit
 ssl.key.password=changeit
@@ -602,11 +613,11 @@ EOL
 
 function enrich_kcat_properties_with_ssl_configs() {
   if [[ "${ENABLE_SSL}" == "true" ]]; then
-    cat >> ${KAFKA_HOME}/bin/kcat.properties << EOL
+    cat >> ${KAFKA_RUNTIME_BIN}/kcat.properties << EOL
 ssl.ca.location=${SSL_CA_LOCATION}
 EOL
     if [[ "${ENABLE_2WAY_SSL}" == "true" ]]; then
-      cat >> ${KAFKA_HOME}/bin/kcat.properties << EOL
+      cat >> ${KAFKA_RUNTIME_BIN}/kcat.properties << EOL
 ssl.key.location=${SSL_KEY_LOCATION}
 ssl.certificate.location=${SSL_CERTIFICATE_LOCATION}
 EOL
@@ -616,13 +627,13 @@ EOL
 
 function enrich_kafkactl_yml_with_ssl_configs() {
   if [[ "${ENABLE_SSL}" == "true" ]]; then
-    cat >> ${KAFKA_HOME}/bin/kafkactl.yml << EOL
+    cat >> ${KAFKA_RUNTIME_BIN}/kafkactl.yml << EOL
     tls:
       enabled: true
       ca: ${SSL_CA_LOCATION}
 EOL
     if [[ "${ENABLE_2WAY_SSL}" == "true" ]]; then
-      cat >> ${KAFKA_HOME}/bin/kafkactl.yml << EOL
+      cat >> ${KAFKA_RUNTIME_BIN}/kafkactl.yml << EOL
       certKey: ${SSL_KEY_LOCATION}
       cert: ${SSL_CERTIFICATE_LOCATION}
 EOL
@@ -631,13 +642,13 @@ EOL
 }
 
 function prepare_secured_config_files() {
-  cat > ${KAFKA_HOME}/bin/adminclient.properties << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/adminclient.properties << EOL
 security.protocol=${SECURITY_PROTOCOL}
 sasl.mechanism=SCRAM-SHA-512
 sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="${CLIENT_USERNAME}" password="${CLIENT_PASSWORD}";
 EOL
   enrich_adminclient_properties_with_ssl_configs
-  cat > ${KAFKA_HOME}/bin/kcat.properties << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/kcat.properties << EOL
 request.timeout.ms=$((${READINESS_PERIOD}*1000))
 security.protocol=${SECURITY_PROTOCOL}
 sasl.mechanisms=SCRAM-SHA-512
@@ -645,7 +656,7 @@ sasl.username=${CLIENT_USERNAME}
 sasl.password=${CLIENT_PASSWORD}
 EOL
   enrich_kcat_properties_with_ssl_configs
-  cat > ${KAFKA_HOME}/bin/kafkactl.yml << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/kafkactl.yml << EOL
 current-context: default
 contexts:
   default:
@@ -661,17 +672,17 @@ EOL
 }
 
 function prepare_unsecured_config_files() {
-  cat > ${KAFKA_HOME}/bin/adminclient.properties << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/adminclient.properties << EOL
 security.protocol=${SECURITY_PROTOCOL}
 sasl.mechanism=GSSAPI
 EOL
   enrich_adminclient_properties_with_ssl_configs
-  cat > ${KAFKA_HOME}/bin/kcat.properties << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/kcat.properties << EOL
 request.timeout.ms=$((${READINESS_PERIOD}*1000))
 security.protocol=${SECURITY_PROTOCOL}
 EOL
   enrich_kcat_properties_with_ssl_configs
-  cat > ${KAFKA_HOME}/bin/kafkactl.yml << EOL
+  cat > ${KAFKA_RUNTIME_BIN}/kafkactl.yml << EOL
 current-context: default
 contexts:
   default:
@@ -707,16 +718,16 @@ fi
 
 # Prepare config files to use them in scripts
 rm -rf \
-  ${KAFKA_HOME}/bin/adminclient.properties \
-  ${KAFKA_HOME}/bin/kcat.properties \
-  ${KAFKA_HOME}/bin/kafkactl.yml
+  ${KAFKA_RUNTIME_BIN}/adminclient.properties \
+  ${KAFKA_RUNTIME_BIN}/kcat.properties \
+  ${KAFKA_RUNTIME_BIN}/kafkactl.yml
 if [[ "$DISABLE_SECURITY" == false ]]; then
   prepare_secured_config_files
 else
   prepare_unsecured_config_files
 fi
-rm -rf "${KAFKA_HOME}/bin/kafkacat.properties"
-cp "${KAFKA_HOME}/bin/kcat.properties" "${KAFKA_HOME}/bin/kafkacat.properties"
+rm -rf "${KAFKA_RUNTIME_BIN}/kafkacat.properties"
+cp "${KAFKA_RUNTIME_BIN}/kcat.properties" "${KAFKA_RUNTIME_BIN}/kafkacat.properties"
 
 if [[ -f ${CONF_KAFKA_LOG_DIRS}/.lock ]]; then
     echo "WARNING: There is FS lock file from previous Kafka pod. Removing it."
@@ -736,7 +747,7 @@ fi
 
 # It is necessary to log failed connection events from Kafka in CEF format because Kafka Security does not have access to these events
 if [[ ${ENABLE_AUDIT_LOGS} == "true" ]]; then
-    cat >> "${KAFKA_HOME}/config/log4j.properties" << EOL
+    cat >> "${KAFKA_CONFIG}/log4j.properties" << EOL
 log4j.appender.AUDIT=org.apache.log4j.ConsoleAppender
 log4j.appender.AUDIT.layout=org.apache.log4j.PatternLayout
 log4j.appender.AUDIT.layout.ConversionPattern = [%d{ISO8601}][%p] [category=kafka.audit] CEF:1|Qubership|Kafka|3.9.1|AUTHENTICATION|%m|1|result=failed type=audit_log_type%n
@@ -762,13 +773,13 @@ case $1 in
     if [[ -z "$LOG_LEVEL" ]]; then
         LOG_LEVEL="INFO"
     fi
-    sed -i -r -e "s|=INFO, stdout|=$LOG_LEVEL, stdout|g" ${KAFKA_HOME}/config/log4j.properties
-    sed -i -r -e "s|^(log4j.appender.stdout.threshold)=.*|\1=${LOG_LEVEL}|g" ${KAFKA_HOME}/config/log4j.properties
-    export KAFKA_LOG4J_OPTS="-Dlog4j.configuration=file:$KAFKA_HOME/config/log4j.properties"
+    sed -i -r -e "s|=INFO, stdout|=$LOG_LEVEL, stdout|g" ${KAFKA_CONFIG}/log4j.properties
+    sed -i -r -e "s|^(log4j.appender.stdout.threshold)=.*|\1=${LOG_LEVEL}|g" ${KAFKA_CONFIG}/log4j.properties
+    export KAFKA_LOG4J_OPTS="-Dlog4j.configuration=file:${KAFKA_CONFIG}/log4j.properties"
     unset LOG_LEVEL
     # Remove .kafka_started file before Kafka start
-    if [[ -f /opt/kafka/.kafka_started ]]; then
-      rm -f /opt/kafka/.kafka_started
+    if [[ -f /tmp/kafka/.kafka_started ]]; then
+      rm -f /tmp/kafka/.kafka_started
     fi
     #
     # Process all environment variables that start with 'CONF_KAFKA_':
@@ -777,19 +788,19 @@ case $1 in
       env_var=`echo "$VAR" | sed -r "s/(.*)=.*/\1/g"`
       if [[ ${env_var} =~ ^CONF_KAFKA_ ]]; then
         prop_name=`echo "$VAR" | sed -r "s/^CONF_KAFKA_(.*)=.*/\1/g" | tr '[:upper:]' '[:lower:]' | tr _ .`
-        if egrep -q "(^|^#)$prop_name=" ${KAFKA_HOME}/config/server.properties; then
+        if egrep -q "(^|^#)$prop_name=" ${KAFKA_CONFIG}/server.properties; then
           # Note that no config names or values may contain an '@' char
-          sed -r -i "s@(^|^#)($prop_name)=(.*)@\2=${!env_var}@g" ${KAFKA_HOME}/config/server.properties
+          sed -r -i "s@(^|^#)($prop_name)=(.*)@\2=${!env_var}@g" ${KAFKA_CONFIG}/server.properties
         else
           #echo "Adding property $prop_name=${!env_var}"
-          echo "$prop_name=${!env_var}" >> ${KAFKA_HOME}/config/server.properties
+          echo "$prop_name=${!env_var}" >> ${KAFKA_CONFIG}/server.properties
         fi
       fi
     done
     if [[ "$KRAFT_ENABLED" == "true" ]]; then
-      ${KAFKA_HOME}/bin/kafka-storage.sh format -t "${KRAFT_CLUSTER_ID}" -c "${KAFKA_HOME}/config/server.properties" ${KAFKA_CREDENTIALS}
+      ${KAFKA_HOME}/bin/kafka-storage.sh format -t "${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" ${KAFKA_CREDENTIALS}
     fi
-    exec ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties
+    exec ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_CONFIG}/server.properties
     ;;
 esac
 

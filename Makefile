@@ -102,6 +102,17 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
+.PHONY: helm-test
+helm-test: ## Run Helm chart security hardening smoke tests (requires helm).
+	bash charts/helm/kafka/tests/security_hardening_test.sh
+	bash charts/helm/kafka-service/tests/security_hardening_test.sh
+
+.PHONY: security-test
+security-test: ## Run Go security-context unit tests + Helm smoke tests.
+	go test ./controllers/provider/... -run TestGet -v
+	bash charts/helm/kafka/tests/security_hardening_test.sh
+	bash charts/helm/kafka-service/tests/security_hardening_test.sh
+
 ##@ Build
 
 .PHONY: build
