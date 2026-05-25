@@ -52,6 +52,7 @@ spec:
             - /manager
           imagePullPolicy: Always
           {{- if and .Values.global.tls.enabled .Values.backupDaemon.install .Values.backupDaemon.tls.enabled }}
+          volumeMounts:
             - name: backup-daemon-ssl-certs
               mountPath: /backupTLS
           {{- end }}
@@ -138,6 +139,7 @@ spec:
           image: {{ template "disasterRecovery.image" . }}
           imagePullPolicy: Always
           {{- if eq (include "disasterRecovery.enableTls" .) "true" }}
+          volumeMounts:
             - name: drd-ssl-certs
               mountPath: /tls
           {{- end }}
