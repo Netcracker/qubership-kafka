@@ -3,7 +3,7 @@ FROM telegraf:1.38.2-alpine
 ENV KMM_MONITORING_HOME=/opt/kafka-mirror-maker-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
 
-RUN mkdir -p ${KMM_MONITORING_HOME} ${MONITORING_LOGS}
+RUN mkdir -p ${KMM_MONITORING_HOME}
 
 COPY docker/config/requirements.txt ${KMM_MONITORING_HOME}/requirements.txt
 COPY exec-scripts/ ${KMM_MONITORING_HOME}/exec-scripts/

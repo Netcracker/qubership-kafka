@@ -21,6 +21,7 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
+      {{- include "kafka.defaultLabels" . | nindent 8 }}
       {{- with .Values.global.customLabels }}
         {{- toYaml . | nindent 8 -}}
       {{- end }}
@@ -33,9 +34,6 @@ spec:
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
       volumes:
-        - name: tmp
-          emptyDir:
-            sizeLimit: 8Mi
       containers:
         - name: {{ template "kafka.name" . }}-operator
           securityContext:
@@ -44,9 +42,6 @@ spec:
           command:
             - /manager
           imagePullPolicy: Always
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

@@ -13,6 +13,7 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "kafka-services.defaultLabels" . | nindent 8 }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "kafka.name" . }}-services-ownerref-migrator
@@ -20,10 +21,6 @@ spec:
       {{- if .Values.groupMigration.runAsNonRoot }}
       securityContext:
         {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
-      volumes:
-        - name: tmp
-          emptyDir:
-            sizeLimit: 8Mi
       {{- end }}
       containers:
         - name: migrator
@@ -100,8 +97,5 @@ spec:
           {{- if .Values.groupMigration.runAsNonRoot }}
           securityContext:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
           {{- end }}
 {{- end }}

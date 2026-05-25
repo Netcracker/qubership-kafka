@@ -30,10 +30,6 @@ spec:
       serviceAccountName: {{ template "kafka.name" . }}-crd-init
       securityContext:
         {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
-      volumes:
-        - name: tmp
-          emptyDir:
-            sizeLimit: 16Mi
       containers:
         - name: crd-init
           image: {{ include "crd-init.image" . }}
@@ -58,9 +54,6 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "100m"
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
           securityContext:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
 {{- end }}

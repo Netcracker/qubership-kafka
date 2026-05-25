@@ -20,6 +20,7 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
+      {{- include "kafka-services.defaultLabels" . | nindent 8 }}
       {{- with .Values.global.customLabels }}
         {{- toYaml . | nindent 8 -}}
       {{- end }}
@@ -32,9 +33,6 @@ spec:
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
       volumes:
-      - name: tmp
-        emptyDir:
-          sizeLimit: 32Mi
       {{- if and (eq (include "disasterRecovery.enableTls" .) "true") (eq (include "kafka-service.enableDisasterRecovery" .) "true") }}
       - name: drd-ssl-certs
         secret:
@@ -53,9 +51,6 @@ spec:
           command:
             - /manager
           imagePullPolicy: Always
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
           {{- if and .Values.global.tls.enabled .Values.backupDaemon.install .Values.backupDaemon.tls.enabled }}
             - name: backup-daemon-ssl-certs
               mountPath: /backupTLS
@@ -142,9 +137,6 @@ spec:
         - name: {{ template "kafka.name" . }}-disaster-recovery
           image: {{ template "disasterRecovery.image" . }}
           imagePullPolicy: Always
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
           {{- if eq (include "disasterRecovery.enableTls" .) "true" }}
             - name: drd-ssl-certs
               mountPath: /tls

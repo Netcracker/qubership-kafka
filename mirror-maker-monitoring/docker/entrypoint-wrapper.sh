@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+mkdir -p "${MONITORING_LOGS}"
+
 CONFIG_SRC="/etc/telegraf/telegraf.conf"
 CONFIG_DST="/tmp/telegraf.conf"
 

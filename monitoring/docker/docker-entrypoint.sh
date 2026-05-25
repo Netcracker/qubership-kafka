@@ -3,7 +3,7 @@
 
 # Initialise writable runtime directories under /tmp so the container can run
 # with readOnlyRootFilesystem: true.
-mkdir -p /tmp/monitoring
+mkdir -p "${MONITORING_LOGS}"
 export KAFKA_CTL_CONFIG=/tmp/monitoring/kafkactl.yml
 
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)

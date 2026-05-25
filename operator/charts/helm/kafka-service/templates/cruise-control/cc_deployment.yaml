@@ -22,6 +22,7 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "kafka-services.defaultLabels" . | nindent 8 }}
         app.kubernetes.io/name: {{ template "kafka.name" . }}-cruise-control
         name: {{ template "kafka.name" . }}-cruise-control
         component: kafka-cruise-control

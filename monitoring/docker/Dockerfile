@@ -32,7 +32,7 @@ ENV KAFKA_MONITORING_HOME=/opt/kafka-monitoring \
 WORKDIR /
 COPY --from=builder --chown=${USER_UID} /workspace/additional-metrics .
 
-RUN mkdir -p ${KAFKA_MONITORING_HOME} ${MONITORING_LOGS}
+RUN mkdir -p ${KAFKA_MONITORING_HOME}
 
 COPY docker/config/requirements.txt ${KAFKA_MONITORING_HOME}/requirements.txt
 COPY exec-scripts/ ${KAFKA_MONITORING_HOME}/exec-scripts/

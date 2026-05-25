@@ -13,6 +13,7 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "kafka.defaultLabels" . | nindent 8 }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "kafka.name" . }}-ownerref-migrator

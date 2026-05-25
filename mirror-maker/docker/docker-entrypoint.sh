@@ -1,10 +1,11 @@
 #!/bin/bash
 # shellcheck disable=SC2086,SC2162,SC2153,SC2068,SC2129,SC2006,SC2196,SC2053
 
-# Initialise writable runtime directories under /tmp so the container can run
-# with readOnlyRootFilesystem: true.  The image stores static config under
-# ${KAFKA_HOME}/config-template; we copy it to ${MM_CONFIG} on every start.
-MM_CONFIG=/tmp/mm/config
+# Initialise writable runtime directories under ${KMM_WORK} so the container
+# can run with readOnlyRootFilesystem: true.  The image stores static config
+# under ${KAFKA_HOME}/config-template; we copy it to ${MM_CONFIG} on every start.
+: "${KMM_WORK:=/tmp/mm}"
+MM_CONFIG="${KMM_WORK}/config"
 # ConfigMap key `config` → kmm.conf is mounted at KMM_CONF_INJECT (outside /tmp).
 KMM_CONF_INJECT="${KAFKA_HOME}/config/kmm/kmm.conf"
 mkdir -p "${MM_CONFIG}"
@@ -94,7 +95,7 @@ for cluster_name in ${clusters[@]}; do
     echo "Configuring TLS on ${cluster_name} cluster..."
     kafka_tls_dir=${KAFKA_HOME}/tls/${cluster_name}
     if [[ -f "${kafka_tls_dir}/ca.crt" ]]; then
-      kafka_tls_ks_dir=/tmp/mm/tls-ks/${cluster_name}
+      kafka_tls_ks_dir="${KMM_WORK}/tls-ks/${cluster_name}"
       mkdir -p ${kafka_tls_ks_dir}
 
       if [[ -f "${kafka_tls_dir}/tls.key" && -f "${kafka_tls_dir}/tls.crt" ]]; then
@@ -133,8 +134,8 @@ for cluster_name in ${clusters[@]}; do
   fi
 done
 
-mkdir -p "/tmp/mm/dumps"
-export KAFKA_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/mm/dumps/ -XX:+ExitOnOutOfMemoryError ${KAFKA_OPTS}"
+mkdir -p "${KMM_WORK}/dumps"
+export KAFKA_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${KMM_WORK}/dumps/ -XX:+ExitOnOutOfMemoryError ${KAFKA_OPTS}"
 
 # Process the argument to this container ...
 case $1 in

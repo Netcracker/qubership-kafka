@@ -26,6 +26,7 @@ spec:
   template:
     metadata:
       labels:
+      {{- include "kafka-services.defaultLabels" . | nindent 8 }}
       {{- with .Values.global.customLabels }}
         {{- toYaml . | nindent 8 -}}
       {{- end }}

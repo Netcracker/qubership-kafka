@@ -27,8 +27,6 @@ services:
 
   backup-daemon:
     read_only: true
-    tmpfs:
-      - /tmp
     image: ghcr.io/netcracker/qubership-kafka-backup-daemon:main
     user: "0:0"
     ports:
