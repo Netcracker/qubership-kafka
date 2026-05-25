@@ -15,6 +15,8 @@
 # limitations under the License.
 
 import os
+import shutil
+import tempfile
 from time import sleep
 
 import yaml
@@ -192,6 +194,18 @@ def _process_crd(file_path) -> bool:
         return True
     return False
 
+CRDS_SOURCE_DIR = "./crds"
+
+
+def copy_crds_to_workdir() -> str:
+    """Copy bundled CRDs to a writable directory (root FS may be read-only)."""
+    work_dir = os.path.join(tempfile.gettempdir(), "crds")
+    if os.path.isdir(work_dir):
+        shutil.rmtree(work_dir)
+    shutil.copytree(CRDS_SOURCE_DIR, work_dir)
+    return work_dir
+
+
 def replace_api_version_in_crd(file_path, old_text, new_text):
     with open(file_path, "r") as file:
         content = file.read()
@@ -200,6 +214,7 @@ def replace_api_version_in_crd(file_path, old_text, new_text):
 
     with open(file_path, "w") as file:
         file.write(new_content)
+
 
 def run():
     crds_to_create = os.getenv("CRDS_TO_CREATE", "")
@@ -213,9 +228,11 @@ def run():
           f"\n\tCRD_UPGRADE_WAITING_TIME: {crd_upgrade_waiting_time}"
           f"\n\tCRDS_TO_CREATE: {crds_to_create}"
           f"\nLocal CRD processing logs are below")
-    for root, dirs, files in os.walk("./crds"):
+    crds_dir = copy_crds_to_workdir()
+    print(f"CRD descriptors copied to writable work directory: {crds_dir}")
+    for root, dirs, files in os.walk(crds_dir):
         for file in files:
-            path = root + "/" + file
+            path = os.path.join(root, file)
             try:
                 if file in crds_to_create:
                     replace_api_version_in_crd(path, "netcracker.com", api_group)
