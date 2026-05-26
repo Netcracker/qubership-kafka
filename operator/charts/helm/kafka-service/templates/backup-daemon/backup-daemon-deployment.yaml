@@ -93,9 +93,6 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-        - name: tmp
-          emptyDir:
-            sizeLimit: 16Mi
       {{- if $hasS3Aliases }}
         - name: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
           secret:

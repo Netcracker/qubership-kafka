@@ -2,14 +2,14 @@
 # shellcheck disable=SC2086,SC2162,SC2153,SC2068,SC2129,SC2006,SC2196,SC2053
 
 # Initialise writable runtime directories under ${KMM_WORK} so the container
-# can run with readOnlyRootFilesystem: true.  The image stores static config
-# under ${KAFKA_HOME}/config-template; we copy it to ${MM_CONFIG} on every start.
+# can run with readOnlyRootFilesystem: true.  Static config lives under
+# ${KAFKA_HOME}/config; we copy it to ${MM_CONFIG} on every start.
 : "${KMM_WORK:=/tmp/mm}"
 MM_CONFIG="${KMM_WORK}/config"
 # ConfigMap key `config` → kmm.conf is mounted at KMM_CONF_INJECT (outside /tmp).
 KMM_CONF_INJECT="${KAFKA_HOME}/config/kmm/kmm.conf"
 mkdir -p "${MM_CONFIG}"
-cp -r "${KAFKA_HOME}/config-template/." "${MM_CONFIG}/"
+cp -r "${KAFKA_HOME}/config/." "${MM_CONFIG}/"
 
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e

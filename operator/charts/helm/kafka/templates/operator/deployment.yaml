@@ -33,7 +33,6 @@ spec:
         app.kubernetes.io/technology: "go"
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
-      volumes:
       containers:
         - name: {{ template "kafka.name" . }}-operator
           securityContext:

@@ -169,7 +169,7 @@ RUN set -x \
         "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
 # Copy config and script files
-COPY docker/config/ ${KAFKA_HOME}/config-template
+COPY docker/config/ ${KAFKA_HOME}/config/
 COPY docker/kafka-health.sh ${KAFKA_HOME}/bin
 COPY docker/get-kraft-migration-status.sh ${KAFKA_HOME}/bin
 COPY docker/get-cluster-id.sh ${KAFKA_HOME}/bin

@@ -32,6 +32,7 @@ spec:
         app.kubernetes.io/technology: "go"
     spec:
       serviceAccountName: {{ template "kafka.serviceAccount" . }}
+      {{- if and .Values.global.tls.enabled (or .Values.global.disasterRecovery.tls.enabled .Values.backupDaemon.tls.enabled) }}
       volumes:
       {{- if and (eq (include "disasterRecovery.enableTls" .) "true") (eq (include "kafka-service.enableDisasterRecovery" .) "true") }}
       - name: drd-ssl-certs
@@ -42,6 +43,7 @@ spec:
       - name: backup-daemon-ssl-certs
         secret:
           secretName: {{ template "backupDaemon.tlsSecretName" . }}
+      {{- end }}
       {{- end }}
       containers:
         - name: {{ template "kafka.name" . }}-service-operator

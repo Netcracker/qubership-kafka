@@ -202,7 +202,7 @@ RUN set -eux; \
   rm -f netty-*-4.1.119.Final.jar;
 
 # Copy config and script files
-COPY docker/config/ ${KAFKA_HOME}/config-template
+COPY docker/config/ ${KAFKA_HOME}/config/
 COPY docker/kafka-health.sh ${KAFKA_HOME}/bin
 COPY docker/get-kraft-migration-status.sh ${KAFKA_HOME}/bin
 COPY docker/get-cluster-id.sh ${KAFKA_HOME}/bin
