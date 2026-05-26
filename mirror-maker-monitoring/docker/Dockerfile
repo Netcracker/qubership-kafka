@@ -7,6 +7,7 @@ RUN mkdir -p ${KMM_MONITORING_HOME}
 
 COPY docker/config/requirements.txt ${KMM_MONITORING_HOME}/requirements.txt
 COPY exec-scripts/ ${KMM_MONITORING_HOME}/exec-scripts/
+COPY docker/entrypoint-wrapper.sh ${KMM_MONITORING_HOME}/entrypoint-wrapper.sh
 
 # Set the Alpine version to 3.23
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
@@ -17,7 +18,8 @@ RUN set -x \
     && apk add --upgrade --no-cache \
         tini \
         python3 \
-        apk-tools
+        apk-tools \
+        gettext
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
@@ -29,10 +31,11 @@ RUN set -x \
     && rm -r /usr/lib/python*/ensurepip \
     && pip3 install --upgrade pip setuptools \
     && pip3 install -r ${KMM_MONITORING_HOME}/requirements.txt \
-    && chmod -R 777 ${KMM_MONITORING_HOME}/exec-scripts
+    && chmod -R 777 ${KMM_MONITORING_HOME}/exec-scripts \
+    && chmod +x ${KMM_MONITORING_HOME}/entrypoint-wrapper.sh
 
 USER 1000:0
 WORKDIR ${KMM_MONITORING_HOME}
 
-ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
-CMD ["telegraf","--non-strict-env-handling"]
+ENTRYPOINT ["/sbin/tini", "--", "/opt/kafka-mirror-maker-monitoring/entrypoint-wrapper.sh"]
+CMD ["telegraf"]
