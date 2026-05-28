@@ -198,6 +198,30 @@ Configure Kafka Mirror Maker monitoring type
 {{- coalesce .Values.mirrorMakerMonitoring.monitoringType .Values.global.monitoringType "prometheus" -}}
 {{- end -}}
 
+{{/*
+Configure Kafka Mirror Maker monitoring Prometheus URLs.
+*/}}
+{{- define "mirrorMakerMonitoring.prometheusURLs" -}}
+  {{- $serviceName := printf "%s-mirror-maker" (include "kafka.name" .) -}}
+  {{- $urlList := list -}}
+  {{- if or (not .Values.mirrorMaker.regionName) (eq .Values.mirrorMaker.regionName "") -}}
+    {{- range .Values.mirrorMaker.clusters -}}
+      {{- $deploymentName := printf "%s-%s" (lower .name) $serviceName -}}
+      {{- $url := printf "http://%s.%s:8080" $deploymentName $.Release.Namespace -}}
+      {{- $urlList = append $urlList $url -}}
+    {{- end -}}
+  {{- else -}}
+    {{- range .Values.mirrorMaker.clusters -}}
+      {{- if eq (lower .name) (lower $.Values.mirrorMaker.regionName) -}}
+        {{- $deploymentName := printf "%s-%s" (lower .name) $serviceName -}}
+        {{- $url := printf "http://%s.%s:8080" $deploymentName $.Release.Namespace -}}
+        {{- $urlList = append $urlList $url -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $urlList | toJson -}}
+{{- end -}}
+
 
 {{/*
 Create list of Kafka brokers separated by ",".
