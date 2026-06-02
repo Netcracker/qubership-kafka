@@ -6,12 +6,11 @@ permissions:
   actions: read
 
 on:
-  push
-#  pull_request:
-#    types: [opened, synchronize, reopened]
-#    branches: [main]
-#  push:
-#    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  push:
+    branches: [main]
 
 jobs:
 
