@@ -95,8 +95,6 @@ global:
       prometheusPassword: ""
       smDbUsername: ""
       smDbPassword: ""
-#      smDbUsernameVaultPath: "vault:/#username"
-#      smDbPasswordVaultPath: "vault:/#password"
     akhq:
       defaultUsername: ""
       defaultPassword: ""
