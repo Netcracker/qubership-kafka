@@ -218,7 +218,6 @@ func (mrp MonitoringResourceProvider) getMonitoringContainerPorts() []corev1.Con
 
 func (mrp MonitoringResourceProvider) getMonitoringEnvs() []corev1.EnvVar {
 	envVars := mrp.getMonitoringEnvironmentVariables()
-	envVars = append(envVars, mrp.getKafkaCredentialsEnvs()...)
 
 	if mrp.spec.MonitoringType == "influxdb" {
 		envVars = append(envVars, []corev1.EnvVar{
@@ -231,18 +230,19 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvs() []corev1.EnvVar {
 				Value: mrp.spec.SmDbName,
 			},
 		}...)
-		envVars = append(envVars, mrp.getMonitoringCredentialsEnvs()...)
-	} else {
-		envVars = append(envVars, []corev1.EnvVar{
-			{
-				Name:      "PROMETHEUS_USERNAME",
-				ValueFrom: getSecretEnvVarSource(mrp.spec.SecretName, "prometheus-username"),
+	}
+	if mrp.spec.MonitoringType == "prometheus" && mrp.spec.SecretName != "" {
+		envVars = append(envVars, corev1.EnvVar{
+			Name: "PROMETHEUS_USERNAME",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: mrp.spec.SecretName,
+					},
+					Key: "prometheus-username",
+				},
 			},
-			{
-				Name:      "PROMETHEUS_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(mrp.spec.SecretName, "prometheus-password"),
-			},
-		}...)
+		})
 	}
 	return envVars
 }
@@ -267,6 +267,50 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumes() []corev1.Volume {
 			},
 		},
 	}
+	defaultMode := int32(0644)
+	projections := []corev1.VolumeProjection{
+		{
+			Secret: &corev1.SecretProjection{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: fmt.Sprintf("%s-services-secret", mrp.cr.Name),
+				},
+				Items: []corev1.KeyToPath{
+					{Key: "client-username", Path: "client_username"},
+					{Key: "client-password", Path: "client_password"},
+				},
+			},
+		},
+	}
+	if mrp.spec.SecretName != "" {
+		var monitoringSecretItems []corev1.KeyToPath
+		if mrp.spec.MonitoringType == "influxdb" {
+			monitoringSecretItems = []corev1.KeyToPath{
+				{Key: "sm-db-username", Path: "sm_db_username"},
+				{Key: "sm-db-password", Path: "sm_db_password"},
+			}
+		} else {
+			monitoringSecretItems = []corev1.KeyToPath{
+				{Key: "prometheus-password", Path: "prometheus_password"},
+			}
+		}
+		projections = append(projections, corev1.VolumeProjection{
+			Secret: &corev1.SecretProjection{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: mrp.spec.SecretName,
+				},
+				Items: monitoringSecretItems,
+			},
+		})
+	}
+	volumes = append(volumes, corev1.Volume{
+		Name: "monitoring-pod-secrets",
+		VolumeSource: corev1.VolumeSource{
+			Projected: &corev1.ProjectedVolumeSource{
+				DefaultMode: &defaultMode,
+				Sources:     projections,
+			},
+		},
+	})
 	if mrp.cr.Spec.Global.KafkaSsl.Enabled && mrp.cr.Spec.Global.KafkaSsl.SecretName != "" {
 		volumes = append(volumes, corev1.Volume{
 			Name: "ssl-certs",
@@ -290,6 +334,11 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumeMounts() []corev1.Volum
 		{
 			Name:      "config",
 			MountPath: "/etc/telegraf",
+		},
+		{
+			Name:      "monitoring-pod-secrets",
+			MountPath: "/etc/secrets/monitoring-pod-secrets",
+			ReadOnly:  true,
 		},
 	}
 	if mrp.cr.Spec.Global.KafkaSsl.Enabled && mrp.cr.Spec.Global.KafkaSsl.SecretName != "" {
@@ -356,31 +405,4 @@ func (mrp MonitoringResourceProvider) getArgs() []string {
 func (mrp MonitoringResourceProvider) getInitContainers() []corev1.Container {
 
 	return nil
-}
-
-func (mrp MonitoringResourceProvider) getKafkaCredentialsEnvs() []corev1.EnvVar {
-	kafkaSecretName := fmt.Sprintf("%s-services-secret", mrp.cr.Name)
-	return []corev1.EnvVar{
-		{
-			Name:      "KAFKA_USER",
-			ValueFrom: getSecretEnvVarSource(kafkaSecretName, "client-username"),
-		},
-		{
-			Name:      "KAFKA_PASSWORD",
-			ValueFrom: getSecretEnvVarSource(kafkaSecretName, "client-password"),
-		},
-	}
-}
-
-func (mrp MonitoringResourceProvider) getMonitoringCredentialsEnvs() []corev1.EnvVar {
-	return []corev1.EnvVar{
-		{
-			Name:      "SM_DB_USERNAME",
-			ValueFrom: getSecretEnvVarSource(mrp.spec.SecretName, "sm-db-username"),
-		},
-		{
-			Name:      "SM_DB_PASSWORD",
-			ValueFrom: getSecretEnvVarSource(mrp.spec.SecretName, "sm-db-password"),
-		},
-	}
 }

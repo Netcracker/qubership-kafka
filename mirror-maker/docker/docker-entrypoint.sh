@@ -14,9 +14,21 @@ cp -r "${KAFKA_HOME}/config/." "${MM_CONFIG}/"
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e
 if [[ "$DEBUG" == true ]]; then
-  set -x
-  printenv
+  echo "DEBUG=true; secret-safe mode enabled (trace/env dump disabled)."
 fi
+
+SECRETS_DIR="${SECRETS_DIR:-/etc/secrets/mirror-maker-pod-secrets}"
+
+resolve_secret_value() {
+  local secret_key="$1"
+  local fallback_env_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!fallback_env_name:-}"
+}
 
 for plugin in "$KAFKA_PLUGINS_DIR"/*; do
   if [[ -d "$plugin" ]]; then
@@ -62,15 +74,17 @@ for cluster_name in ${clusters[@]}; do
   if [[ "${sasl_mechanism}" == "" ]]; then
     sasl_mechanism="SCRAM-SHA-512"
   fi
-  if [[ -n "${!env_kafka_username}" && -n "${!env_kafka_password}" ]]; then
+  key_kafka_username=${cluster_name,,}-kafka-username
+  key_kafka_password=${cluster_name,,}-kafka-password
+  kafka_username="$(resolve_secret_value "${key_kafka_username}" "${env_kafka_username}")"
+  kafka_password="$(resolve_secret_value "${key_kafka_password}" "${env_kafka_password}")"
+  if [[ -n "${kafka_username}" && -n "${kafka_password}" ]]; then
     if [[ "${!enable_ssl}" == "true" ]]; then
       security_protocol="SASL_SSL"
     else
       security_protocol="SASL_PLAINTEXT"
     fi
 
-    key_kafka_username=${cluster_name,,}-kafka-username
-    key_kafka_password=${cluster_name,,}-kafka-password
     if [[ "${sasl_mechanism}" == "SCRAM-SHA-512" ]]; then
       export ${upper_cluster_name}_CONF_SASL_JAAS_CONFIG="org.apache.kafka.common.security.scram.ScramLoginModule required \
         username=\"\${secret:${secret_name}:${key_kafka_username}}\" \
@@ -82,9 +96,6 @@ for cluster_name in ${clusters[@]}; do
     fi
 
     export ${upper_cluster_name}_CONF_SASL_MECHANISM="${sasl_mechanism}"
-
-    unset ${env_kafka_username}
-    unset ${env_kafka_password}
   elif [[ ${!enable_ssl} == "true" ]]; then
     security_protocol="SSL"
   fi

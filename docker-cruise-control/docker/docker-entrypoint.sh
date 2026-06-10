@@ -12,6 +12,26 @@ if [[ "${UI_ENABLED}" != "false" ]]; then
   cp -r /cruise-control/cruise-control-ui "${CC_WORK}/cruise-control-ui"
 fi
 
+SECRETS_DIR_BASE="${SECRETS_DIR_BASE:-/etc/secrets/cruise-control-pod-secrets}"
+
+resolve_secret_value() {
+  local secret_relative_path="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR_BASE}/${secret_relative_path}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
+KAFKA_AUTH_USERNAME="$(resolve_secret_value "client-username" "KAFKA_AUTH_USERNAME")"
+KAFKA_AUTH_PASSWORD="$(resolve_secret_value "client-password" "KAFKA_AUTH_PASSWORD")"
+ADMIN_USERNAME="$(resolve_secret_value "admin-username" "ADMIN_USERNAME")"
+ADMIN_PASSWORD="$(resolve_secret_value "admin-password" "ADMIN_PASSWORD")"
+VIEWER_USERNAME="$(resolve_secret_value "viewer-username" "VIEWER_USERNAME")"
+VIEWER_PASSWORD="$(resolve_secret_value "viewer-password" "VIEWER_PASSWORD")"
+
 # Resolve security protocol.
 #
 #$1 - security protocol without SSL

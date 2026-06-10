@@ -16,7 +16,6 @@ package kafkaservice
 
 import (
 	"fmt"
-	appsv1 "k8s.io/api/apps/v1"
 	"regexp"
 	"time"
 
@@ -59,6 +58,9 @@ func NewReconcileAkhq(r *KafkaServiceReconciler, cr *kafkaservice.KafkaService, 
 }
 
 func (r ReconcileAkhq) Reconcile() error {
+	ldapSecret = nil
+	ldapConfigMap = nil
+
 	akhqSecret, err := r.reconciler.WatchSecret("akhq-secret", r.cr, r.logger)
 	if err != nil {
 		return err
@@ -146,9 +148,6 @@ func (r ReconcileAkhq) Reconcile() error {
 		if err := r.reconciler.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
-		if kafkaServicesSecret.Annotations != nil && kafkaServicesSecret.Annotations[autoRestartAnnotation] == "true" {
-			r.addDeploymentAnnotation(deployment, fmt.Sprintf(resourceVersionAnnotationTemplate, kafkaServicesSecret.Name), kafkaServicesSecret.ResourceVersion)
-		}
 		if err := r.reconciler.CreateOrUpdateDeployment(deployment, r.logger); err != nil {
 			return err
 		}
@@ -160,6 +159,13 @@ func (r ReconcileAkhq) Reconcile() error {
 	} else {
 		r.logger.Info("AKHQ configuration didn't change, skipping reconcile loop")
 	}
+
+	if err := updateDeploymentSecretRestartAnnotations(
+		r.reconciler.Client, r.cr.Namespace, r.akhqProvider.GetServiceName(), r.logger,
+		akhqSecret, kafkaServicesSecret, ldapSecret); err != nil {
+		return err
+	}
+
 	r.reconciler.ResourceVersions[akhqSecret.Name] = akhqSecret.ResourceVersion
 	r.reconciler.ResourceVersions[kafkaServicesSecret.Name] = kafkaServicesSecret.ResourceVersion
 	r.reconciler.ResourceVersions[protobufConfigMap.Name] = protobufConfigMap.ResourceVersion
@@ -250,11 +256,3 @@ func (r *ReconcileAkhq) updateAkhqStatus(labels map[string]string) error {
 	})
 }
 
-func (r ReconcileAkhq) addDeploymentAnnotation(deployment *appsv1.Deployment, annotationName string, annotationValue string) {
-	r.logger.Info(fmt.Sprintf("Add annotation '%s: %s' to deployment '%s'",
-		annotationName, annotationValue, deployment.Name))
-	if deployment.Spec.Template.Annotations == nil {
-		deployment.Spec.Template.Annotations = map[string]string{}
-	}
-	deployment.Spec.Template.Annotations[annotationName] = annotationValue
-}

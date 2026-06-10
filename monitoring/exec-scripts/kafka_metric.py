@@ -46,6 +46,15 @@ CA_CERT_PATH = '/tls/ca.crt'
 TLS_CERT_PATH = '/tls/tls.crt'
 TLS_KEY_PATH = '/tls/tls.key'
 MONITORING_LOGS=os.getenv('MONITORING_LOGS')
+SECRETS_BASE_PATH = '/etc/secrets/monitoring-pod-secrets'
+
+
+def _get_file_or_env(path, variable_name):
+    if path and os.path.isfile(path):
+        with open(path, mode='r', encoding='utf-8') as secret_file:
+            return secret_file.read().strip()
+    return os.getenv(variable_name, "")
+
 
 def __configure_logging(log):
     log.setLevel(logging.DEBUG)
@@ -242,8 +251,8 @@ def run():
         KAFKA_ENABLE_SSL = _str2bool(os.getenv("KAFKA_ENABLE_SSL", "false"))
         KAFKA_TOTAL_BROKERS_COUNT = int(os.getenv('KAFKA_TOTAL_BROKERS_COUNT'))
         OS_PROJECT = os.getenv('OS_PROJECT')
-        KAFKA_USER = os.getenv('KAFKA_USER')
-        KAFKA_PASSWORD = os.getenv('KAFKA_PASSWORD')
+        KAFKA_USER = _get_file_or_env(f"{SECRETS_BASE_PATH}/client_username", "KAFKA_USER")
+        KAFKA_PASSWORD = _get_file_or_env(f"{SECRETS_BASE_PATH}/client_password", "KAFKA_PASSWORD")
         timeout = os.getenv('KAFKA_EXEC_PLUGIN_TIMEOUT', "60s")
         KAFKA_TIMEOUT = int(re.compile(r"(\d+)").match(timeout).group(1))
         message = _collect_metrics()

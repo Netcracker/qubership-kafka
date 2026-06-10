@@ -929,6 +929,27 @@ Configure replicas number for backup-daemon pod
   {{- end }}
 {{- end }}
 
+{{/*
+  Pod-template checksums for Helm-only Deployments that mount credential Secrets.
+  Rolls Pods on helm upgrade when Secret manifest content changes. Does not react to
+  kubectl edit secret alone — use operator patch (see deployment_secret_restart.go) where available.
+*/}}
+{{- define "integrationTests.podSecretsChecksumAnnotations" -}}
+checksum/kafka-services-secret: {{ include (print $.Template.BasePath "/kafka-services-secret.yaml") . | sha256sum }}
+{{- if .Values.backupDaemon.install }}
+checksum/backup-daemon-secret: {{ include (print $.Template.BasePath "/backup-daemon/backup-daemon-secret.yaml") . | sha256sum }}
+{{- end }}
+{{- if and .Values.backupDaemon.s3.enabled }}
+checksum/backup-daemon-s3-secret: {{ include (print $.Template.BasePath "/backup-daemon/backup-daemon-s3-secret.yaml") . | sha256sum }}
+{{- end }}
+{{- if or (and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install) .Values.integrationTests.identityProviderUrl (and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install) }}
+checksum/integration-tests-secret: {{ include (print $.Template.BasePath "/integration_tests/secret.yaml") . | sha256sum }}
+{{- end }}
+{{- if .Values.integrationTests.atpReport.enabled }}
+checksum/integration-tests-atp-storage-secret: {{ include (print $.Template.BasePath "/integration_tests/atp-storage-secret.yaml") . | sha256sum }}
+{{- end }}
+{{- end -}}
+
 {{- define "kafka.monitoredImages" -}}
   {{- printf "deployment %s-service-operator kafka-service-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-service-operator")) -}}
   {{- if .Values.monitoring.install }}

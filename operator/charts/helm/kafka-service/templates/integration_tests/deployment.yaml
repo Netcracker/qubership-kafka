@@ -25,6 +25,8 @@ spec:
   replicas: 1
   template:
     metadata:
+      annotations:
+        {{- include "integrationTests.podSecretsChecksumAnnotations" . | nindent 8 }}
       labels:
       {{- include "kafka-services.defaultLabels" . | nindent 8 }}
       {{- with .Values.global.customLabels }}
@@ -89,16 +91,8 @@ spec:
               value: {{ .Values.integrationTests.kafkaPvNames }}
             - name: KAFKA_VOLUME_SIZE
               value: {{ .Values.integrationTests.kafkaVolumeSize | quote }}
-            - name: KAFKA_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-services-secret
-                  key: client-username
-            - name: KAFKA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-services-secret
-                  key: client-password
+            - name: INTEGRATION_TESTS_SECRETS_DIR
+              value: {{ printf "/etc/secrets/%s-pod-secrets" .Values.integrationTests.service.name | quote }}
             {{- if .Values.backupDaemon.install }}
             - name: BACKUP_DAEMON_HOST
               value: {{ template "kafka.name" . }}-backup-daemon
@@ -106,16 +100,6 @@ spec:
               value: {{ template "backupDaemon.Protocol" . }}
             - name: BACKUP_DAEMON_PORT
               value: {{ include "backupDaemon.port" . | quote }}
-            - name: BACKUP_DAEMON_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-backup-daemon-secret
-                  key: username
-            - name: BACKUP_DAEMON_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-backup-daemon-secret
-                  key: password
             {{- end }}
             {{- if and .Values.backupDaemon.s3.enabled }}
             - name: S3_ENABLED
@@ -124,58 +108,18 @@ spec:
               value: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
             - name: S3_DEFAULT_ALIAS_NAME
               value: {{ default "default" $defaultS3AliasName | quote }}
-            - name: S3_KEY_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
-                  key: s3-key-secret
             {{- end }}      
             {{- if and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install }}
             - name: PROMETHEUS_URL
               value: {{ .Values.integrationTests.prometheusUrl }}
-            - name: PROMETHEUS_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: prometheus-user
-            - name: PROMETHEUS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: prometheus-password
             {{- end }}
             {{- if .Values.integrationTests.identityProviderUrl }}
             - name: IDENTITY_PROVIDER_URL
               value: {{ .Values.integrationTests.identityProviderUrl | quote }}
-            - name: IDENTITY_PROVIDER_REGISTRATION_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: idp-registration-token
-            - name: IDENTITY_PROVIDER_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: idp-username
-            - name: IDENTITY_PROVIDER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: idp-password
             {{- end }}
             {{- if and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install }}
             - name: ZABBIX_URL
               value: {{ .Values.integrationTests.zabbixUrl }}
-            - name: ZABBIX_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: zabbix-user
-            - name: ZABBIX_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-secret
-                  key: zabbix-password
             - name: CLOUD_DB
               value: {{ .Values.global.smDbName }}
             {{- end }}
@@ -192,16 +136,6 @@ spec:
               value: {{ .Values.integrationTests.atpReport.atpStorage.bucket | quote }}
             - name: ATP_STORAGE_REGION
               value: {{ .Values.integrationTests.atpReport.atpStorage.region | quote }}
-            - name: ATP_STORAGE_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-atp-storage-secret
-                  key: atp-storage-username
-            - name: ATP_STORAGE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.integrationTests.service.name }}-atp-storage-secret
-                  key: atp-storage-password
             - name: ATP_REPORT_VIEW_UI_URL
               value: {{ .Values.integrationTests.atpReportViewUiUrl | quote }}
             {{- end }}
@@ -225,6 +159,9 @@ spec:
               mountPath: /opt/robot/output
             - name: tmp
               mountPath: /tmp
+            - name: integration-tests-pod-secrets
+              mountPath: {{ printf "/etc/secrets/%s-pod-secrets" .Values.integrationTests.service.name | quote }}
+              readOnly: true
           {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
             - name: ssl-certs
               mountPath: /tls
@@ -262,6 +199,65 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 32Mi
+        - name: integration-tests-pod-secrets
+          projected:
+            defaultMode: 420
+            sources:
+              - secret:
+                  name: {{ template "kafka.name" . }}-services-secret
+                  items:
+                    - key: client-username
+                      path: KAFKA_USER
+                    - key: client-password
+                      path: KAFKA_PASSWORD
+              {{- if .Values.backupDaemon.install }}
+              - secret:
+                  name: {{ template "kafka.name" . }}-backup-daemon-secret
+                  items:
+                    - key: username
+                      path: BACKUP_DAEMON_USER
+                    - key: password
+                      path: BACKUP_DAEMON_PASSWORD
+              {{- end }}
+              {{- if and .Values.backupDaemon.s3.enabled }}
+              - secret:
+                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
+                  items:
+                    - key: s3-key-id
+                      path: S3_KEY_ID
+                    - key: s3-key-secret
+                      path: S3_KEY_SECRET
+              {{- end }}
+              {{- if or (and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install) .Values.integrationTests.identityProviderUrl (and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install) }}
+              - secret:
+                  name: {{ .Values.integrationTests.service.name }}-secret
+                  items:
+                    - key: idp-registration-token
+                      path: IDENTITY_PROVIDER_REGISTRATION_TOKEN
+                    - key: idp-username
+                      path: IDENTITY_PROVIDER_USERNAME
+                    - key: idp-password
+                      path: IDENTITY_PROVIDER_PASSWORD
+                    - key: prometheus-user
+                      path: PROMETHEUS_USER
+                    - key: prometheus-password
+                      path: PROMETHEUS_PASSWORD
+                    {{- if and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install }}
+                    - key: zabbix-user
+                      path: ZABBIX_USER
+                    - key: zabbix-password
+                      path: ZABBIX_PASSWORD
+                    {{- end }}
+              {{- end }}
+              {{- if .Values.integrationTests.atpReport.enabled }}
+              - secret:
+                  name: {{ .Values.integrationTests.service.name }}-atp-storage-secret
+                  items:
+                    - key: atp-storage-username
+                      path: ATP_STORAGE_USERNAME
+                    - key: atp-storage-password
+                      path: ATP_STORAGE_PASSWORD
+              {{- end }}
       {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
         - name: ssl-certs
           secret:

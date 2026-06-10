@@ -24,7 +24,6 @@ import (
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v7"
 	"github.com/go-logr/logr"
 	"io"
-	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/utils/pointer"
 	"net/http"
@@ -85,16 +84,12 @@ func (r ReconcileBackupDaemon) Reconcile() error {
 	if err != nil {
 		return err
 	}
-	backupDaemonDeployment, err := r.reconciler.FindDeployment(fmt.Sprintf("%s-backup-daemon", r.cr.Name), r.cr.Namespace, r.logger)
-	if err != nil {
+	backupDaemonName := fmt.Sprintf("%s-backup-daemon", r.cr.Name)
+	if _, err := r.reconciler.FindDeployment(backupDaemonName, r.cr.Namespace, r.logger); err != nil {
 		return err
 	}
-	if kafkaServicesSecret.Annotations != nil && kafkaServicesSecret.Annotations[autoRestartAnnotation] == "true" {
-		r.addDeploymentAnnotation(backupDaemonDeployment, fmt.Sprintf(resourceVersionAnnotationTemplate, kafkaServicesSecret.Name), kafkaServicesSecret.ResourceVersion)
-	}
-	r.logger.Info("Updating the found Deployment",
-		"Deployment.Namespace", backupDaemonDeployment.Namespace, "Deployment.Name", backupDaemonDeployment.Name)
-	if err := r.reconciler.Client.Update(context.TODO(), backupDaemonDeployment); err != nil {
+	if err := updateDeploymentSecretRestartAnnotations(
+		r.reconciler.Client, r.cr.Namespace, backupDaemonName, r.logger, kafkaServicesSecret); err != nil {
 		return err
 	}
 	if r.cr.Spec.DisasterRecovery == nil || !r.cr.Spec.DisasterRecovery.TopicsBackup.Enabled {
@@ -437,11 +432,3 @@ func (r *ReconcileBackupDaemon) getLastFullBackup(backups []string) (vaultId str
 	return "", nil
 }
 
-func (r ReconcileBackupDaemon) addDeploymentAnnotation(deployment *appsv1.Deployment, annotationName string, annotationValue string) {
-	r.logger.Info(fmt.Sprintf("Add annotation '%s: %s' to deployment '%s'",
-		annotationName, annotationValue, deployment.Name))
-	if deployment.Spec.Template.Annotations == nil {
-		deployment.Spec.Template.Annotations = map[string]string{}
-	}
-	deployment.Spec.Template.Annotations[annotationName] = annotationValue
-}

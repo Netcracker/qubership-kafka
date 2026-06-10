@@ -18,9 +18,31 @@ echo "" >> ${KAFKA_CONFIG}/server.properties
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e
 if [[ "$DEBUG" == true ]]; then
-  set -x
-  printenv
+  echo "DEBUG=true; secret-safe mode enabled (trace/env dump disabled)."
 fi
+
+SECRETS_DIR="${KAFKA_SECRETS_DIR:-${SECRETS_DIR:-/etc/secrets/kafka-pod-secrets}}"
+
+# Resolve secret value from mounted secret files with env fallback.
+# During migration we keep env fallback for compatibility, but files are preferred.
+resolve_secret_value() {
+  local secret_key="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
+ADMIN_USERNAME="$(resolve_secret_value "admin-username" "ADMIN_USERNAME")"
+ADMIN_PASSWORD="$(resolve_secret_value "admin-password" "ADMIN_PASSWORD")"
+CLIENT_USERNAME="$(resolve_secret_value "client-username" "CLIENT_USERNAME")"
+CLIENT_PASSWORD="$(resolve_secret_value "client-password" "CLIENT_PASSWORD")"
+IDP_WHITELIST="$(resolve_secret_value "idp-whitelist" "IDP_WHITELIST")"
+ZOOKEEPER_CLIENT_USERNAME="$(resolve_secret_value "zookeeper-client-username" "ZOOKEEPER_CLIENT_USERNAME")"
+ZOOKEEPER_CLIENT_PASSWORD="$(resolve_secret_value "zookeeper-client-password" "ZOOKEEPER_CLIENT_PASSWORD")"
 
 if [[ ${DISABLE_SECURITY} == "false" && -z ${ADMIN_USERNAME} && -z ${ADMIN_PASSWORD} && -z ${CLIENT_USERNAME} && -z ${CLIENT_PASSWORD} ]]; then
   echo "Warning: All credential are not set, security is disabled"
