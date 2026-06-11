@@ -2810,6 +2810,48 @@ spec:
                 - monitoringType
                 - secretName
                 type: object
+              vaultSecretManagement:
+                description: 'Deprecated: no longer used. Retained for backward
+                  compatibility.'
+                properties:
+                  dockerImage:
+                    type: string
+                  enabled:
+                    type: boolean
+                  method:
+                    type: string
+                  passwordGenerationMechanism:
+                    type: string
+                  path:
+                    type: string
+                  role:
+                    type: string
+                  secretPaths:
+                    properties:
+                      kafka:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      mirrorMaker:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      mirrorMakerMonitoring:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      monitoring:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  url:
+                    type: string
+                  writePolicies:
+                    type: boolean
+                required:
+                  - dockerImage
+                type: object
             type: object
           status:
             properties:
@@ -2880,6 +2922,16 @@ spec:
                 properties:
                   status:
                     type: string
+                type: object
+              vaultSecretManagementStatus:
+                description: 'Deprecated: no longer used. Retained for backward
+                  compatibility.'
+                properties:
+                  secretVersions:
+                    additionalProperties:
+                      format: int64
+                      type: integer
+                    type: object
                 type: object
             type: object
         type: object
