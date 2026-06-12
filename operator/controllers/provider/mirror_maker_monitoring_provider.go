@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v7"
 	"github.com/Netcracker/qubership-kafka/operator/util"
@@ -46,7 +47,7 @@ func NewMirrorMakerMonitoringResourceProvider(cr *kafkaservice.KafkaService, log
 		cr:          cr,
 		spec:        cr.Spec.MirrorMakerMonitoring,
 		logger:      logger,
-		serviceName: fmt.Sprintf("%s-kafka-mirror-maker-monitoring", cr.Name),
+		serviceName: fmt.Sprintf("%s-mirror-maker-monitoring", cr.Name),
 	}
 }
 
@@ -195,6 +196,9 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMonitoringEnvironmentVaria
 			Name:  "KMM_COLLECTION_INTERVAL",
 			Value: util.DefaultIfEmpty(mmmrp.spec.KmmCollectionInterval, "5s"),
 		},
+		// Avoid writing __pycache__ entries under the read-only root
+		// filesystem when Python helper scripts are invoked.
+		{Name: "PYTHONDONTWRITEBYTECODE", Value: "1"},
 	}
 }
 
@@ -255,15 +259,15 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getContainerPorts() []corev1.
 }
 
 func (mmmrp MirrorMakerMonitoringResourceProvider) getPrometheusUrls() string {
-	var urlList = buildPrometheusUrlsByMirrorMakerConfig(mmmrp)
-	for i, prometheusUrl := range urlList {
-		urlList[i] = fmt.Sprintf("'%s'", prometheusUrl)
-	}
-	result := strings.Join(urlList, ",")
-	result = fmt.Sprintf("[%s]", result)
-	return result
+	urlList := buildPrometheusUrlsByMirrorMakerConfig(mmmrp)
 
-}
+	result, err := json.Marshal(urlList)
+	if err != nil {
+		return "[]"
+	}
+
+	return string(result)
+}	
 
 func buildPrometheusUrlsByMirrorMakerConfig(mmmrp MirrorMakerMonitoringResourceProvider) []string {
 	var urlList []string
@@ -305,6 +309,7 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 				},
 			},
 		},
+		getTmpVolume("16Mi"), // Telegraf + sidecar scripts
 	}
 }
 
@@ -315,6 +320,7 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 			Name:      "config",
 			MountPath: "/etc/telegraf",
 		},
+		getTmpVolumeMount(),
 	}
 	return volumeMounts
 }

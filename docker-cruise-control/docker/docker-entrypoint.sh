@@ -1,13 +1,24 @@
 #!/bin/bash
 # shellcheck disable=SC2086,SC2223,SC2034,SC2006,SC2196
 
+# Initialise writable runtime directories under /tmp so the container can run
+# with readOnlyRootFilesystem: true.  Static CC config is in /cruise-control/config;
+# we copy it plus the UI bundle to /tmp/cc at each start.
+CC_WORK=/tmp/cc
+export KAFKA_CTL_CONFIG="${CC_WORK}/kafkactl.yml"
+mkdir -p "${CC_WORK}/config" "${CC_WORK}/tls-ks"
+cp -r /cruise-control/config/. "${CC_WORK}/config/"
+if [[ "${UI_ENABLED}" != "false" ]]; then
+  cp -r /cruise-control/cruise-control-ui "${CC_WORK}/cruise-control-ui"
+fi
+
 # Resolve security protocol.
 #
 #$1 - security protocol without SSL
 #$2 - security protocol with SSL
 prepare_secured_client() {
-echo "sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username=\"${KAFKA_AUTH_USERNAME}\" password=\"${KAFKA_AUTH_PASSWORD}\";" >> config/cruisecontrol.properties
-cat > config/cruise_control_jaas.conf <<EOL
+echo "sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username=\"${KAFKA_AUTH_USERNAME}\" password=\"${KAFKA_AUTH_PASSWORD}\";" >> ${CC_WORK}/config/cruisecontrol.properties
+cat > ${CC_WORK}/config/cruise_control_jaas.conf <<EOL
 KafkaClient {
   org.apache.kafka.common.security.scram.ScramLoginModule required
   username="${KAFKA_AUTH_USERNAME}"
@@ -56,27 +67,27 @@ EOL
 }
 
 # Prepare main config file
-cat >> config/cruisecontrol.properties <<EOF
+cat >> ${CC_WORK}/config/cruisecontrol.properties <<EOF
 bootstrap.servers=$BOOTSTRAP_SERVERS
 self.healing.enabled=$SELF_HEALING_ENABLED
-capacity.config.file=config/capacityConfigFile.json
+capacity.config.file=${CC_WORK}/config/capacityConfigFile.json
 kafka.broker.failure.detection.enable=true
-webserver.auth.credentials.file=config/ui-credentianals
+webserver.auth.credentials.file=${CC_WORK}/config/ui-credentianals
 webserver.security.enable=true
 EOF
 
 if [[ "${KAFKA_ENABLE_SSL}" == "true" && -n "${KAFKA_AUTH_USERNAME}" && -n "${KAFKA_AUTH_PASSWORD}" ]]; then
-  echo 'security.protocol=SASL_SSL' >> config/cruisecontrol.properties
-  echo 'sasl.mechanism=SCRAM-SHA-512' >> config/cruisecontrol.properties
+  echo 'security.protocol=SASL_SSL' >> ${CC_WORK}/config/cruisecontrol.properties
+  echo 'sasl.mechanism=SCRAM-SHA-512' >> ${CC_WORK}/config/cruisecontrol.properties
   prepare_secured_client
 elif [[ -n "${KAFKA_AUTH_USERNAME}" && -n "${KAFKA_AUTH_PASSWORD}" ]]; then
-  echo 'security.protocol=SASL_PLAINTEXT' >> config/cruisecontrol.properties
-  echo 'sasl.mechanism=SCRAM-SHA-512' >> config/cruisecontrol.properties
+  echo 'security.protocol=SASL_PLAINTEXT' >> ${CC_WORK}/config/cruisecontrol.properties
+  echo 'sasl.mechanism=SCRAM-SHA-512' >> ${CC_WORK}/config/cruisecontrol.properties
   prepare_secured_client
 elif [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
-  echo 'security.protocol=SSL' >> config/cruisecontrol.properties
+  echo 'security.protocol=SSL' >> ${CC_WORK}/config/cruisecontrol.properties
 else
-  echo 'security.protocol=PLAINTEXT' >> config/cruisecontrol.properties
+  echo 'security.protocol=PLAINTEXT' >> ${CC_WORK}/config/cruisecontrol.properties
 fi
 
 #Prepare kafkactl config
@@ -86,30 +97,28 @@ if [[ -n ${KAFKA_AUTH_USERNAME} && -n ${KAFKA_AUTH_PASSWORD} ]]; then
 else
   prepare_unsecured_config_files
 fi
-# kafkactl >=5.18 stores the active context in a dedicated file.
-cat > /cruise-control/current-context.yml << EOL
+# kafkactl >=5.18 stores the active context next to KAFKA_CTL_CONFIG (must be writable under readOnlyRootFilesystem).
+cat > "${CC_WORK}/current-context.yml" << EOL
 current-context: default
 EOL
 enrich_kafkactl_yml_with_ssl_configs
 
 
 #Prepare UI credentianals file
-cat > /cruise-control/config/ui-credentianals << EOF
+cat > ${CC_WORK}/config/ui-credentianals << EOF
 $ADMIN_USERNAME: $ADMIN_PASSWORD,ADMIN
 EOF
 if [[ -n "${VIEWER_USERNAME}" && -n "${VIEWER_PASSWORD}" ]]; then
-cat >> /cruise-control/config/ui-credentianals << EOF
+cat >> ${CC_WORK}/config/ui-credentianals << EOF
 $VIEWER_USERNAME: $VIEWER_PASSWORD,VIEWER
 EOF
 fi
 
-#Prepare UI endpoint file
-cat > /cruise-control/cruise-control-ui/dist/static/config.csv <<EOL
+#Prepare UI endpoint file (only if UI is enabled; the dir was copied in the init block above)
+if [[ "${UI_ENABLED}" != "false" ]]; then
+  cat > ${CC_WORK}/cruise-control-ui/dist/static/config.csv <<EOL
 $CLUSTER_NAME,$CLUSTER_NAME,/kafkacruisecontrol/
 EOL
-
-if [[ "${UI_ENABLED}" == "false" ]]; then
-    rm -r /cruise-control/cruise-control-ui
 fi
 
 #Prepare broker's capacity config file
@@ -117,7 +126,7 @@ fi
 : ${BROKER_NW_IN:=10000} # in KB
 : ${BROKER_NW_OUT:=10000} # in KB
 : ${BROKER_CPU:=100} # In Percentage
-cat >> config/capacityConfigFile.json << EOL
+cat >> ${CC_WORK}/config/capacityConfigFile.json << EOL
 {"brokerCapacities":[
 {"brokerId": "-1","capacity": {"DISK": "$BROKER_DISK_SPACE","CPU": "$BROKER_CPU","NW_IN": "$BROKER_NW_IN","NW_OUT": "$BROKER_NW_OUT"}}
 ]}
@@ -127,8 +136,8 @@ if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
     kafka_ca_cert_path="/cruise-control/tls/ca.crt"
     kafka_tls_key_path="/cruise-control/tls/tls.key"
     kafka_tls_cert_path="/cruise-control/tls/tls.crt"
-    kafka_tls_ks_dir="tls-ks"
-    mkdir -p ${kafka_tls_ks_dir}
+    kafka_tls_ks_dir="${CC_WORK}/tls-ks"
+    mkdir -p "${kafka_tls_ks_dir}"
     trust_cert_path="${kafka_ca_cert_path}"
     # Some cert-manager TLS secrets do not include ca.crt.
     # In that case trust the mounted certificate chain from tls.crt.
@@ -145,7 +154,7 @@ if [[ "${KAFKA_ENABLE_SSL}" == "true" ]]; then
         -srckeystore ${kafka_tls_ks_dir}/kafka.keystore.p12 -srcstoretype PKCS12 -srcstorepass ${SSL_PASSWORD}
       keytool -import -trustcacerts -keystore ${SSL_KEYSTORE_LOCATION} -storepass ${SSL_PASSWORD} -noprompt -alias ca-cert -file "${trust_cert_path}"
       SSL_CONFIGURATION="ssl.keystore.location = \"${SSL_KEYSTORE_LOCATION}\"\n        ssl.keystore.password = \"${SSL_PASSWORD}\"\n        ssl.key.password = \"${SSL_PASSWORD}\""
-    cat >> config/cruisecontrol.properties <<EOF
+    cat >> ${CC_WORK}/config/cruisecontrol.properties <<EOF
 ssl.keystore.type=JKS
 ssl.keystore.location=$SSL_KEYSTORE_LOCATION
 ssl.keystore.password=${SSL_PASSWORD}
@@ -155,7 +164,7 @@ EOF
 
     SSL_TRUSTSTORE_LOCATION="${kafka_tls_ks_dir}/kafka.truststore.jks"
     keytool -import -trustcacerts -keystore ${SSL_TRUSTSTORE_LOCATION} -storepass ${SSL_PASSWORD} -noprompt -alias ca -file "${trust_cert_path}"
-    cat >> config/cruisecontrol.properties <<EOF
+    cat >> ${CC_WORK}/config/cruisecontrol.properties <<EOF
 ssl.truststore.type=JKS
 ssl.truststore.location=$SSL_TRUSTSTORE_LOCATION
 ssl.truststore.password=${SSL_PASSWORD}
@@ -168,12 +177,12 @@ for VAR in `env`; do
   env_var=`echo "$VAR" | sed -r "s/(.*)=.*/\1/g"`
   if [[ ${env_var} =~ ^CONF_ ]]; then
     prop_name=`echo "$VAR" | sed -r "s/^CONF_(.*)=.*/\1/g" | tr '[:upper:]' '[:lower:]' | tr _ .`
-    if egrep -q "(^|^#)$prop_name=" config/cruisecontrol.properties; then
+    if egrep -q "(^|^#)$prop_name=" ${CC_WORK}/config/cruisecontrol.properties; then
       # Note that no config names or values may contain an '@' char
-      sed -r -i "s@(^|^#)($prop_name)=(.*)@\2=${!env_var}@g" config/cruisecontrol.properties
+      sed -r -i "s@(^|^#)($prop_name)=(.*)@\2=${!env_var}@g" ${CC_WORK}/config/cruisecontrol.properties
     else
       #echo "Adding property $prop_name=${!env_var}"
-      echo "$prop_name=${!env_var}" >> config/cruisecontrol.properties
+      echo "$prop_name=${!env_var}" >> ${CC_WORK}/config/cruisecontrol.properties
     fi
   fi
 done
@@ -183,9 +192,19 @@ if [[ "${EXTERNAL_KAFKA_ENABLED}" == "false" ]]; then
 fi
 
 # Write config map to main config file
-cat /cruise-control/additionalConfig/cruisecontrolAdditionalProperties.conf >> /cruise-control/config/cruisecontrol.properties
+cat /cruise-control/additionalConfig/cruisecontrolAdditionalProperties.conf >> ${CC_WORK}/config/cruisecontrol.properties
 
-/cruise-control/kafka-cruise-control-start.sh config/cruisecontrol.properties 9090
+# Point webserver to the runtime UI path (or disable it)
+if [[ "${UI_ENABLED}" != "false" ]]; then
+  echo "webserver.ui.diskpath=${CC_WORK}/cruise-control-ui/dist" >> ${CC_WORK}/config/cruisecontrol.properties
+fi
+
+# kafka-cruise-control-start.sh defaults LOG_DIR to /cruise-control/logs (read-only with readOnlyRootFilesystem).
+# LinkedIn start.sh passes -Dkafka.logs.dir=$LOG_DIR to the JVM; keep logs under CC_WORK (/tmp).
+export LOG_DIR="${CC_WORK}/logs"
+mkdir -p "${LOG_DIR}"
+
+/cruise-control/kafka-cruise-control-start.sh ${CC_WORK}/config/cruisecontrol.properties 9090
 
 
 
