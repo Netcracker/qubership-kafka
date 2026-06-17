@@ -23,7 +23,7 @@ external = environ.get("EXTERNAL_KAFKA") is not None
 namespace = environ.get("KAFKA_OS_PROJECT")
 kafka = environ.get("KAFKA_HOST")
 backup_daemon = environ.get("BACKUP_DAEMON_HOST")
-timeout = 300
+timeout = 600
 
 if __name__ == '__main__':
     time.sleep(10)
