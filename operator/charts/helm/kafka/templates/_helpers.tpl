@@ -35,6 +35,10 @@ Create chart name and version as used by the chart label.
 runAsNonRoot: true
 seccompProfile:
   type: "RuntimeDefault"
+{{- if eq (default "" .Values.PAAS_PLATFORM) "KUBERNETES" }}
+runAsUser: 1000
+runAsGroup: 1000
+{{- end }}
 {{- with .Values.global.securityContext }}
 {{ toYaml . }}
 {{- end -}}
@@ -42,6 +46,7 @@ seccompProfile:
 
 {{- define "kafka-service.globalContainerSecurityContext" -}}
 allowPrivilegeEscalation: false
+readOnlyRootFilesystem: true
 capabilities:
   drop: ["ALL"]
 {{- end -}}

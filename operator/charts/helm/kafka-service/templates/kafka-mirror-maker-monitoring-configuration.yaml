@@ -31,12 +31,12 @@ data:
     # rack = "1a"
     ## Environment variables can be used as tags, and throughout the config file
     # user = "$USER"
-      project_name= "$OS_PROJECT"
+      project_name= "${OS_PROJECT}"
 
     # Configuration for telegraf agent
         [agent]
     ## Default data collection interval for all inputs
-      interval = "$KMM_COLLECTION_INTERVAL"
+      interval = "${KMM_COLLECTION_INTERVAL}"
         ## Rounds collection interval to 'interval'
         ## ie, if interval="10s" then always collect on :00, :10, :20, etc.
       round_interval = true
@@ -95,9 +95,9 @@ data:
     ## Multiple urls can be specified as part of the same cluster,
     ## this means that only ONE of the urls will be written to each interval.
     # urls = ["udp://localhost:8089"] # UDP endpoint example
-      urls = ["$SM_DB_HOST"] # required
+      urls = ["${SM_DB_HOST}"] # required
         ## The target database for metrics (telegraf will create it if not exists).
-      database = "$SM_DB_NAME" # required
+      database = "${SM_DB_NAME}" # required
 
         ## Retention policy to write to. Empty string writes to the default rp.
       retention_policy = ""
@@ -107,8 +107,8 @@ data:
         ## Write timeout (for the InfluxDB client), formatted as a string.
         ## If not provided, will default to 5s. 0s means no timeout (not recommended).
       timeout = "5s"
-      username = "$SM_DB_USERNAME"
-      password = "$SM_DB_PASSWORD"
+      username = "${SM_DB_USERNAME}"
+      password = "${SM_DB_PASSWORD}"
     ## Set the user agent for HTTP POSTs (can be useful for log differentiation)
     # user_agent = "telegraf"
     ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
@@ -198,7 +198,7 @@ data:
       "python3 /opt/kafka-mirror-maker-monitoring/exec-scripts/health_metric.py"
       ]
         #
-      timeout = "$KMM_EXEC_PLUGIN_TIMEOUT"
+      timeout = "${KMM_EXEC_PLUGIN_TIMEOUT}"
         #
         ## measurement name suffix (for separating different commands)
       name_prefix = "kmm_"
@@ -213,7 +213,7 @@ data:
     # Read metrics from one or many prometheus clients
     [[inputs.prometheus]]  
       ## An array of urls to scrape metrics from.
-      urls = $PROMETHEUS_URLS
+      urls = {{ include "mirrorMakerMonitoring.prometheusURLs" . }}
 
       ## Metric version controls the mapping from Prometheus metrics into
       ## Telegraf metrics.  When using the prometheus_client output, use the same

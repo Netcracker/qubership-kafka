@@ -35,6 +35,10 @@ Create chart name and version as used by the chart label.
 runAsNonRoot: true
 seccompProfile:
   type: "RuntimeDefault"
+{{- if eq (default "" .Values.PAAS_PLATFORM) "KUBERNETES" }}
+runAsUser: 1000
+runAsGroup: 1000
+{{- end }}
 {{- with .Values.global.securityContext }}
 {{ toYaml . }}
 {{- end -}}
@@ -42,6 +46,7 @@ seccompProfile:
 
 {{- define "kafka-service.globalContainerSecurityContext" -}}
 allowPrivilegeEscalation: false
+readOnlyRootFilesystem: true
 capabilities:
   drop: ["ALL"]
 {{- end -}}
@@ -191,6 +196,30 @@ Configure Kafka Mirror Maker monitoring type
 */}}
 {{- define "mirrorMakerMonitoring.type" -}}
 {{- coalesce .Values.mirrorMakerMonitoring.monitoringType .Values.global.monitoringType "prometheus" -}}
+{{- end -}}
+
+{{/*
+Configure Kafka Mirror Maker monitoring Prometheus URLs.
+*/}}
+{{- define "mirrorMakerMonitoring.prometheusURLs" -}}
+  {{- $serviceName := printf "%s-mirror-maker" (include "kafka.name" .) -}}
+  {{- $urlList := list -}}
+  {{- if or (not .Values.mirrorMaker.regionName) (eq .Values.mirrorMaker.regionName "") -}}
+    {{- range .Values.mirrorMaker.clusters -}}
+      {{- $deploymentName := printf "%s-%s" (lower .name) $serviceName -}}
+      {{- $url := printf "http://%s.%s:8080" $deploymentName $.Release.Namespace -}}
+      {{- $urlList = append $urlList $url -}}
+    {{- end -}}
+  {{- else -}}
+    {{- range .Values.mirrorMaker.clusters -}}
+      {{- if eq (lower .name) (lower $.Values.mirrorMaker.regionName) -}}
+        {{- $deploymentName := printf "%s-%s" (lower .name) $serviceName -}}
+        {{- $url := printf "http://%s.%s:8080" $deploymentName $.Release.Namespace -}}
+        {{- $urlList = append $urlList $url -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $urlList | toJson -}}
 {{- end -}}
 
 

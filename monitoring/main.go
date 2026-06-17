@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -38,11 +39,12 @@ var (
 	sslMechanism   = getEnv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
 	isDebugEnabled = getBoolEnv("KAFKA_MONITORING_SCRIPT_DEBUG", "false")
 	sslEnabled     = getBoolEnv("KAFKA_ENABLE_SSL", "false")
+	monitoringLogs = getEnv("MONITORING_LOGS", "/tmp/monitoring/logs")
 
 	caCertPath     = "/tls/ca.crt"
 	tlsCertPath    = "/tls/tls.crt"
 	tlsKeyPath     = "/tls/tls.key"
-	debugLogger, _ = initLogger("/opt/kafka-monitoring/exec-scripts/additional-metrics.log")
+	debugLogger, _ = initLogger(filepath.Join(monitoringLogs, "additional-metrics.log"))
 )
 
 func getEnv(key, defaultValue string) string {
