@@ -2162,7 +2162,7 @@ In this case, you need to:
 The arbiter node has limited resources, and allows having an uneven number of
 members in an ensemble when you have an even number of dedicated nodes.
 
-![Arbiter Installation Architecture](images/arbiter_installation_architecture.png)
+![Arbiter Installation Architecture](/docs/images/arbiter_installation_architecture.png)
 
 ### Kafka
 
@@ -2342,7 +2342,7 @@ and Kafka Mirror Maker, one for each datacenter.
 
 The case for three datacenters **{dc1, dc2, dc3}** is provided in the figure below.
 
-![Three kafka regions](/docs/public/images/kafka-mm2-3.png)
+![Three kafka regions](/docs/images/kafka-mm2-3.png)
 
 ### Multi-datacenter Prerequisites
 

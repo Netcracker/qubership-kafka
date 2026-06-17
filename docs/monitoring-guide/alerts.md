@@ -205,7 +205,7 @@ For more information refer to [Memory Limit](./troubleshooting.md#memory-limit-r
 Garbage collections count rate of one of the pods in the Kafka cluster comes close to the specified limit.
 
 This limit can be overridden with parameter `thresholds.gcCountAlert` described in
-[Kafka Monitoring Parameters](/docs/public/installation.md#monitoring).
+[Kafka Monitoring Parameters](/docs/pubinstallation-guide/installation.md#monitoring).
 
 For more information refer to [Memory Limit Reached](./troubleshooting.md#memory-limit-reached).
 
@@ -237,7 +237,7 @@ For more information refer to [Memory Limit Reached](./troubleshooting.md#memory
 Partition lag of one of the consumer group in the Kafka cluster comes close to the specified limit.
 
 This limit can be overridden with parameter `thresholds.lagAlert` described in
-[Kafka Monitoring Parameters](/docs/public/installation.md#monitoring)
+[Kafka Monitoring Parameters](/docs/installation-guide/installation.md#monitoring)
 
 For more information refer to [Lag Limit Reached](./troubleshooting.md#lag-limit-reached).
 
@@ -312,9 +312,9 @@ For more information refer to [Kafka Mirror Maker is Down](./troubleshooting.md#
 
 Partition count of one of the broker in the Kafka cluster comes close to the specified limit.
 There are strong restrictions for every Kafka cluster type and allowed number of partitions,
-you can find then in [HWE](/docs/public/installation.md#hwe).
+you can find then in [HWE](/docs/installation-guide/installation.md#hwe).
 
-This limit can be overridden with parameter `thresholds.partitionCountAlert` described in [Kafka Monitoring Parameters](/docs/public/installation.md#monitoring)
+This limit can be overridden with parameter `thresholds.partitionCountAlert` described in [Kafka Monitoring Parameters](/docs/installation-guide/installation.md#monitoring)
 
 ### Possible Causes
 
@@ -341,7 +341,7 @@ This limit can be overridden with parameter `thresholds.partitionCountAlert` des
 
 Partitions skew of one of the broker in the Kafka cluster comes close to the specified limit.
 
-This limit can be overridden with parameter `thresholds.brokerSkewAlert` described in [Kafka Monitoring Parameters](/docs/public/installation.md#monitoring)
+This limit can be overridden with parameter `thresholds.brokerSkewAlert` described in [Kafka Monitoring Parameters](/docs/installation-guide/installation.md#monitoring)
 
 ### Possible Causes
 

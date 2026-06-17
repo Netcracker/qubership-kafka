@@ -28,11 +28,11 @@ Prometheus dashboard shows information about ready pods, but InfluxDB dashboard 
 
 An overview of Kafka Monitoring dashboard for Prometheus is shown below.
 
-![Prometheus Dashboard](/docs/public/images/kafka-monitoring_dashboard-prometheus.png)
+![Prometheus Dashboard](/docs/images/kafka-monitoring_dashboard-prometheus.png)
 
 An overview of Kafka Monitoring dashboard for InfluxDB is shown below.
 
-![InfluxDB Dashboard](/docs/public/images/kafka-monitoring_dashboard-influxdb.png)
+![InfluxDB Dashboard](/docs/images/kafka-monitoring_dashboard-influxdb.png)
 
 ### Metrics
 
@@ -40,11 +40,11 @@ An overview of Kafka Monitoring dashboard for InfluxDB is shown below.
 
 Prometheus panel:
 
-![Cluster Overview Prometheus](/docs/public/images/kafka-monitoring_cluster_overview-prometheus.png)
+![Cluster Overview Prometheus](/docs/images/kafka-monitoring_cluster_overview-prometheus.png)
 
 InfluxDB panel:
 
-![Cluster Overview InfluxDB](/docs/public/images/kafka-monitoring_cluster_overview-influxdb.png)
+![Cluster Overview InfluxDB](/docs/images/kafka-monitoring_cluster_overview-influxdb.png)
 
 * `Cluster status` - Displays the status of Kafka cluster.
 * `Current cluster size` - Displays the current size of Kafka cluster.
@@ -110,7 +110,7 @@ InfluxDB panel:
 
 **Broker Issues**
 
-![Broker Issues](/docs/public/images/kafka-monitoring_broker_issues.png)
+![Broker Issues](/docs/images/kafka-monitoring_broker_issues.png)
 
 * `Under Replicated Partitions` - The number of under-replicated partitions. Replicas that are added as part of
    a reassignment will not count toward this value.
@@ -122,7 +122,7 @@ InfluxDB panel:
 
 **Topics**
 
-![Topics](/docs/public/images/kafka-monitoring_topics.png)
+![Topics](/docs/images/kafka-monitoring_topics.png)
 
 * `Total Topics Count` - Displays the total count of topics on Kafka cluster.
 * `Total Partitions Count` - Displays the total count of partitions on Kafka cluster.
@@ -142,13 +142,13 @@ InfluxDB panel:
 
 **Consumer Groups Metrics**
 
-![Consumer Groups Metrics](/docs/public/images/kafka-monitoring_consumer_groups_metrics.png)
+![Consumer Groups Metrics](/docs/images/kafka-monitoring_consumer_groups_metrics.png)
 
 * `Consumer Groups Number` - Displays the number of consumer groups in different states as a table.
 
 **JVM Heap and GC Metrics**
 
-![JVM Heap and GC Metrics](/docs/public/images/kafka-monitoring_jvm_heap_and_gc_metrics.png)
+![JVM Heap and GC Metrics](/docs/images/kafka-monitoring_jvm_heap_and_gc_metrics.png)
 
 * `JVM Heap Usage` - Displays the JVM heap usage by broker.
 * `JVM Heap Usage in Percent` - Displays the JVM heap usage by broker in percent (%).
@@ -159,19 +159,19 @@ NOTE: JVM metrics are not applicable for external managed Kafka (e.g. Amazon MSK
 
 **RAM Memory Metrics**
 
-![RAM Memory Metrics](/docs/public/images/kafka-monitoring_ram_memory_metrics.png)
+![RAM Memory Metrics](/docs/images/kafka-monitoring_ram_memory_metrics.png)
 
 * `Memory usage` - Displays the memory usage by pod. Not applicable for external managed Kafka (e.g. Amazon MSK).
 
 **CPU**
 
-![CPU](/docs/public/images/kafka-monitoring_cpu.png)
+![CPU](/docs/images/kafka-monitoring_cpu.png)
 
 * `CPU usage` - Displays the CPU usage by pod. Not applicable for external managed Kafka (e.g. Amazon MSK).
 
 **Disk Metrics**
 
-![Disk Metrics](/docs/public/images/kafka-monitoring_disk_metrics.png)
+![Disk Metrics](/docs/images/kafka-monitoring_disk_metrics.png)
 
 * `Disk Read Bytes` - Displays the total size in bytes of read operations on the volume for each broker.
 * `Disk Write Bytes` - Displays the total size in bytes of write operations on the volume for each broker.
@@ -179,7 +179,7 @@ NOTE: JVM metrics are not applicable for external managed Kafka (e.g. Amazon MSK
 
 **Controller Queues Metrics**
 
-![Controller Queues Metrics](/docs/public/images/kafka-monitoring_controller_queues_metrics.png)
+![Controller Queues Metrics](/docs/images/kafka-monitoring_controller_queues_metrics.png)
 
 * `Total Queue Size` - Displays the total number of controller requests to be sent out to brokers by `ControllerChannelManager`. 
   `ControllerChannelManager` establishes connection to every broker and starts a corresponding `RequestSendThread` 
@@ -197,14 +197,14 @@ NOTE: JVM metrics are not applicable for external managed Kafka (e.g. Amazon MSK
 
 **Network Metrics**
 
-![Network Metrics](/docs/public/images/kafka-monitoring_network_metrics.png)
+![Network Metrics](/docs/images/kafka-monitoring_network_metrics.png)
 
 * `Bytes In/Out` - Displays the aggregate incoming/outgoing byte rate per second.
 * `Bytes Rejected` - Displays the amount of data in bytes per second rejected by broker.
 
 **ZooKeeper Connection Metrics**
 
-![ZooKeeper Connection Metrics](/docs/public/images/kafka-monitoring_zookeeper_connection_metrics.png)
+![ZooKeeper Connection Metrics](/docs/images/kafka-monitoring_zookeeper_connection_metrics.png)
 
 * `ZooKeeper Session State` - Displays ZooKeeper session state for each broker as a table.
   Not applicable for external managed Kafka (e.g. Amazon MSK). The possible states are:
@@ -220,7 +220,7 @@ NOTE: JVM metrics are not applicable for external managed Kafka (e.g. Amazon MSK
 
 **In Sync Replica (ISR) Metrics**
 
-![ISR Metrics](/docs/public/images/kafka-monitoring_isr_metrics.png)
+![ISR Metrics](/docs/images/kafka-monitoring_isr_metrics.png)
 
 * `Isr Expands Rate` - Displays if a broker goes down, then the ISR for some partitions shrink.
   When that broker is up again, ISR is expanded after the replicas are fully caught up. 
@@ -231,13 +231,13 @@ NOTE: JVM metrics are not applicable for external managed Kafka (e.g. Amazon MSK
 
 **Messages Metric**
 
-![Messages Metric](/docs/public/images/kafka-monitoring_messages_metric.png)
+![Messages Metric](/docs/images/kafka-monitoring_messages_metric.png)
 
 * `Message Rate` - Displays the aggregate incoming messages rate per second.
 
 **Request Metrics**
 
-![Request Metrics](/docs/public/images/kafka-monitoring_request_metrics.png)
+![Request Metrics](/docs/images/kafka-monitoring_request_metrics.png)
 
 * `Total Fetch Requests Rate` - Displays the total fetch request rate per second.
 * `Total Produce Requests Rate` - Displays the total produce request rate per second.
@@ -249,7 +249,7 @@ NOTE: JVM metrics are not applicable for external managed Kafka (e.g. Amazon MSK
 
 **Threads**
 
-![Threads](/docs/public/images/kafka-monitoring_threads.png)
+![Threads](/docs/images/kafka-monitoring_threads.png)
 
 * `Thread count` - Displays the current number of live threads, including both daemon and non-daemon threads.
 * `Total Started Thread Count` - Displays the total number of threads created and also started since the JVM started.
@@ -270,7 +270,7 @@ This section describes the Kafka Exporter dashboard and their metrics.
 
 An overview of Kafka Exporter dashboard is shown below.
 
-![Dashboard](/docs/public/images/overview_kafka_lag_exporter.png)
+![Dashboard](/docs/images/overview_kafka_lag_exporter.png)
 
 **Note**: This dashboard is only available in Prometheus.
 
@@ -278,7 +278,7 @@ An overview of Kafka Exporter dashboard is shown below.
 
 **All Consumer Group Lag**
 
-![All Consumer Group Lag](/docs/public/images/all_consumer_group_lag.png)
+![All Consumer Group Lag](/docs/images/all_consumer_group_lag.png)
 
 * `Consumer Group Max Lag Seconds` - shows max extrapolated lag in seconds for each consumer group.
 * `Consumer Group Lag Partition Seconds` - shows extrapolated lag in seconds for each partition.
@@ -287,7 +287,7 @@ An overview of Kafka Exporter dashboard is shown below.
 
 **Consumer Group Lag In Time Per Group Over Offset Lag**
 
-![Consumer Group Lag In Time Per Group Over Offset Lag](/docs/public/images/Consumer_Group_Lag_In_Time_Per_Group_Over_Offset_Lag.png)
+![Consumer Group Lag In Time Per Group Over Offset Lag](/docs/images/Consumer_Group_Lag_In_Time_Per_Group_Over_Offset_Lag.png)
 
 This panel describes the consumer groups individually. Each monitored Kafka consumer group has
 own Grafana widget.
@@ -297,7 +297,7 @@ own Grafana widget.
 
 **Consumer Group Lag in Time Per Group Over Summed Offsets**
 
-![Consumer Group Lag in Time Per Group Over Summed Offsets](/docs/public/images/Consumer_Group_Lag_in_Time_Per_Group_Over_Summed_Offsets.png)
+![Consumer Group Lag in Time Per Group Over Summed Offsets](/docs/images/Consumer_Group_Lag_in_Time_Per_Group_Over_Summed_Offsets.png)
 
 This panel describes the consumer groups individually. Each monitored Kafka consumer group has
 own Grafana widget.
@@ -307,7 +307,7 @@ own Grafana widget.
 
 **Kafka Exporter JVM Metrics**
 
-![Kafka Exporter JVM Metrics](/docs/public/images/Kafka_Lag_Exporter_JVM_Metrics.png)
+![Kafka Exporter JVM Metrics](/docs/images/Kafka_Lag_Exporter_JVM_Metrics.png)
 
 * `JVM Memory Used` - displays JVM memory usage for Kafka Exporter.
 * `JVM GC Time` - displays JVM garbage collection time for Kafka Exporter.
@@ -321,7 +321,7 @@ This section describes the `Kafka Topics` dashboard and their metrics.
 
 An overview of `Kafka Topics` dashboard is shown below.
 
-![Dashboard](/docs/public/images/kafka-topics_dashboard.png)
+![Dashboard](/docs/images/kafka-topics_dashboard.png)
 
 **Note**: This dashboard is only available in Prometheus.
 
@@ -329,14 +329,14 @@ An overview of `Kafka Topics` dashboard is shown below.
 
 **Overview**
 
-![Overview](/docs/public/images/kafka-topics_overview.png)
+![Overview](/docs/images/kafka-topics_overview.png)
 
 * `Topics` - The count of partitions, number of messages and size in bytes for each topic in descending order of size values presented
   as a table.
 
 **Topic Issues**
 
-![Topic Issues](/docs/public/images/kafka-topics_topic_issues.png)
+![Topic Issues](/docs/images/kafka-topics_topic_issues.png)
 
 * `Under Min ISR Partitions Table` - The list of topic partitions whose in-sync replicas (ISR) count is less than `minIsr` for each broker.
 * `Under Replicated Partitions Table` - The list of topic under-replicated partitions for each broker.
@@ -347,9 +347,9 @@ An overview of `Kafka Topics` dashboard is shown below.
 
 **Topics Information**
 
-![Topics Information 1](/docs/public/images/kafka-topics_topics_information_1.png)
+![Topics Information 1](/docs/images/kafka-topics_topics_information_1.png)
 
-![Topics Information 2](/docs/public/images/kafka-topics_topics_information_2.png)
+![Topics Information 2](/docs/images/kafka-topics_topics_information_2.png)
 
 * `Incoming Messages Rate` - The incoming messages rate by specific topic for each broker. `No Data` for specific topic means that
   there are no operations performed on the topic.
@@ -367,46 +367,46 @@ This section describes the Kafka Mirror Maker Monitoring dashboard and their met
 
 An overview of Kafka Mirror Maker Monitoring dashboard is shown below.
 
-![Dashboard](/docs/public/images/kmm-monitoring_dashboard.jpg)
+![Dashboard](/docs/images/kmm-monitoring_dashboard.jpg)
 
 ### Metrics
 
 **Overall status**
 
-![Overall status](/docs/public/images/kmm-monitoring_overall_status.jpg)
+![Overall status](/docs/images/kmm-monitoring_overall_status.jpg)
 
 * `KMM Status` - shows current state of kafka-mirror-maker. It can be UP, DEGRADED, FAILED.
 * `Node Status` - shows the amount of alive and failed instances.
 
 **JVM overview**
 
-![Heap Memory Usage](/docs/public/images/kmm-monitoring_heap_memory_usage.jpg)
+![Heap Memory Usage](/docs/images/kmm-monitoring_heap_memory_usage.jpg)
 
 * `Heap Memory Usage` - shows the amount of memory that is using for the heap.
 
-![Eden Space](/docs/public/images/kmm-monitoring_eden_space.jpg)
+![Eden Space](/docs/images/kmm-monitoring_eden_space.jpg)
 
 * `Eden Space` - shows the amount of memory that is using for eden space.
 
-![Survivor Space](/docs/public/images/kmm-monitoring_survivor_space.jpg)
+![Survivor Space](/docs/images/kmm-monitoring_survivor_space.jpg)
 
 * `Survivor Space` - shows the amount of memory that is using for survivor space.
 
-![Non-Heap Memory Usage](/docs/public/images/kmm-monitoring_non_heap_memory_usage.jpg)
+![Non-Heap Memory Usage](/docs/images/kmm-monitoring_non_heap_memory_usage.jpg)
 
 * `Non-Heap Memory Usage` - shows the amount of memory that is using for non-heap area.
 
-![Metaspace](/docs/public/images/kmm-monitoring_metaspace.jpg)
+![Metaspace](/docs/images/kmm-monitoring_metaspace.jpg)
 
 * `Metaspace` - shows the amount of memory that is using for metaspace.
 
-![Thread Count](/docs/public/images/kmm-monitoring_thread_count.jpg)
+![Thread Count](/docs/images/kmm-monitoring_thread_count.jpg)
 
 * `Thread Count` - shows the amount of active threads.
 
 **Replication status**
 
-![Replication status](/docs/public/images/kmm-monitoring_replication_status.jpg)
+![Replication status](/docs/images/kmm-monitoring_replication_status.jpg)
 
 * `Replicated bytes` - shows the amount of replicated bytes.
 * `Replicated records` - shows the amount of replicated records.

@@ -44,7 +44,7 @@ The deployment procedure and additional features include the following:
 
 The following image illustrates the Kafka components.
 
-![Application overview](images/kafka_components_overview.drawio.png)
+![Application overview](/docs/images/kafka_components_overview.drawio.png)
 
 ## Kafka Operator
 
@@ -125,7 +125,7 @@ Kafka Cruise Control simplifies the management of Kafka clusters and helps maint
 
 The following image illustrates the deployment of Kafka in HA scheme.
 
-![HA scheme](images/kafka_on_prem_deploy.drawio.png)
+![HA scheme](/docs/images/kafka_on_prem_deploy.drawio.png)
 
 Following the above picture, let us describe the main parts of the Kafka K8s deployment:
 
@@ -148,7 +148,7 @@ For a non-HA deployment scheme, it is possible to use one pod of Kafka cluster a
 The Disaster Recovery scheme of Kafka deployment assumes that two independent Kafka clusters are deployed for both sides on separate
 Kubernetes environments with some kind of replication between them.
 
-![DR scheme](images/kafka_dr_deploy.drawio.png)
+![DR scheme](/docs/images/kafka_dr_deploy.drawio.png)
 
 In the common case Kafka provides two schemes for disaster recovery:
 
@@ -169,7 +169,7 @@ The Kafka Service allows you to deploy Kafka supplementary services (AKHQ, Monit
 deploying Kafka, using Amazon Managed Streaming for Apache Kafka (MSK) connection. 
 Thus, the features and functions of these services are adopted to Amazon MSK and available as for Qubership Kafka delivery. 
 
-![AWS scheme](images/kafka_aws_deploy.drawio.png)
+![AWS scheme](/docs/images/kafka_aws_deploy.drawio.png)
 
 For more information, refer to [Amazon MSK](/docs/public/managed/amazon.md).
 

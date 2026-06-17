@@ -1,5 +1,3 @@
-[[_TOC_]]
-
 ## ZooKeeper Failure
 
 ### Description
@@ -1343,7 +1341,7 @@ the following approaches:
 
 1. Remove unused topics (Kafka spends resource even on empty and not used topics).
    Pay attention, MaaS created topics should be removed only via MaaS.
-2. Scale In Kafka cluster with new brokers using [Scaling Guide](/docs/public/scaling.md).
+2. Scale In Kafka cluster with new brokers using [Scaling Guide](/docs/installation-guide/scaling.md).
 3. Spit one Kafka cluster into several for each project environment. This is most recommended option,
    because it covers the real production scenario.
 

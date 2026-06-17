@@ -12,7 +12,7 @@ is read from topics in the origin cluster and written to a topic with the corres
 
 Suppose there are three datacenters **{dc1, dc2, dc3}** as shown in the image below. 
 
-![Three kafka regions](/docs/public/images/kafka-mm2-3.png)
+![Three kafka regions](/docs/images/kafka-mm2-3.png)
 
 According to [KIP-382: MirrorMaker 2.0](https://cwiki.apache.org/confluence/display/KAFKA/KIP-382%3A+MirrorMaker+2.0), 
 for cross-datacenter replication (XDCR), each datacenter should have a single Connect cluster that pulls records from the other datacenters

@@ -23,7 +23,7 @@ many other programming languages.
 
 The Kafka Architecture overview is shown in the image below.
 
-![Kafka Overview](images/kafka_overview.png)
+![Kafka Overview](/docs/images/kafka_overview.png)
 
 # Main Concepts and Terminology
 
@@ -62,7 +62,7 @@ always reads that partition's events in exactly the same order as they were writ
 
 An example of topic with partitions is shown in the image below.
 
-![Topics and Producers](images/streams-and-tables-p1_p4.png)
+![Topics and Producers](/docs/images/streams-and-tables-p1_p4.png)
 
 The above example topic has four partitions P1–P4. Two different producer clients are publishing, independently of each other, new events to
 the topic by writing events over the network to the topic's partitions.
