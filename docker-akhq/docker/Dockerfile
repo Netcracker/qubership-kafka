@@ -24,7 +24,7 @@ RUN set -x \
         openssl
 
 # Download libraries and adapt grants
-ARG AKHQ_VERSION="0.27.0"
+ARG AKHQ_VERSION="0.27.1"
 RUN set -x \
     && wget -nv -O ${AKHQ_HOME}/akhq.jar \
         "https://github.com/tchiotludo/akhq/releases/download/${AKHQ_VERSION}/akhq-${AKHQ_VERSION}-all.jar" \
