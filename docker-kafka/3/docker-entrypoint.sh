@@ -5,6 +5,7 @@
 # can run with readOnlyRootFilesystem: true.  Static config lives under
 # ${KAFKA_HOME}/config; we copy it to ${KAFKA_CONFIG} on every start.
 : "${KAFKA_WORK:=/tmp/kafka}"
+rm -rf "${KAFKA_WORK}"
 KAFKA_CONFIG="${KAFKA_WORK}/config"
 KAFKA_RUNTIME_BIN="${KAFKA_WORK}/bin"
 export KAFKA_CTL_CONFIG="${KAFKA_RUNTIME_BIN}/kafkactl.yml"
