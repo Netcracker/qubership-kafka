@@ -5,6 +5,7 @@
 # with readOnlyRootFilesystem: true.  Static CC config is in /cruise-control/config;
 # we copy it plus the UI bundle to /tmp/cc at each start.
 CC_WORK=/tmp/cc
+rm -rf "${CC_WORK}"
 export KAFKA_CTL_CONFIG="${CC_WORK}/kafkactl.yml"
 mkdir -p "${CC_WORK}/config" "${CC_WORK}/tls-ks"
 cp -r /cruise-control/config/. "${CC_WORK}/config/"
