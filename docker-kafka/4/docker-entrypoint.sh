@@ -75,6 +75,14 @@ if [[ "$KRAFT_ENABLED" == "true" ]]; then
   export CONF_KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
   export CONF_KAFKA_CONTROLLER_QUORUM_VOTERS=${VOTERS}
   export CONF_KAFKA_NODE_ID=${BROKER_ID}
+  # KRaft controller quorum timeouts. The Apache Kafka defaults (fetch/request 2000ms,
+  # election 1000ms) are too aggressive for CPU-constrained or busy environments: a
+  # single missed Raft fetch triggers a spurious leader election, brokers briefly lose
+  # their controller session and become unreachable for clients. Raise the defaults and
+  # keep them overridable via CONF_KAFKA_* env vars.
+  export CONF_KAFKA_CONTROLLER_QUORUM_FETCH_TIMEOUT_MS=${CONF_KAFKA_CONTROLLER_QUORUM_FETCH_TIMEOUT_MS:=8000}
+  export CONF_KAFKA_CONTROLLER_QUORUM_REQUEST_TIMEOUT_MS=${CONF_KAFKA_CONTROLLER_QUORUM_REQUEST_TIMEOUT_MS:=5000}
+  export CONF_KAFKA_CONTROLLER_QUORUM_ELECTION_TIMEOUT_MS=${CONF_KAFKA_CONTROLLER_QUORUM_ELECTION_TIMEOUT_MS:=3000}
   # For Kraft remove quorum-state file so that we won't enter voter not match error after scaling up/down https://issues.apache.org/jira/browse/KAFKA-14094
   if [ -f "/var/opt/kafka/data/$BROKER_ID/__cluster_metadata-0/quorum-state" ]; then
     echo "Removing quorum-state file"
