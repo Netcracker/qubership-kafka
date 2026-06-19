@@ -75,6 +75,13 @@ if [[ "$KRAFT_ENABLED" == "true" ]]; then
   export CONF_KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
   export CONF_KAFKA_CONTROLLER_QUORUM_VOTERS=${VOTERS}
   export CONF_KAFKA_NODE_ID=${BROKER_ID}
+  # The stock Apache server.properties ships controller.quorum.bootstrap.servers=localhost:9093,
+  # which points at the INTER_BROKER listener (SCRAM-SHA-512). The Raft/controller client
+  # authenticates with the controller mechanism (PLAIN), so whenever a node falls back to the
+  # bootstrap endpoint during a leader election it hits the inter-broker listener and fails with
+  # "Authentication failed: Invalid username or password". Point the bootstrap at the CONTROLLER
+  # listener (9096, PLAIN) so the fallback path authenticates against the right listener.
+  export CONF_KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS=${CONF_KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS:=localhost:9096}
   # KRaft controller quorum timeouts. The Apache Kafka defaults (fetch/request 2000ms,
   # election 1000ms) are too aggressive for CPU-constrained or busy environments: a
   # single missed Raft fetch triggers a spurious leader election, brokers briefly lose
