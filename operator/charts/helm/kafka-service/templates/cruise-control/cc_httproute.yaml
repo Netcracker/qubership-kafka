@@ -28,7 +28,7 @@ spec:
             value: /
       backendRefs:
         - name: {{ template "kafka.name" . }}-cruise-control
-          group: ''
+          group: ""
           kind: Service
           port: 9090
           weight: 1

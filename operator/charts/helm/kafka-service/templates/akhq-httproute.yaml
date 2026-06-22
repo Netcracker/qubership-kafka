@@ -27,7 +27,7 @@ spec:
             value: /
       backendRefs:
         - name: akhq
-          group: ''
+          group: ""
           kind: Service
           port: 8080
           weight: 1
