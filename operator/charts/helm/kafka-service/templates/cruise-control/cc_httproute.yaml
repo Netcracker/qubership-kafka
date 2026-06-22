@@ -12,7 +12,7 @@ metadata:
     route.openshift.io/termination: edge
 spec:
   parentRefs:
-  {{- include "gateway.parentRefs" (list . .Values.cruiseControl.envoyGateway.parentRefs) | nindent 2 }}
+  {{- include "gateway.parentRefs" (list . .Values.cruiseControl.envoyGateway.parentRefs) | nindent 4 }}
 
   hostnames:
   {{- if .Values.cruiseControl.envoyGateway.host }}
@@ -28,7 +28,10 @@ spec:
             value: /
       backendRefs:
         - name: {{ template "kafka.name" . }}-cruise-control
+          group: ''
+          kind: Service
           port: 9090
+          weight: 1
 
 {{- end }}
 {{- end }}

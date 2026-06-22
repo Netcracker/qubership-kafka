@@ -332,10 +332,12 @@ akhq:
     host: ""
     className: ""
   envoyGateway:
-    enabled: false
+    enabled: true
     host: ""
     parentRefs:
-      - name: default-external-gateway
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: default-external-gateway
         namespace: gateway-system
   ldap:
     enabled: false
@@ -727,10 +729,12 @@ cruiseControl:
   ingress:
     host: ""
   envoyGateway:
-    enabled: false
+    enabled: true
     host: ""
     parentRefs:
-      - name: default-external-gateway
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: default-external-gateway
         namespace: gateway-system
 
   prometheusServerEndpoint: ""
