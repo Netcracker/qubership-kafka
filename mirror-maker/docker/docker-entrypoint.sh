@@ -5,6 +5,7 @@
 # can run with readOnlyRootFilesystem: true.  Static config lives under
 # ${KAFKA_HOME}/config; we copy it to ${MM_CONFIG} on every start.
 : "${KMM_WORK:=/tmp/mm}"
+rm -rf "${KMM_WORK}"
 MM_CONFIG="${KMM_WORK}/config"
 # ConfigMap key `config` → kmm.conf is mounted at KMM_CONF_INJECT (outside /tmp).
 KMM_CONF_INJECT="${KAFKA_HOME}/config/kmm/kmm.conf"
