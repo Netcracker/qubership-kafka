@@ -308,7 +308,7 @@ spec:
       {{- end }}
       kmmExecPluginTimeout: {{ default "20s" .Values.mirrorMakerMonitoring.kmmExecPluginTimeout }}
       kmmCollectionInterval: {{ default "5s" .Values.mirrorMakerMonitoring.kmmCollectionInterval }}
-      secretName: {{ template "kafka.name" . }}-kafka-mirror-maker-monitoring-secret
+      secretName: {{ template "kafka.name" . }}-mirror-maker-monitoring-secret
       securityContext:
       {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
       {{- with .Values.mirrorMakerMonitoring.securityContext }}
