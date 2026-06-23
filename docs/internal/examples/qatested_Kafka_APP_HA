@@ -240,15 +240,6 @@ akhq:
   securityContext:
     fsGroup: 1000
     runAsUser: 1000
-vaultSecretManagement:
-  enabled: false
-  url: http://vault-service.vault-operator:8200
-  method: kubernetes
-  role: kafka-role
-  path: secret
-  writePolicies: true
-  passwordGenerationMechanism: operator
-  refreshCredentials: false
 integrationTests:
   install: true
   service:
