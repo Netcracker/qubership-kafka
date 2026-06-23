@@ -45,20 +45,20 @@ ALLOWED_DIFFERENT_CONFIGS = ["listeners", "zookeeper.connect", "node.id"]
 CA_CERT_PATH = '/tls/ca.crt'
 TLS_CERT_PATH = '/tls/tls.crt'
 TLS_KEY_PATH = '/tls/tls.key'
-
+MONITORING_LOGS=os.getenv('MONITORING_LOGS')
 
 def __configure_logging(log):
     log.setLevel(logging.DEBUG)
     formatter = logging.Formatter(fmt='[%(asctime)s,%(msecs)03d][%(levelname)s] %(message)s',
                                   datefmt='%Y-%m-%dT%H:%M:%S')
 
-    log_handler = RotatingFileHandler(filename='/opt/kafka-monitoring/exec-scripts/kafka_metric.log',
+    log_handler = RotatingFileHandler(filename=f'{MONITORING_LOGS}/kafka_metric.log',
                                       maxBytes=50 * 1024,
                                       backupCount=5)
     log_handler.setFormatter(formatter)
     log_handler.setLevel(logging.DEBUG if os.getenv('KAFKA_MONITORING_SCRIPT_DEBUG') else logging.INFO)
     log.addHandler(log_handler)
-    err_handler = RotatingFileHandler(filename='/opt/kafka-monitoring/exec-scripts/kafka_metric.err',
+    err_handler = RotatingFileHandler(filename=f'{MONITORING_LOGS}/kafka_metric.err',
                                       maxBytes=50 * 1024,
                                       backupCount=5)
     err_handler.setFormatter(formatter)
@@ -183,12 +183,18 @@ def _is_kraft(admin_client, broker_id):
 
 def _collect_metrics():
     admin_client = _create_admin_client()
+    is_kraft_enabled = None
     if not admin_client:
         broker_ids = []
     else:
-        broker_ids = [broker['node_id'] for broker
-                      in admin_client.describe_cluster()['brokers']]
-        is_kraft_enabled = _is_kraft(admin_client, broker_ids[0])
+        try:
+            broker_ids = [broker['node_id'] for broker
+                          in admin_client.describe_cluster()['brokers']]
+            if broker_ids:
+                is_kraft_enabled = _is_kraft(admin_client, broker_ids[0])
+        except Exception as e:
+            logger.warning("Kafka metadata is not available yet: %s", e)
+            broker_ids = []
     args = [(idx, admin_client) for idx in broker_ids]
     metrics_func = _get_broker_metrics_simple
     collect_func = _concatenate_all_brokers_metrics_simple
@@ -209,7 +215,10 @@ def _collect_metrics():
     logger.info('Active brokers: %s', active_brokers)
     same_configs = _check_config_consistency(broker_configs_list)
     cluster_status = _determine_cluster_status_simple(active_brokers)
-    quorum_mode = 101 if is_kraft_enabled else 100
+    if is_kraft_enabled is None:
+        quorum_mode = 100
+    else:
+        quorum_mode = 101 if is_kraft_enabled else 100
     logger.info('Cluster status: %s', cluster_status)
     message = f'kafka_cluster ' \
               f'size={len(active_brokers)}i,' \

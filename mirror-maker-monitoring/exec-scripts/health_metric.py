@@ -18,19 +18,21 @@ import requests
 from logging.handlers import RotatingFileHandler
 
 logger = logging.getLogger(__name__)
+MONITORING_LOGS=os.getenv('MONITORING_LOGS')
 
 
 def __configure_logging(log):
     log.setLevel(logging.DEBUG)
+    os.makedirs(MONITORING_LOGS, exist_ok=True)
     formatter = logging.Formatter(fmt='[%(asctime)s,%(msecs)03d][%(levelname)s] %(message)s',
                                   datefmt='%Y-%m-%dT%H:%M:%S')
-    log_handler = RotatingFileHandler(filename='/opt/kafka-kafka-mirror-maker-monitoring/exec-scripts/health_metric.log',
+    log_handler = RotatingFileHandler(filename=f'{MONITORING_LOGS}/health_metric.log',
                                       maxBytes=50 * 1024,
                                       backupCount=5)
     log_handler.setFormatter(formatter)
     log_handler.setLevel(logging.DEBUG if os.getenv('KAFKA_MIRROR_MAKER_MONITORING_SCRIPT_DEBUG') else logging.INFO)
     log.addHandler(log_handler)
-    err_handler = RotatingFileHandler(filename='/opt/kafka-kafka-mirror-maker-monitoring/exec-scripts/health_metric.err',
+    err_handler = RotatingFileHandler(filename=f'{MONITORING_LOGS}/health_metric.err',
                                       maxBytes=50 * 1024,
                                       backupCount=5)
     err_handler.setFormatter(formatter)

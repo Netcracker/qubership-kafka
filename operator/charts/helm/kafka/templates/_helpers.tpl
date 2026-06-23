@@ -35,6 +35,10 @@ Create chart name and version as used by the chart label.
 runAsNonRoot: true
 seccompProfile:
   type: "RuntimeDefault"
+{{- if eq (default "" .Values.PAAS_PLATFORM) "KUBERNETES" }}
+runAsUser: 1000
+runAsGroup: 1000
+{{- end }}
 {{- with .Values.global.securityContext }}
 {{ toYaml . }}
 {{- end -}}
@@ -42,6 +46,7 @@ seccompProfile:
 
 {{- define "kafka-service.globalContainerSecurityContext" -}}
 allowPrivilegeEscalation: false
+readOnlyRootFilesystem: true
 capabilities:
   drop: ["ALL"]
 {{- end -}}
@@ -244,22 +249,6 @@ Whether Kafka TLS enabled
 */}}
 {{- define "kafka-service.enableTls" -}}
   {{- and .Values.kafka.tls.enabled .Values.global.tls.enabled -}}
-{{- end -}}
-
-{{/*
-Whether Kafka TLS is changed from previous installation
-*/}}
-{{- define "kafka-service.tlsChanged" -}}
-  {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
-  {{- $cr := lookup $apiVersion "Kafka" .Release.Namespace (include "kafka.name" .) }}
-  {{- if $cr }}
-    {{- $ssl := index $cr "spec" "ssl" | default dict }}
-    {{- $previous_ssl := index $ssl "enabled" | default false }}
-    {{- $current_ssl := eq (include "kafka-service.enableTls" .) "true" }}
-    {{- and (or $previous_ssl $current_ssl) (not (and $previous_ssl $current_ssl)) }}
-  {{- else }}
-    {{- false }}
-  {{- end }}
 {{- end -}}
 
 {{/*
