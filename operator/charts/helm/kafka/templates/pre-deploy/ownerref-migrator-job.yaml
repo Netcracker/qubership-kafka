@@ -13,14 +13,14 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "kafka.defaultLabels" . | nindent 8 }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "kafka.name" . }}-ownerref-migrator
       restartPolicy: OnFailure
       {{- if .Values.groupMigration.runAsNonRoot }}
       securityContext:
-        runAsNonRoot: true
-        seccompProfile: { type: RuntimeDefault }
+        {{- include "kafka-service.globalPodSecurityContext" . | nindent 8 }}
       {{- end }}
       containers:
         - name: migrator
@@ -96,8 +96,6 @@ spec:
               memory: {{ .Values.groupMigration.resources.requests.memory }}
           {{- if .Values.groupMigration.runAsNonRoot }}
           securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities: { drop: ["ALL"] }
+            {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
           {{- end }}
 {{- end }}
