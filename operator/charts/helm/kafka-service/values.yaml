@@ -95,8 +95,6 @@ global:
       prometheusPassword: ""
       smDbUsername: ""
       smDbPassword: ""
-#      smDbUsernameVaultPath: "vault:/#username"
-#      smDbPasswordVaultPath: "vault:/#password"
     akhq:
       defaultUsername: ""
       defaultPassword: ""
@@ -334,10 +332,12 @@ akhq:
     host: ""
     className: ""
   envoyGateway:
-    enabled: false
+    enabled: true
     host: ""
     parentRefs:
-      - name: default-external-gateway
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: default-external-gateway
         namespace: gateway-system
   ldap:
     enabled: false
@@ -455,7 +455,7 @@ mirrorMaker:
 
 mirrorMakerMonitoring:
   install: false
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-kafka-mirror-maker-monitoring:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-mirror-maker-monitoring:main
 #  affinity: {
 #    "podAffinity": {
 #      "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -729,10 +729,12 @@ cruiseControl:
   ingress:
     host: ""
   envoyGateway:
-    enabled: false
+    enabled: true
     host: ""
     parentRefs:
-      - name: default-external-gateway
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: default-external-gateway
         namespace: gateway-system
 
   prometheusServerEndpoint: ""

@@ -22,13 +22,26 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import (NewTopic, NewPartitions, KafkaAdminClient, ACL, ACLFilter, ResourceType,
                          ACLOperation, ACLPermissionType, ResourcePattern, ConfigResource, ConfigResourceType)
 from kafka.sasl.oauth import AbstractTokenProvider
-from kafka.errors import UnknownTopicOrPartitionError, KafkaConnectionError
+from kafka.errors import (UnknownTopicOrPartitionError, KafkaConnectionError, NoBrokersAvailable,
+                          NodeNotReadyError, NotControllerError, KafkaTimeoutError)
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
 CA_CERT_PATH = '/tls/ca.crt'
 TLS_CERT_PATH = '/tls/tls.crt'
 TLS_KEY_PATH = '/tls/tls.key'
+
+# Errors that are typically transient (a broker is being rolled/restarted, a leader or
+# coordinator is being re-elected, etc.). Operations failing with these should be retried
+# instead of failing the whole test, e.g. when tests run concurrently with a Kafka
+# rolling upgrade.
+TRANSIENT_KAFKA_ERRORS = (
+    KafkaConnectionError,
+    NoBrokersAvailable,
+    NodeNotReadyError,
+    NotControllerError,
+    KafkaTimeoutError,
+)
 
 
 def _str2bool(v: str) -> bool:
@@ -121,6 +134,49 @@ class KafkaLibrary(object):
             self.builtin.fail(f'Exception while connecting to Kafka: {e}')
         return consumer
 
+    def __build_admin_client(self):
+        """Builds a Kafka admin client, letting connection errors propagate to the caller."""
+        configs = dict(self._common_configs.items())
+        configs['metadata_max_age_ms'] = 1000
+        if self._kafka_username and self._kafka_password:
+            configs['sasl_mechanism'] = 'SCRAM-SHA-512'
+            configs['sasl_plain_username'] = self._kafka_username
+            configs['sasl_plain_password'] = self._kafka_password
+            configs['request_timeout_ms'] = 90000
+        admin = KafkaAdminClient(**configs)
+        logger.debug("Kafka admin client is created.")
+        return admin
+
+    def __execute_with_retry(self, operation, description, retries=15, delay=10):
+        """
+        Runs ``operation`` retrying on transient Kafka errors.
+
+        A fresh admin client is created for every attempt, because a stale client may
+        keep pointing at a broker that is being rolled/restarted. ``operation`` receives
+        the admin client as its only argument.
+        """
+        last_error = None
+        for attempt in range(1, retries + 1):
+            admin = None
+            try:
+                admin = self.__build_admin_client()
+                return operation(admin)
+            except TRANSIENT_KAFKA_ERRORS as e:
+                last_error = e
+                msg = (f'Attempt {attempt}/{retries}: failed to {description} '
+                       f'due to transient Kafka error: {e}')
+                BuiltIn().log_to_console(msg)
+                logger.warn(msg)
+                if attempt < retries:
+                    time.sleep(delay)
+            finally:
+                if admin is not None:
+                    try:
+                        admin.close()
+                    except Exception:
+                        pass
+        self.builtin.fail(f'Failed to {description} after {retries} attempts: {last_error}')
+
     def create_admin_client(self):
         """
         Creates Kafka admin client. If security is enabled, received credentials are used.
@@ -132,15 +188,7 @@ class KafkaLibrary(object):
         """
         admin = None
         try:
-            configs = dict(self._common_configs.items())
-            configs['metadata_max_age_ms'] = 1000
-            if self._kafka_username and self._kafka_password:
-                configs['sasl_mechanism'] = 'SCRAM-SHA-512'
-                configs['sasl_plain_username'] = self._kafka_username
-                configs['sasl_plain_password'] = self._kafka_password
-                configs['request_timeout_ms'] = 90000
-            admin = KafkaAdminClient(**configs)
-            logger.debug("Kafka admin client is created.")
+            admin = self.__build_admin_client()
         except Exception as e:
             self.builtin.fail(f'Exception while connecting to Kafka: {e}')
         return admin
@@ -169,7 +217,7 @@ class KafkaLibrary(object):
         message = f'Kafka msg: {time.time()}'
         return message
 
-    def produce_message(self, producer: KafkaProducer, topic_name, message):
+    def produce_message(self, producer: KafkaProducer, topic_name, message, retries=15, delay=10):
         """
         Sends the message to Kafka using Kafka producer.
         *Args:*\n
@@ -179,22 +227,34 @@ class KafkaLibrary(object):
         *Example:*\n
             | Produce Message | producer | consumer-producer-tests-topic | 1541506923 |
         """
-        try:
-            # producer.send(topic_name, message.encode('utf-8'))
-            # producer.flush(timeout=10)
-            future = producer.send(topic_name, message.encode("utf-8"))
-            record_metadata = future.get(timeout=10)
-            producer.flush(timeout=10)
-            self.builtin.log(
-                f"Produced to {record_metadata.topic} partition {record_metadata.partition} offset {record_metadata.offset}",
-                "INFO"
-            )
-        except Exception as e:
-            self.builtin.log(traceback.format_exc(), "ERROR")  # ruff: noqa: F821
-            self.builtin.fail(f'Failed to produce message: "{message}" to '
-                              f'topic: {topic_name} {e}')
+        last_error = None
+        for attempt in range(1, retries + 1):
+            try:
+                future = producer.send(topic_name, message.encode("utf-8"))
+                record_metadata = future.get(timeout=10)
+                producer.flush(timeout=10)
+                self.builtin.log(
+                    f"Produced to {record_metadata.topic} partition {record_metadata.partition} offset {record_metadata.offset}",
+                    "INFO"
+                )
+                return
+            except TRANSIENT_KAFKA_ERRORS as e:
+                last_error = e
+                msg = (f'Attempt {attempt}/{retries}: failed to produce message to '
+                       f'topic "{topic_name}" due to transient Kafka error: {e}')
+                BuiltIn().log_to_console(msg)
+                logger.warn(msg)
+                if attempt < retries:
+                    time.sleep(delay)
+            except Exception as e:
+                self.builtin.log(traceback.format_exc(), "ERROR")  # ruff: noqa: F821
+                self.builtin.fail(f'Failed to produce message: "{message}" to '
+                                  f'topic: {topic_name} {e}')
+                return
+        self.builtin.fail(f'Failed to produce message: "{message}" to topic: {topic_name} '
+                          f'after {retries} attempts: {last_error}')
 
-    def consume_message(self, consumer, topic_name: str) -> str:
+    def consume_message(self, consumer, topic_name: str, retries=15, delay=10) -> str:
         """
         Receives a message from Kafka using Kafka consumer.
         *Args:*\n
@@ -205,12 +265,24 @@ class KafkaLibrary(object):
             | Consume Message | consumer |
         """
         consumer.subscribe([topic_name])
-        message = consumer.poll(5000.0)
-        if message:
-            return str(message)
-        else:
-            logger.debug(f'Received message is "{message}".')
-            return ""
+        last_error = None
+        for attempt in range(1, retries + 1):
+            try:
+                message = consumer.poll(5000.0)
+                if message:
+                    return str(message)
+                logger.debug(f'Received message is "{message}".')
+                return ""
+            except TRANSIENT_KAFKA_ERRORS as e:
+                last_error = e
+                msg = (f'Attempt {attempt}/{retries}: failed to consume from '
+                       f'topic "{topic_name}" due to transient Kafka error: {e}')
+                BuiltIn().log_to_console(msg)
+                logger.warn(msg)
+                if attempt < retries:
+                    time.sleep(delay)
+        self.builtin.fail(f'Failed to consume message from topic: {topic_name} '
+                          f'after {retries} attempts: {last_error}')
 
     def get_brokers_count(self, admin: KafkaAdminClient) -> int:
         """
@@ -270,19 +342,19 @@ class KafkaLibrary(object):
         *Example:*\n
             | Create Topic | admin | kafka-topic-tests | ${1} | ${1} |
         """
-        topics = self.get_topics_list(admin)
-        if topic_name in topics:
-            logger.debug(f'Topic "{topic_name}" has already been created.')
-            return
-        new_topic = NewTopic(topic_name,
-                             num_partitions=partitions,
-                             replication_factor=replication_factor,
-                             topic_configs=configs)
-        try:
-            admin.create_topics([new_topic])
+        def _create(client):
+            topics = self.get_topics_list(client)
+            if topic_name in topics:
+                logger.debug(f'Topic "{topic_name}" has already been created.')
+                return
+            new_topic = NewTopic(topic_name,
+                                 num_partitions=partitions,
+                                 replication_factor=replication_factor,
+                                 topic_configs=configs)
+            client.create_topics([new_topic])
             logger.debug(f'Topic "{topic_name}" is created.')
-        except Exception as e:
-            self.builtin.fail(f'Failed to create topic "{topic_name}": {e}')
+
+        self.__execute_with_retry(_create, f'create topic "{topic_name}"')
 
     def create_topic_with_expected_exception(self, admin, topic_name, replication_factor, partitions):
         """
