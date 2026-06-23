@@ -1,4 +1,11 @@
 {{- if .Values.integrationTests.install }}
+{{- $s3AliasesData := fromYaml (include "backupDaemon.s3Aliases" .) }}
+{{- $defaultS3AliasName := "" }}
+{{- range $s3AliasesData.items }}
+  {{- if and .name .spec .spec.default }}
+    {{- $defaultS3AliasName = .name }}
+  {{- end }}
+{{- end }}
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -19,6 +26,7 @@ spec:
   template:
     metadata:
       labels:
+      {{- include "kafka-services.defaultLabels" . | nindent 8 }}
       {{- with .Values.global.customLabels }}
         {{- toYaml . | nindent 8 -}}
       {{- end }}
@@ -40,6 +48,8 @@ spec:
             - containerPort: 8080
               protocol: TCP
           env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
             - name: RANDOM_RUN_TRIGGER
               value: "{{ randAlphaNum 10 }}"
             - name: TAGS
@@ -107,6 +117,19 @@ spec:
                   name: {{ template "kafka.name" . }}-backup-daemon-secret
                   key: password
             {{- end }}
+            {{- if and .Values.backupDaemon.s3.enabled }}
+            - name: S3_ENABLED
+              value: "true"
+            - name: S3_ALIASES_SECRET_NAME
+              value: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
+            - name: S3_DEFAULT_ALIAS_NAME
+              value: {{ default "default" $defaultS3AliasName | quote }}
+            - name: S3_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
+                  key: s3-key-secret
+            {{- end }}      
             {{- if and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install }}
             - name: PROMETHEUS_URL
               value: {{ .Values.integrationTests.prometheusUrl }}
@@ -200,6 +223,8 @@ spec:
           volumeMounts:
             - name: output
               mountPath: /opt/robot/output
+            - name: tmp
+              mountPath: /tmp
           {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
             - name: ssl-certs
               mountPath: /tls
@@ -234,6 +259,9 @@ spec:
       volumes:
         - name: output
           emptyDir: {}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 32Mi
       {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
         - name: ssl-certs
           secret:

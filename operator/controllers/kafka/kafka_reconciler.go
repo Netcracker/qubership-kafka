@@ -16,11 +16,14 @@ package kafka
 
 import (
 	"bytes"
+	stderrors "errors"
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,6 +39,8 @@ import (
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
+
+var ErrNoKafkaPods = stderrors.New("no Kafka pods found")
 
 const (
 	kafkaConditionReason              = "KafkaReadinessStatus"
@@ -161,9 +166,15 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		return err
 	}
 
-	if currentReplicas < 3 {
-		r.logger.Info("RollingUpdate value is set to false")
-		r.cr.Spec.RollingUpdate = false
+	if r.cr.Spec.RollingUpdate {
+		isRollingUpdateApplicable, err := r.isRollingUpdateApplicable(currentReplicas)
+		if err != nil {
+			return err
+		}
+		if !isRollingUpdateApplicable {
+			r.logger.Info("RollingUpdate value is set to false")
+			r.cr.Spec.RollingUpdate = false
+		}
 	}
 
 	r.logger.Info(fmt.Sprintf("Update brokers set: current replicas count is [%d], new replicas count is [%d].", currentReplicas, kafkaSpec.Replicas))
@@ -290,6 +301,26 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 	return nil
 }
 
+func (r *ReconcileKafka) isRollingUpdateApplicable(currentReplicas int) (bool, error) {
+	if currentReplicas < 3 {
+		return false, nil
+	}
+	deployments, err := r.reconciler.FindKafkaDeployments(r.cr)
+	if err != nil {
+		return true, err
+	}
+	// check whether TLS is changed
+	previousTLSEnabledValue := r.reconciler.GetDeploymentParameterWithDefault(deployments.Items[0], "ENABLE_SSL", "false")
+	previousTLSEnabled, err := strconv.ParseBool(previousTLSEnabledValue)
+	if err != nil {
+		return true, err
+	}
+	if previousTLSEnabled != r.cr.Spec.Ssl.Enabled {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *corev1.Secret) error {
 	r.logger.Info("Perform brokers rollout procedure")
 	for brokerId := 1; brokerId <= replicas; brokerId++ {
@@ -367,7 +398,16 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err != nil {
 		return err
 	}
-	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, "")
+     
+	var clusterID string
+    if kraft {
+        clusterID, err = r.resolveClusterID()
+        if err != nil && err != ErrNoKafkaPods {
+		   return err
+	    }
+    }
+
+	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, clusterID)
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
@@ -592,9 +632,31 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 		return "", err
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
+	if len(podNames) == 0 {
+        return "", ErrNoKafkaPods
+    }
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
 	return strings.TrimSpace(zkClusterID), commandErr
+}
+
+func (r *ReconcileKafka) resolveClusterID() (string, error) {
+	labels := r.kafkaProvider.GetSelectorLabels()
+	podList, err := r.reconciler.FindPodList(r.cr.Namespace, labels)
+	if err != nil {
+		return "", err
+	}
+	if len(podList.Items) == 0 {
+		return "", ErrNoKafkaPods
+	}
+	if len(podList.Items[0].Spec.Containers) > 0 {
+		for _, env := range podList.Items[0].Spec.Containers[0].Env {
+			if env.Name == "KRAFT_CLUSTER_ID" && env.Value != "" {
+				return env.Value, nil
+			}
+		}
+	}
+	return r.getZooKeeperClusterID()
 }
 
 func (r ReconcileKafka) getMigrationStatus() bool {

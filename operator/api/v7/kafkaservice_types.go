@@ -199,7 +199,7 @@ type MirrorMakerMonitoring struct {
 }
 
 // VaultSecretManagement shows Vault secret management configuration
-// Deprecated
+// Deprecated: no longer used. Retained for backward compatibility.
 type VaultSecretManagement struct {
 	DockerImage                 string      `json:"dockerImage"`
 	Enabled                     bool        `json:"enabled,omitempty"`
@@ -217,6 +217,12 @@ type SecretPaths struct {
 	Monitoring            map[string]string `json:"monitoring,omitempty"`
 	MirrorMaker           map[string]string `json:"mirrorMaker,omitempty"`
 	MirrorMakerMonitoring map[string]string `json:"mirrorMakerMonitoring,omitempty"`
+}
+
+// VaultSecretManagementStatus shows Vault secret management status
+// Deprecated: no longer used. Retained for backward compatibility.
+type VaultSecretManagementStatus struct {
+	SecretVersions map[string]int64 `json:"secretVersions,omitempty"`
 }
 
 // IntegrationTests shows Integration Tests configuration
@@ -282,6 +288,7 @@ type KafkaServiceSpec struct {
 	Monitoring            *Monitoring            `json:"monitoring,omitempty"`
 	MirrorMaker           *MirrorMaker           `json:"mirrorMaker,omitempty"`
 	MirrorMakerMonitoring *MirrorMakerMonitoring `json:"mirrorMakerMonitoring,omitempty"`
+	// Deprecated: no longer used. Retained for backward compatibility.
 	VaultSecretManagement *VaultSecretManagement `json:"vaultSecretManagement,omitempty"`
 	IntegrationTests      *IntegrationTests      `json:"integrationTests,omitempty"`
 	BackupDaemon          *BackupDaemon          `json:"backupDaemon,omitempty"`
@@ -294,13 +301,10 @@ type KafkaServiceStatus struct {
 	AkhqStatus                   AkhqStatus                   `json:"akhqStatus,omitempty"`
 	MonitoringStatus             MonitoringStatus             `json:"monitoringStatus,omitempty"`
 	MirrorMakerStatus            MirrorMakerStatus            `json:"mirrorMakerStatus,omitempty"`
+	// Deprecated: no longer used. Retained for backward compatibility.
 	VaultSecretManagementStatus  VaultSecretManagementStatus  `json:"vaultSecretManagementStatus,omitempty"`
 	DisasterRecoveryStatus       DisasterRecoveryStatus       `json:"disasterRecoveryStatus,omitempty"`
 	Conditions                   []StatusCondition            `json:"conditions,omitempty"`
-}
-
-type VaultSecretManagementStatus struct {
-	SecretVersions map[string]int64 `json:"secretVersions,omitempty"`
 }
 
 type MirrorMakerReplication struct {
