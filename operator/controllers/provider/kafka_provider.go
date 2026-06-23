@@ -17,6 +17,9 @@ package provider
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v1"
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
@@ -24,8 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -247,6 +248,7 @@ func (krp KafkaResourceProvider) NewKafkaPersistentVolumeClaimForCR(brokerId int
 	if krp.cr.Spec.Kraft.Enabled {
 		labels["kraft"] = "enabled"
 	}
+	labels["cloud-backuper.netcracker.com/exclude-from-physical-backup"] = "true"
 	persistentVolumeClaim := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(persistentVolumeClaimPattern, krp.cr.Name, brokerId),
@@ -401,6 +403,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 		{Name: "public-certs", VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: fmt.Sprintf("%s-public-certs", krp.cr.Name)}}},
+		getTmpVolume("32Mi"), // JVM Kafka broker: /tmp for config copy, keystores, hsperfdata
 	}
 
 	volumeMounts := []corev1.VolumeMount{
@@ -408,6 +411,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 		{Name: "log", MountPath: "/opt/kafka/logs"},
 		{Name: "trusted-certs", MountPath: "/opt/kafka/trustcerts"},
 		{Name: "public-certs", MountPath: "/opt/kafka/public-certs"},
+		getTmpVolumeMount(),
 	}
 
 	replicationFactor := 3
@@ -580,6 +584,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 		{Name: "public-certs", VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: fmt.Sprintf("%s-public-certs", krp.cr.Name)}}},
+		getTmpVolume("32Mi"), // JVM Kafka broker: /tmp for config copy, keystores, hsperfdata
 	}
 
 	volumeMounts := []corev1.VolumeMount{
@@ -587,6 +592,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 		{Name: "log", MountPath: "/opt/kafka/logs"},
 		{Name: "trusted-certs", MountPath: "/opt/kafka/trustcerts"},
 		{Name: "public-certs", MountPath: "/opt/kafka/public-certs"},
+		getTmpVolumeMount(),
 	}
 
 	var voters []string

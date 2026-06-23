@@ -73,6 +73,9 @@ func (lep LagExporterResourceProvider) getEnvs(cmVersion string) []corev1.EnvVar
 			Name:  "KAFKA_ENABLE_SSL",
 			Value: strconv.FormatBool(lep.cr.Spec.Global.KafkaSsl.Enabled),
 		},
+		// Avoid writing __pycache__ entries under the read-only root
+		// filesystem when config_parser.py is invoked at startup.
+		{Name: "PYTHONDONTWRITEBYTECODE", Value: "1"},
 	}
 }
 
@@ -86,6 +89,7 @@ func (lep LagExporterResourceProvider) getVolumeMounts() []corev1.VolumeMount {
 	if lep.cr.Spec.Global.KafkaSsl.Enabled && lep.cr.Spec.Global.KafkaSsl.SecretName != "" {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: "ssl-certs", MountPath: "/tls"})
 	}
+	volumeMounts = append(volumeMounts, getTmpVolumeMount())
 	return volumeMounts
 }
 
