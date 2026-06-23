@@ -6,6 +6,7 @@ set -e
 # Initialise writable runtime directories under /tmp so the container can run
 # with readOnlyRootFilesystem: true.
 AKHQ_WORK=/tmp/akhq
+rm -rf "${AKHQ_WORK}"
 export MICRONAUT_CONFIG_FILES="${AKHQ_WORK}/application.yml"
 mkdir -p "${AKHQ_WORK}/config/descs" "${AKHQ_WORK}/tls-ks"
 
