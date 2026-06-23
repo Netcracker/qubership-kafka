@@ -15,6 +15,7 @@ FROM eclipse-temurin:21-jdk-alpine-3.23
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
     KAFKA_LOG_DIRS=/opt/kafka/logs \
+    KMM_WORK=/tmp/mm \
     KAFKA_PLUGINS_DIR=${KAFKA_HOME}/plugins
 
 # Install misc tools
@@ -112,7 +113,7 @@ RUN set -x \
 COPY --from=builder /build/target/kafka-mm2-extension-*.jar ${KAFKA_HOME}/libs
 
 # Copy config and script files
-COPY docker/config/ ${KAFKA_HOME}/config
+COPY docker/config/ ${KAFKA_HOME}/config/
 COPY docker/health.sh ${KAFKA_HOME}/bin
 COPY docker/docker-entrypoint.sh /
 

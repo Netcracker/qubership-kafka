@@ -47,11 +47,11 @@ jobs:
 
   Kafka-Pipeline:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@e73ce64071a551c21f2a1c5f9edd14d445e61ce5 #1.7.1
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@247c69038e00f2a9e283412e902555f84b16dab2 # v1.8.0
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'e73ce64071a551c21f2a1c5f9edd14d445e61ce5' #this value must match the value after '@' in 'uses'
+      pipeline_branch: '247c69038e00f2a9e283412e902555f84b16dab2' #this value must match the value after '@' in 'uses'
       skip_tests: ${{ fromJSON(needs.Wait-for-images.outputs.skip_tests) }}
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}

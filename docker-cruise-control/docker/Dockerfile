@@ -44,6 +44,7 @@ FROM eclipse-temurin:21-jdk-alpine-3.23
 RUN mkdir -p /cruise-control
 
 ENV KAFKA_CTL_CONFIG=/cruise-control/kafkactl.yml
+ENV USER=1001
 
 WORKDIR cruise-control
 

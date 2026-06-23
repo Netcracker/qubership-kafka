@@ -35,6 +35,10 @@ Create chart name and version as used by the chart label.
 runAsNonRoot: true
 seccompProfile:
   type: "RuntimeDefault"
+{{- if eq (default "" .Values.PAAS_PLATFORM) "KUBERNETES" }}
+runAsUser: 1000
+runAsGroup: 1000
+{{- end }}
 {{- with .Values.global.securityContext }}
 {{ toYaml . }}
 {{- end -}}
@@ -42,6 +46,7 @@ seccompProfile:
 
 {{- define "kafka-service.globalContainerSecurityContext" -}}
 allowPrivilegeEscalation: false
+readOnlyRootFilesystem: true
 capabilities:
   drop: ["ALL"]
 {{- end -}}
@@ -191,6 +196,30 @@ Configure Kafka Mirror Maker monitoring type
 */}}
 {{- define "mirrorMakerMonitoring.type" -}}
 {{- coalesce .Values.mirrorMakerMonitoring.monitoringType .Values.global.monitoringType "prometheus" -}}
+{{- end -}}
+
+{{/*
+Configure Kafka Mirror Maker monitoring Prometheus URLs.
+*/}}
+{{- define "mirrorMakerMonitoring.prometheusURLs" -}}
+  {{- $serviceName := printf "%s-mirror-maker" (include "kafka.name" .) -}}
+  {{- $urlList := list -}}
+  {{- if or (not .Values.mirrorMaker.regionName) (eq .Values.mirrorMaker.regionName "") -}}
+    {{- range .Values.mirrorMaker.clusters -}}
+      {{- $deploymentName := printf "%s-%s" (lower .name) $serviceName -}}
+      {{- $url := printf "http://%s.%s:8080" $deploymentName $.Release.Namespace -}}
+      {{- $urlList = append $urlList $url -}}
+    {{- end -}}
+  {{- else -}}
+    {{- range .Values.mirrorMaker.clusters -}}
+      {{- if eq (lower .name) (lower $.Values.mirrorMaker.regionName) -}}
+        {{- $deploymentName := printf "%s-%s" (lower .name) $serviceName -}}
+        {{- $url := printf "http://%s.%s:8080" $deploymentName $.Release.Namespace -}}
+        {{- $urlList = append $urlList $url -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $urlList | toJson -}}
 {{- end -}}
 
 
@@ -501,6 +530,42 @@ Backup Daemon SSL secret name
 {{- end -}}
 
 {{/*
+Effective backup daemon S3 aliases wrapped in a map: { items: [...] }.
+fromYaml cannot parse bare YAML lists, so the output is a map with an "items" key.
+*/}}
+{{- define "backupDaemon.s3Aliases" -}}
+{{- if and .Values.backupDaemon.s3Aliases -}}
+items: {{ toYaml .Values.backupDaemon.s3Aliases | nindent 2 }}
+{{- else -}}
+items: []
+{{- end -}}
+{{- end -}}
+
+{{/*
+Build backup daemon aliases payload as JSON object.
+*/}}
+{{- define "backupDaemon.s3AliasesJson" -}}
+{{- $s3Data := fromYaml (include "backupDaemon.s3Aliases" .) -}}
+{{- $aliases := dict -}}
+{{- range $s3Data.items }}
+  {{- $out := dict -}}
+  {{- if .spec }}
+    {{- $out = merge $out (omit .spec "storageBucket" "storageUsername" "storageRegion" "storageServerUrl") -}}
+    {{- if .spec.storageBucket }}{{- $out = set $out "bucketName" .spec.storageBucket }}{{- end -}}
+    {{- if .spec.storageUsername }}{{- $out = set $out "accessKeyId" .spec.storageUsername }}{{- end -}}
+    {{- $out = set $out "region" (default "us-east-1" .spec.storageRegion) -}}
+    {{- if .spec.storageServerUrl }}{{- $out = set $out "s3Url" .spec.storageServerUrl }}{{- end -}}
+  {{- end }}
+  {{- if .secretContent }}
+    {{- $out = merge $out (omit .secretContent "storagePassword") -}}
+    {{- if .secretContent.storagePassword }}{{- $out = set $out "accessKeySecret" .secretContent.storagePassword }}{{- end -}}
+  {{- end }}
+  {{- $aliases = set $aliases .name $out -}}
+{{- end }}
+{{- $aliases | toPrettyJson -}}
+{{- end -}}
+
+{{/*
 DNS names used to generate TLS certificate with "Subject Alternative Name" field for Backup Daemon
 */}}
 {{- define "backupDaemon.certDnsNames" -}}
@@ -668,12 +733,16 @@ Ingress host for Cruise Control
 {{- $root := index . 0 -}}
 {{- $refs := index . 1 | default list -}}
 {{- if and $root.Values.GATEWAY_SYSTEM_NAME $root.Values.GATEWAY_SYSTEM_NAMESPACE }}
-- name: {{ $root.Values.GATEWAY_SYSTEM_NAME }}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: {{ $root.Values.GATEWAY_SYSTEM_NAME }}
   namespace: {{ $root.Values.GATEWAY_SYSTEM_NAMESPACE }}
   port: 443
 {{- else if gt (len $refs) 0 }}
 {{- range $refs }}
-- name: {{ .name }}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: {{ .name }}
   namespace: {{ .namespace }}
   port: 443
 {{- end }}
