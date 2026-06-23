@@ -1,6 +1,7 @@
 FROM telegraf:1.38.2-alpine
 
-ENV KMM_MONITORING_HOME=/opt/kafka-mirror-maker-monitoring
+ENV KMM_MONITORING_HOME=/opt/kafka-mirror-maker-monitoring \
+    MONITORING_LOGS=/tmp/monitoring/logs
 
 RUN mkdir -p ${KMM_MONITORING_HOME}
 
@@ -16,7 +17,8 @@ RUN set -x \
     && apk add --upgrade --no-cache \
         tini \
         python3 \
-        apk-tools
+        apk-tools \
+        gettext
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available

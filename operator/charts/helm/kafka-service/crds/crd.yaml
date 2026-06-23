@@ -2871,6 +2871,8 @@ spec:
                     - secretName
                   type: object
                 vaultSecretManagement:
+                  description: 'Deprecated: no longer used. Retained for backward
+                    compatibility.'
                   properties:
                     dockerImage:
                       type: string
@@ -2982,6 +2984,8 @@ spec:
                       type: string
                   type: object
                 vaultSecretManagementStatus:
+                  description: 'Deprecated: no longer used. Retained for backward
+                    compatibility.'
                   properties:
                     secretVersions:
                       additionalProperties:

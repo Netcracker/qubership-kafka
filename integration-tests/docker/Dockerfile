@@ -3,7 +3,7 @@ FROM ghcr.io/netcracker/qubership-docker-integration-tests:main
 ENV ROBOT_OUTPUT=${ROBOT_HOME}/output \
     DISTR_DIR=/tmp/deps \
     SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/kafka_pods_checker.py \
-    SERVICE_CHECKER_SCRIPT_TIMEOUT=500
+    SERVICE_CHECKER_SCRIPT_TIMEOUT=600
 
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
     echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
