@@ -2,7 +2,7 @@ module mod
 
 go 1.26
 
-require github.com/segmentio/kafka-go v0.4.50
+require github.com/segmentio/kafka-go v0.4.51
 
 require (
 	github.com/klauspost/compress v1.18.3 // indirect
