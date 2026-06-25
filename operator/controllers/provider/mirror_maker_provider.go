@@ -271,7 +271,6 @@ func (mmrp MirrorMakerResourceProvider) NewMirrorMakerDeploymentForCR(cluster ka
 			},
 		}
 		envVars = append(envVars, clusterNameVariables...)
-		envVars = append(envVars, mmrp.getKafkaClusterCredentialsEnvs(upperClusterName, lowerClusterName)...)
 
 		if cluster.EnableSsl && cluster.SslSecretName != "" {
 			volumes = append(volumes, corev1.Volume{
@@ -358,7 +357,7 @@ func (mmrp MirrorMakerResourceProvider) NewMirrorMakerDeploymentForCR(cluster ka
 
 // getMirrorMakerVolumes configures the list of Kafka Mirror Maker volumes
 func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumes() []corev1.Volume {
-	return []corev1.Volume{
+	volumes := []corev1.Volume{
 		{
 			Name: "log",
 			VolumeSource: corev1.VolumeSource{
@@ -389,11 +388,24 @@ func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumes() []corev1.Volume 
 		},
 		getTmpVolume("32Mi"), // JVM Connect / MM2
 	}
+	if mmrp.spec.SecretName != "" {
+		defaultMode := int32(0644)
+		volumes = append(volumes, corev1.Volume{
+			Name: "mm-secrets",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName:  mmrp.spec.SecretName,
+					DefaultMode: &defaultMode,
+				},
+			},
+		})
+	}
+	return volumes
 }
 
 // getMirrorMakerVolumeMounts configures the list of Kafka Mirror Maker volume mounts
 func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumeMounts() []corev1.VolumeMount {
-	return []corev1.VolumeMount{
+	volumeMounts := []corev1.VolumeMount{
 		{
 			Name:      "data",
 			MountPath: "/var/opt/kafka/data",
@@ -408,6 +420,14 @@ func (mmrp MirrorMakerResourceProvider) getMirrorMakerVolumeMounts() []corev1.Vo
 		},
 		getTmpVolumeMount(),
 	}
+	if mmrp.spec.SecretName != "" {
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      "mm-secrets",
+			MountPath: "/etc/secrets/mirror-maker-pod-secrets",
+			ReadOnly:  true,
+		})
+	}
+	return volumeMounts
 }
 
 // getAffinityRules configures the Kafka Mirror Maker affinity rules
@@ -505,17 +525,4 @@ func (mmrp MirrorMakerResourceProvider) getArgs() []string {
 
 func (mmrp MirrorMakerResourceProvider) getInitContainers() []corev1.Container {
 	return nil
-}
-
-func (mmrp MirrorMakerResourceProvider) getKafkaClusterCredentialsEnvs(upperClusterName string, lowerClusterName string) []corev1.EnvVar {
-	return []corev1.EnvVar{
-		{
-			Name:      fmt.Sprintf("%s_KAFKA_USERNAME", upperClusterName),
-			ValueFrom: getSecretEnvVarSource(mmrp.spec.SecretName, fmt.Sprintf("%s-kafka-username", lowerClusterName)),
-		},
-		{
-			Name:      fmt.Sprintf("%s_KAFKA_PASSWORD", upperClusterName),
-			ValueFrom: getSecretEnvVarSource(mmrp.spec.SecretName, fmt.Sprintf("%s-kafka-password", lowerClusterName)),
-		},
-	}
 }

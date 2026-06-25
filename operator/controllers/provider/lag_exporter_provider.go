@@ -55,16 +55,7 @@ func (lep LagExporterResourceProvider) getPorts() []corev1.ContainerPort {
 }
 
 func (lep LagExporterResourceProvider) getEnvs(cmVersion string) []corev1.EnvVar {
-	kafkaSecretName := fmt.Sprintf("%s-services-secret", lep.cr.Name)
 	return []corev1.EnvVar{
-		{
-			Name:      "KAFKA_USER",
-			ValueFrom: getSecretEnvVarSource(kafkaSecretName, "client-username"),
-		},
-		{
-			Name:      "KAFKA_PASSWORD",
-			ValueFrom: getSecretEnvVarSource(kafkaSecretName, "client-password"),
-		},
 		{
 			Name:  "KAFKA_SASL_MECHANISM",
 			Value: lep.cr.Spec.Global.KafkaSaslMechanism,
@@ -84,6 +75,11 @@ func (lep LagExporterResourceProvider) getVolumeMounts() []corev1.VolumeMount {
 		{
 			Name:      volumeName,
 			MountPath: "/opt/docker/src/",
+		},
+		{
+			Name:      "monitoring-pod-secrets",
+			MountPath: "/etc/secrets/monitoring-pod-secrets",
+			ReadOnly:  true,
 		},
 	}
 	if lep.cr.Spec.Global.KafkaSsl.Enabled && lep.cr.Spec.Global.KafkaSsl.SecretName != "" {

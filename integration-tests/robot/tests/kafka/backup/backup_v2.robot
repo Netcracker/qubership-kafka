@@ -2,8 +2,8 @@
 ${KAFKA_BACKUP_DAEMON_HOST}          %{BACKUP_DAEMON_HOST}
 ${KAFKA_BACKUP_DAEMON_PORT}          %{BACKUP_DAEMON_PORT}
 ${KAFKA_BACKUP_DAEMON_PROTOCOL}      %{BACKUP_DAEMON_PROTOCOL}
-${KAFKA_BACKUP_DAEMON_USER}          %{BACKUP_DAEMON_USER}
-${KAFKA_BACKUP_DAEMON_PASSWORD}      %{BACKUP_DAEMON_PASSWORD}
+${KAFKA_BACKUP_DAEMON_USER}          ${BACKUP_DAEMON_USER}
+${KAFKA_BACKUP_DAEMON_PASSWORD}      ${BACKUP_DAEMON_PASSWORD}
 ${KAFKA_OS_PROJECT}                  %{KAFKA_OS_PROJECT}
 ${KAFKA_BACKUP_V2_TOPIC}             kafka_backup_v2_topic
 ${BACKUP_STORAGE_NAME}               s3
@@ -11,7 +11,6 @@ ${BACKUP_BLOB_PATH}                  /backup-storage/v2/kafka
 ${BACKUP_BLOB_PATH_ALIAS_TEST}       /backup-storage/v2-alias-default/kafka
 ${S3_ALIASES_SECRET_NAME}            %{S3_ALIASES_SECRET_NAME=kafka-backup-daemon-s3-aliases}
 ${S3_DEFAULT_ALIAS_NAME}             %{S3_DEFAULT_ALIAS_NAME=default}
-${S3_KEY_SECRET}                     %{S3_KEY_SECRET}
 ${RETRY_TIME}                        300s
 ${RETRY_INTERVAL}                    10s
 ${SLEEP}                             5s

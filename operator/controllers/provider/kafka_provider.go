@@ -413,6 +413,10 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 		{Name: "public-certs", MountPath: "/opt/kafka/public-certs"},
 		getTmpVolumeMount(),
 	}
+	if secretVolume := krp.getSecretFilesVolume(); secretVolume != nil {
+		volumes = append(volumes, *secretVolume)
+		volumeMounts = append(volumeMounts, krp.getSecretFilesVolumeMount())
+	}
 
 	replicationFactor := 3
 	if krp.cr.Spec.Replicas < 3 {
@@ -471,8 +475,6 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 			{Name: "ZOOKEEPER_SET_ACL", Value: strconv.FormatBool(krp.isZookeeperSetACL())},
 		}...)
 	}
-	envVars = append(envVars, krp.getSecretEnvs(kraftEnabled)...)
-
 	if krp.cr.Spec.Ssl.Enabled && krp.cr.Spec.Ssl.SecretName != "" {
 		envVars = append(envVars, []corev1.EnvVar{
 			{Name: "ENABLE_SSL", Value: "true"},
@@ -594,6 +596,10 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 		{Name: "public-certs", MountPath: "/opt/kafka/public-certs"},
 		getTmpVolumeMount(),
 	}
+	if secretVolume := krp.getSecretFilesVolume(); secretVolume != nil {
+		volumes = append(volumes, *secretVolume)
+		volumeMounts = append(volumeMounts, krp.getSecretFilesVolumeMount())
+	}
 
 	var voters []string
 	voters = append(voters, "3000@localhost:9092")
@@ -660,8 +666,6 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 			{Name: "MIGRATION_CONTROLLER", Value: "true"},
 		}...)
 	}
-
-	envVars = append(envVars, krp.getSecretEnvs(!zookeeperEnabled)...)
 
 	if krp.cr.Spec.Ssl.Enabled && krp.cr.Spec.Ssl.SecretName != "" {
 		envVars = append(envVars, []corev1.EnvVar{
@@ -921,22 +925,28 @@ func (krp KafkaResourceProvider) getExecCommand(originalCommand []string) *corev
 	return &corev1.ExecAction{Command: originalCommand}
 }
 
-func (krp KafkaResourceProvider) getSecretEnvs(kraftEnabled bool) []corev1.EnvVar {
-	envVars := []corev1.EnvVar{
-		{Name: "ADMIN_USERNAME", ValueFrom: getSecretEnvVarSource(krp.cr.Spec.SecretName, "admin-username")},
-		{Name: "ADMIN_PASSWORD", ValueFrom: getSecretEnvVarSource(krp.cr.Spec.SecretName, "admin-password")},
-		{Name: "CLIENT_USERNAME", ValueFrom: getSecretEnvVarSource(krp.cr.Spec.SecretName, "client-username")},
-		{Name: "CLIENT_PASSWORD", ValueFrom: getSecretEnvVarSource(krp.cr.Spec.SecretName, "client-password")},
+func (krp KafkaResourceProvider) getSecretFilesVolume() *corev1.Volume {
+	if krp.cr.Spec.SecretName == "" {
+		return nil
+	}
+	defaultMode := int32(0400)
+	return &corev1.Volume{
+		Name: "kafka-secrets",
+		VolumeSource: corev1.VolumeSource{
+			Secret: &corev1.SecretVolumeSource{
+				SecretName:  krp.cr.Spec.SecretName,
+				DefaultMode: &defaultMode,
+			},
+		},
+	}
+}
 
-		{Name: "IDP_WHITELIST", ValueFrom: getSecretEnvVarSource(krp.cr.Spec.SecretName, "idp-whitelist")},
+func (krp KafkaResourceProvider) getSecretFilesVolumeMount() corev1.VolumeMount {
+	return corev1.VolumeMount{
+		Name:      "kafka-secrets",
+		MountPath: "/etc/secrets/kafka-pod-secrets",
+		ReadOnly:  true,
 	}
-	if !kraftEnabled {
-		envVars = append(envVars, []corev1.EnvVar{
-			{Name: "ZOOKEEPER_CLIENT_USERNAME", ValueFrom: getSecretEnvVarSource(krp.cr.Spec.SecretName, "zookeeper-client-username")},
-			{Name: "ZOOKEEPER_CLIENT_PASSWORD", ValueFrom: getSecretEnvVarSource(krp.cr.Spec.SecretName, "zookeeper-client-password")},
-		}...)
-	}
-	return envVars
 }
 
 func (krp KafkaResourceProvider) createDeploymentContainers(envs []corev1.EnvVar, volumeMounts []corev1.VolumeMount, kraftEnabled bool, kraftController bool) []corev1.Container {

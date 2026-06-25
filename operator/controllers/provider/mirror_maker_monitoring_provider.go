@@ -104,7 +104,6 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) NewMirrorMakerMonitoringDeplo
 				Value: mmmrp.spec.SmDbName,
 			},
 		}...)
-		envVars = append(envVars, mmmrp.getMonitoringCredentialsEnvs()...)
 	}
 
 	return &appsv1.Deployment{
@@ -292,7 +291,7 @@ func buildPrometheusUrlsByMirrorMakerConfig(mmmrp MirrorMakerMonitoringResourceP
 
 // getMirrorMakerMonitoringVolumes configures the list of Kafka Mirror Maker volumes
 func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolumes() []corev1.Volume {
-	return []corev1.Volume{
+	volumes := []corev1.Volume{
 		{
 			Name: "config",
 			VolumeSource: corev1.VolumeSource{
@@ -311,6 +310,23 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 		},
 		getTmpVolume("16Mi"), // Telegraf + sidecar scripts
 	}
+	if mmmrp.spec.SecretName != "" && mmmrp.spec.MonitoringType == "influxdb" {
+		defaultMode := int32(0644)
+		volumes = append(volumes, corev1.Volume{
+			Name: "mirror-maker-monitoring-pod-secrets",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName:  mmmrp.spec.SecretName,
+					DefaultMode: &defaultMode,
+					Items: []corev1.KeyToPath{
+						{Key: "sm-db-username", Path: "sm_db_username"},
+						{Key: "sm-db-password", Path: "sm_db_password"},
+					},
+				},
+			},
+		})
+	}
+	return volumes
 }
 
 // getMirrorMakerMonitoringVolumeMounts configures the list of Kafka Mirror Maker Monitoring volume mounts
@@ -321,6 +337,13 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 			MountPath: "/etc/telegraf",
 		},
 		getTmpVolumeMount(),
+	}
+	if mmmrp.spec.SecretName != "" && mmmrp.spec.MonitoringType == "influxdb" {
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      "mirror-maker-monitoring-pod-secrets",
+			MountPath: "/etc/secrets/mirror-maker-monitoring-pod-secrets",
+			ReadOnly:  true,
+		})
 	}
 	return volumeMounts
 }
@@ -335,17 +358,4 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getArgs() []string {
 
 func (mmmrp MirrorMakerMonitoringResourceProvider) getInitContainers() []corev1.Container {
 	return nil
-}
-
-func (mmmrp MirrorMakerMonitoringResourceProvider) getMonitoringCredentialsEnvs() []corev1.EnvVar {
-	return []corev1.EnvVar{
-		{
-			Name:      "SM_DB_USERNAME",
-			ValueFrom: getSecretEnvVarSource(mmmrp.spec.SecretName, "sm-db-username"),
-		},
-		{
-			Name:      "SM_DB_PASSWORD",
-			ValueFrom: getSecretEnvVarSource(mmmrp.spec.SecretName, "sm-db-password"),
-		},
-	}
 }

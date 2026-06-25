@@ -85,6 +85,14 @@ data:
         ## If set to true, do no set the "host" tag in the telegraf agent.
       omit_hostname = false
 
+    {{- if (eq (include "mirrorMakerMonitoring.type" .) "influxdb") }}
+    # Credentials from mounted secret files (Telegraf secret store).
+    [[secretstores.docker]]
+      id = "mirror_maker_monitoring_secrets"
+      path = "/etc/secrets/mirror-maker-monitoring-pod-secrets"
+      dynamic = true
+    {{- end }}
+
     ###############################################################################
     #                            OUTPUT PLUGINS                                   #
     ###############################################################################
@@ -107,8 +115,8 @@ data:
         ## Write timeout (for the InfluxDB client), formatted as a string.
         ## If not provided, will default to 5s. 0s means no timeout (not recommended).
       timeout = "5s"
-      username = "${SM_DB_USERNAME}"
-      password = "${SM_DB_PASSWORD}"
+      username = "@{mirror_maker_monitoring_secrets:sm_db_username}"
+      password = "@{mirror_maker_monitoring_secrets:sm_db_password}"
     ## Set the user agent for HTTP POSTs (can be useful for log differentiation)
     # user_agent = "telegraf"
     ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
