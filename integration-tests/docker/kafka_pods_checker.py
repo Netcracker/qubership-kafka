@@ -24,6 +24,25 @@ namespace = environ.get("KAFKA_OS_PROJECT")
 kafka = environ.get("KAFKA_HOST")
 backup_daemon = environ.get("BACKUP_DAEMON_HOST")
 timeout = 600
+# Kafka can be updated by the operator node-by-node (rolling upgrade). During such an
+# upgrade all deployments may momentarily report "ready" in the gap between two pods
+# being rolled, so a single ready observation is not enough to assume the cluster is
+# stable. Require several consecutive ready observations spaced apart in time before
+# proceeding, so an in-progress rolling upgrade is reliably detected.
+stability_checks = int(environ.get("READINESS_STABILITY_CHECKS", 3))
+stability_retry_delay = int(environ.get("READINESS_STABILITY_RETRY_DELAY", 20))
+
+
+def deployments_ready(k8s_lib) -> bool:
+    deployments = k8s_lib.get_deployment_entities_count_for_service(namespace, kafka)
+    ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, kafka)
+    if backup_daemon:
+        print(f'Adding Kafka Backup Daemon to check')
+        deployments += k8s_lib.get_deployment_entities_count_for_service(namespace, backup_daemon, 'component')
+        ready_deployments += k8s_lib.get_active_deployment_entities_count_for_service(namespace, backup_daemon, 'component')
+    print(f'[Check status] deployments: {deployments}, ready deployments: {ready_deployments}')
+    return deployments == ready_deployments and deployments != 0
+
 
 if __name__ == '__main__':
     time.sleep(20)
@@ -40,23 +59,29 @@ if __name__ == '__main__':
     except Exception as e:
         print(e)
         exit(1)
+    consecutive_ready = 0
     timeout_start = time.time()
     while time.time() < timeout_start + timeout:
         try:
-            deployments = k8s_lib.get_deployment_entities_count_for_service(namespace, kafka)
-            ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, kafka)
-            if backup_daemon:
-                print(f'Adding Kafka Backup Daemon to check')
-                deployments += k8s_lib.get_deployment_entities_count_for_service(namespace, backup_daemon, 'component')
-                ready_deployments += k8s_lib.get_active_deployment_entities_count_for_service(namespace, backup_daemon, 'component')
-            print(f'[Check status] deployments: {deployments}, ready deployments: {ready_deployments}')
+            ready = deployments_ready(k8s_lib)
         except Exception as e:
             print(e)
+            consecutive_ready = 0
+            time.sleep(10)
             continue
-        if deployments == ready_deployments and deployments != 0:
-            print("Kafka deployments are ready")
-            time.sleep(30)
-            exit(0)
-        time.sleep(10)
-    print(f'Kafka deployments are not ready at least {timeout} seconds')
+        if ready:
+            consecutive_ready += 1
+            print(f'Kafka deployments are ready ({consecutive_ready}/{stability_checks} consecutive checks)')
+            if consecutive_ready >= stability_checks:
+                print("Kafka deployments are ready and stable")
+                time.sleep(30)
+                exit(0)
+            time.sleep(stability_retry_delay)
+        else:
+            if consecutive_ready:
+                print('Kafka deployments became not ready, resetting stability counter '
+                      '(rolling upgrade may be in progress)')
+            consecutive_ready = 0
+            time.sleep(10)
+    print(f'Kafka deployments are not ready and stable at least {timeout} seconds')
     exit(1)
