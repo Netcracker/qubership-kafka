@@ -86,6 +86,12 @@ data:
     ## If set to true, do no set the "host" tag in the telegraf agent.
     omit_hostname = false
 
+    # Credentials from mounted secret files (Telegraf secret store).
+    # File names use underscores because secret-store keys cannot contain hyphens.
+    [[secretstores.docker]]
+      id = "monitoring_secrets"
+      path = "/etc/secrets/monitoring-pod-secrets"
+      dynamic = true
 
     ###############################################################################
     #                            OUTPUT PLUGINS                                   #
@@ -110,8 +116,8 @@ data:
     ## Write timeout (for the InfluxDB client), formatted as a string.
     ## If not provided, will default to 5s. 0s means no timeout (not recommended).
     timeout = "5s"
-    username = "$SM_DB_USERNAME"
-    password = "$SM_DB_PASSWORD"
+    username = "@{monitoring_secrets:sm_db_username}"
+    password = "@{monitoring_secrets:sm_db_password}"
     ## Set the user agent for HTTP POSTs (can be useful for log differentiation)
     # user_agent = "telegraf"
     ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
@@ -138,8 +144,9 @@ data:
       # metric_version = 1
 
       ## Use HTTP Basic Authentication.
+      ## basic_username has no secret-store support in prometheus_client; use env (secretKeyRef).
       basic_username = "$PROMETHEUS_USERNAME"
-      basic_password = "$PROMETHEUS_PASSWORD"
+      basic_password = "@{monitoring_secrets:prometheus_password}"
       ## If set, the IP Ranges which are allowed to access metrics.
       ##   ex: ip_range = ["192.168.0.0/24", "192.168.1.0/30"]
       # ip_range = []
@@ -483,8 +490,8 @@ data:
 
       ## HTTP Basic Authentication username and password. ('bearer_token' and
       ## 'bearer_token_string' take priority)
-      username = "$KAFKA_USER"
-      password = "$KAFKA_PASSWORD"
+      username = "@{monitoring_secrets:client_username}"
+      password = "@{monitoring_secrets:client_password}"
 
       ## Specify timeout duration for slower prometheus clients (default is 3s)
       response_timeout = "10s"

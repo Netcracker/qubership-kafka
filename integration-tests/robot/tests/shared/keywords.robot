@@ -6,12 +6,13 @@ ${KAFKA_OS_PROJECT}             %{KAFKA_OS_PROJECT}
 *** Settings ***
 Library  String
 Library  Collections
+Variables  %{ROBOT_HOME}/SecretData.py
 Library  ./lib/KafkaLibrary.py  bootstrap_servers=${KAFKA_BOOTSTRAP_SERVERS}
 ...                             namespace=%{KAFKA_OS_PROJECT}
 ...                             host=${KAFKA_HOST}
 ...                             port=%{KAFKA_PORT}
-...                             username=%{KAFKA_USER}
-...                             password=%{KAFKA_PASSWORD}
+...                             username=${KAFKA_USER}
+...                             password=${KAFKA_PASSWORD}
 ...                             enable_ssl=%{KAFKA_ENABLE_SSL}
 Library  PlatformLibrary  managed_by_operator=%{KAFKA_IS_MANAGED_BY_OPERATOR}
 

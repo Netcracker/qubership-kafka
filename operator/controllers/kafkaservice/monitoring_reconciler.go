@@ -57,6 +57,11 @@ func (r ReconcileMonitoring) Reconcile() error {
 		return err
 	}
 
+	kafkaServicesSecret, err := r.reconciler.WatchSecret(fmt.Sprintf("%s-services-secret", r.cr.Name), r.cr, r.logger)
+	if err != nil {
+		return err
+	}
+
 	currentCMResourceVersion := ""
 	if r.cr.Spec.Monitoring.LagExporter != nil {
 		configMap, err := r.reconciler.FindConfigMap(r.lagExporterConfigMapName, r.cr.Namespace, r.logger)
@@ -81,6 +86,7 @@ func (r ReconcileMonitoring) Reconcile() error {
 	if r.reconciler.ResourceHashes[monitoringHashName] != monitoringHash ||
 		r.reconciler.ResourceHashes[globalHashName] != globalSpecHash ||
 		(monitoringSecret.Name != "" && r.reconciler.ResourceVersions[monitoringSecret.Name] != monitoringSecret.ResourceVersion) ||
+		(kafkaServicesSecret.Name != "" && r.reconciler.ResourceVersions[kafkaServicesSecret.Name] != kafkaServicesSecret.ResourceVersion) ||
 		lagExporterUpdateEnabled {
 		monitoringLabels := r.monitoringProvider.GetMonitoringSelectorLabels()
 
@@ -114,7 +120,14 @@ func (r ReconcileMonitoring) Reconcile() error {
 		r.logger.Info("Kafka monitoring configuration didn't change, skipping reconcile loop")
 	}
 
+	if err := updateDeploymentSecretRestartAnnotations(
+		r.reconciler.Client, r.cr.Namespace, r.monitoringProvider.GetServiceName(), r.logger,
+		monitoringSecret, kafkaServicesSecret); err != nil {
+		return err
+	}
+
 	r.reconciler.ResourceVersions[monitoringSecret.Name] = monitoringSecret.ResourceVersion
+	r.reconciler.ResourceVersions[kafkaServicesSecret.Name] = kafkaServicesSecret.ResourceVersion
 	r.reconciler.ResourceHashes[monitoringHashName] = monitoringHash
 	if r.cr.Spec.Monitoring.LagExporter != nil {
 		r.reconciler.ResourceVersions[lagExporterConfigMapKey] = currentCMResourceVersion

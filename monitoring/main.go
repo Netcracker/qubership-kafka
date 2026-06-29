@@ -32,14 +32,15 @@ import (
 )
 
 var (
-	broker         = getEnv("KAFKA_ADDRESSES", "")
-	saslUsername   = getEnv("KAFKA_USER", "")
-	saslPassword   = getEnv("KAFKA_PASSWORD", "")
-	serviceName    = getEnv("KAFKA_SERVICE_NAME", "kafka")
-	sslMechanism   = getEnv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
-	isDebugEnabled = getBoolEnv("KAFKA_MONITORING_SCRIPT_DEBUG", "false")
-	sslEnabled     = getBoolEnv("KAFKA_ENABLE_SSL", "false")
-	monitoringLogs = getEnv("MONITORING_LOGS", "/tmp/monitoring/logs")
+	monitoringSecretsBaseDir = "/etc/secrets/monitoring-pod-secrets"
+	broker                   = getEnv("KAFKA_ADDRESSES", "")
+	saslUsername             = getSecretFromFileOrEnv(fmt.Sprintf("%s/%s", monitoringSecretsBaseDir, "client_username"), "KAFKA_USER")
+	saslPassword             = getSecretFromFileOrEnv(fmt.Sprintf("%s/%s", monitoringSecretsBaseDir, "client_password"), "KAFKA_PASSWORD")
+	serviceName              = getEnv("KAFKA_SERVICE_NAME", "kafka")
+	sslMechanism             = getEnv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
+	isDebugEnabled           = getBoolEnv("KAFKA_MONITORING_SCRIPT_DEBUG", "false")
+	sslEnabled               = getBoolEnv("KAFKA_ENABLE_SSL", "false")
+	monitoringLogs           = getEnv("MONITORING_LOGS", "/tmp/monitoring/logs")
 
 	caCertPath     = "/tls/ca.crt"
 	tlsCertPath    = "/tls/tls.crt"
@@ -56,6 +57,14 @@ func getEnv(key, defaultValue string) string {
 
 func getBoolEnv(key string, defaultValue string) bool {
 	return strings.ToLower(getEnv(key, defaultValue)) == "true"
+}
+
+func getSecretFromFileOrEnv(filePath string, envKey string) string {
+	secretBytes, err := os.ReadFile(filePath)
+	if err == nil {
+		return strings.TrimSpace(string(secretBytes))
+	}
+	return getEnv(envKey, "")
 }
 
 type Logger struct {

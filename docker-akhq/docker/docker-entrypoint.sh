@@ -10,6 +10,30 @@ rm -rf "${AKHQ_WORK}"
 export MICRONAUT_CONFIG_FILES="${AKHQ_WORK}/application.yml"
 mkdir -p "${AKHQ_WORK}/config/descs" "${AKHQ_WORK}/tls-ks"
 
+SECRETS_DIR="${SECRETS_DIR:-/etc/secrets/akhq-pod-secrets}"
+
+resolve_secret_value() {
+  local secret_key="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
+KAFKA_AUTH_USERNAME="$(resolve_secret_value "client-username" "KAFKA_AUTH_USERNAME")"
+KAFKA_AUTH_PASSWORD="$(resolve_secret_value "client-password" "KAFKA_AUTH_PASSWORD")"
+AKHQ_DEFAULT_USER="$(resolve_secret_value "akhq_default_user" "AKHQ_DEFAULT_USER")"
+AKHQ_DEFAULT_PASSWORD="$(resolve_secret_value "akhq_default_password" "AKHQ_DEFAULT_PASSWORD")"
+SECURITY_GROUPS_CONFIGURATION="$(resolve_secret_value "security_groups_config" "SECURITY_GROUPS_CONFIGURATION")"
+BASIC_AUTH_USERS_CONFIGURATION="$(resolve_secret_value "basic_auth_users_config" "BASIC_AUTH_USERS_CONFIGURATION")"
+LDAP_SERVER_CONFIGURATION="$(resolve_secret_value "ldap_server_config" "LDAP_SERVER_CONFIGURATION")"
+LDAP_USERS_CONFIGURATION="$(resolve_secret_value "ldap_users_config" "LDAP_USERS_CONFIGURATION")"
+SCHEMA_REGISTRY_USERNAME="$(resolve_secret_value "username" "SCHEMA_REGISTRY_USERNAME")"
+SCHEMA_REGISTRY_PASSWORD="$(resolve_secret_value "password" "SCHEMA_REGISTRY_PASSWORD")"
+
 # The section below decomposes the proto-files, that are added by operator according to the AKHQConfig CR
 # The target directories DESCS_DEFAULT_DIR & DESCS_COMRESSED_DIR was already hardcoded & defined in operator functionality.
 

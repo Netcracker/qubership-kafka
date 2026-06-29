@@ -69,15 +69,6 @@ func newDomainServiceForCR(serviceName string, namespace string, labels map[stri
 		}}
 }
 
-func getSecretEnvVarSource(secretName string, key string) *corev1.EnvVarSource {
-	return &corev1.EnvVarSource{
-		SecretKeyRef: &corev1.SecretKeySelector{
-			Key:                  key,
-			LocalObjectReference: corev1.LocalObjectReference{Name: secretName},
-		},
-	}
-}
-
 func getConfigMapEnvVarSource(configMapName string, key string) *corev1.EnvVarSource {
 	return &corev1.EnvVarSource{
 		ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
