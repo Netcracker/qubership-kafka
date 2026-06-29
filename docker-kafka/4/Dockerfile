@@ -37,7 +37,7 @@ RUN set -x \
     && useradd -s /bin/bash -r -g kafka --uid=1000 kafka \
     && usermod -a -G 0 kafka
 
-ARG KAFKA_VERSION=4.1.2
+ARG KAFKA_VERSION=4.3.0
 ARG DISTRO_NAME=kafka_2.13-${KAFKA_VERSION}
 ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
@@ -81,7 +81,7 @@ RUN set -x \
     && rm -f /tmp/kafkactl.tar.gz
 
 #Download Cruise Control Metric Reporter
-ENV CC_VERSION=2.5.141
+ENV CC_VERSION=2.5.146
 RUN set -x \
     && wget \
         -nv \
@@ -158,12 +158,6 @@ RUN rm -f ${KAFKA_HOME}/libs/commons-beanutils-1.9.4.jar \
     && wget -nv -O ${KAFKA_HOME}/libs/commons-beanutils-1.11.0.jar \
        "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.11.0/commons-beanutils-1.11.0.jar"
 
-RUN rm -f ${KAFKA_HOME}/libs/log4j-core-2.24.3.jar \
-    && wget -nv -O ${KAFKA_HOME}/libs/log4j-core-2.25.3.jar \
-       "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.25.3/log4j-core-2.25.3.jar"
-
-
-
 ARG KAFKA_SECURITY_OAUTH_VERSION=0.12.0-4.1.0
 # Kafka Security OAuth dependencies
 RUN set -x \
@@ -181,7 +175,7 @@ RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositori
     && apk add --update --upgrade --no-cache \
         pcre2 curl gnutls libcurl jq openssl libcrypto3 binutils libssl3
 
-ARG NETTY_VER=4.1.125.Final
+ARG NETTY_VER=4.1.129.Final
 RUN set -eux; \
   KAFKA_LIB=/opt/kafka/libs; \
   cd "$KAFKA_LIB"; \
@@ -199,7 +193,7 @@ RUN set -eux; \
     curl -fL -o "${a}-${NETTY_VER}.jar" \
       "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
   done; \
-  rm -f netty-*-4.1.119.Final.jar;
+  rm -f netty-*-4.1.125.Final.jar;
 
 # Copy config and script files
 COPY docker/config/ ${KAFKA_HOME}/config/
