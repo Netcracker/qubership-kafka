@@ -25,7 +25,7 @@ RUN GOOS=linux GOARCH=amd64 GO111MODULE=on go build -tags musl -a -o additional-
 FROM telegraf:1.38.2-alpine
 
 ENV KAFKA_MONITORING_HOME=/opt/kafka-monitoring \
-    KAFKA_CTL_CONFIG=/opt/kafka-monitoring/kafkactl.yml \
+    KAFKA_CTL_CONFIG=/tmp/monitoring/kafkactl.yml \
     USER=1000 \
     MONITORING_LOGS=/tmp/monitoring/logs
 
