@@ -5,7 +5,8 @@ USER 0:0
 ENV AKHQ_HOME=/app \
     MICRONAUT_CONFIG_FILES=/app/application.yml \
     KAFKA_CTL_CONFIG=/tmp/akhq/kafkactl.yml \
-    KCAT_CONFIG=/tmp/akhq/kcat.properties
+    KCAT_CONFIG=/tmp/akhq/kcat.properties \
+    USER=1000
 
 COPY docker/docker-entrypoint.sh /
 COPY docker/config/streaming.desc ${AKHQ_HOME}/config/streaming.desc

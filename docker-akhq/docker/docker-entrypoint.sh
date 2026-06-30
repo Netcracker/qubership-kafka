@@ -134,7 +134,6 @@ sasl.password=${KAFKA_AUTH_PASSWORD}
 EOL
   enrich_kcat_properties_with_ssl_configs
   cat > ${KAFKA_CTL_CONFIG} << EOL
-current-context: default
 contexts:
   default:
     brokers: [${BOOTSTRAP_SERVERS}]
@@ -157,7 +156,6 @@ security.protocol=${security_protocol}
 EOL
   enrich_kcat_properties_with_ssl_configs
   cat > ${KAFKA_CTL_CONFIG} << EOL
-current-context: default
 contexts:
   default:
     brokers: [${BOOTSTRAP_SERVERS}]
@@ -177,6 +175,10 @@ function prepare_kafka_cli_configs() {
   else
     prepare_unsecured_kafka_cli_configs
   fi
+  # kafkactl >=5.18 stores the active context next to KAFKA_CTL_CONFIG (must be writable under readOnlyRootFilesystem).
+  cat > "${AKHQ_WORK}/current-context.yml" << EOL
+current-context: default
+EOL
   cp "${KCAT_CONFIG}" "${AKHQ_WORK}/kafkacat.properties"
 }
 
