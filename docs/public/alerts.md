@@ -234,16 +234,16 @@ For more information refer to [Memory Limit Reached](./troubleshooting.md#memory
 
 ### Description
 
-Partition lag of one of the consumer group in the Kafka cluster comes close to the specified limit.
+The maximum consumer group offset lag across the Kafka cluster exceeds the configured threshold.
 
-This limit can be overridden with parameter `thresholds.lagAlert` described in
-[Kafka Monitoring Parameters](/docs/public/installation.md#monitoring)
+The threshold is configured with `monitoring.thresholds.lagAlert` (default `100000`). Set the parameter to `-1` to disable this alert. Requires Kafka Exporter (`monitoring.lagExporter.enabled: true`).
 
 For more information refer to [Lag Limit Reached](./troubleshooting.md#lag-limit-reached).
 
 ### Possible Causes
 
-- Consumer service is overloaded.
+- Consumer service is overloaded or stopped.
+- Consumer group cannot keep up with the produce rate.
 
 ### Impact
 
@@ -251,12 +251,69 @@ For more information refer to [Lag Limit Reached](./troubleshooting.md#lag-limit
 
 ### Actions for Investigation
 
-1. Monitor lag of one of the consumer group in Kafka Monitoring dashboard.
+1. Monitor consumer group lag in the Kafka Monitoring or Kafka Exporter dashboard.
+2. Check consumer pod health and logs.
 
 ### Recommended Actions to Resolve Issue
 
 1. Consider the possibility of increasing the number of topic partitions.
 2. Increase the number of consumers.
+
+## KafkaEstimatedLagSecondsAlert
+
+### Description
+
+The estimated time (in seconds) required for a consumer group to catch up exceeds the configured threshold. The estimate is calculated as total offset lag divided by the recent produce rate (same formula as the Kafka Exporter dashboard).
+
+The threshold is configured with `monitoring.thresholds.lagAlertSeconds` (default `3600`). Set the parameter to `-1` to disable this alert. Requires Kafka Exporter (`monitoring.lagExporter.enabled: true`).
+
+For more information refer to [Lag Limit Reached](./troubleshooting.md#lag-limit-reached).
+
+### Possible Causes
+
+- Consumer service is overloaded or stopped.
+- Produce rate is high relative to consumer throughput.
+
+### Impact
+
+- Growing lag increases the risk of data loss when topic retention is reached.
+
+### Actions for Investigation
+
+1. Compare offset lag and produce rate in the Kafka Exporter dashboard.
+2. Check whether consumers are running and processing messages.
+
+### Recommended Actions to Resolve Issue
+
+1. Scale up consumers or increase partition count.
+2. Investigate slow message processing in the consumer application.
+
+## Custom Consumer Lag Alerts
+
+### Description
+
+Additional lag alerts can be defined in `monitoring.thresholds.lagAlertConfiguration`. Each entry creates Prometheus alerts filtered by topic and consumer group regular expressions. Alert names are taken from the mandatory `alertName` field.
+
+When both offset lag (`lagAlert`) and estimated lag seconds (`lagAlertSeconds`) are enabled for the same entry, the seconds alert is named `<alertName>Seconds`.
+
+Configuration is described in [Consumer Lag Alerts](/docs/public/installation.md#consumer-lag-alerts).
+
+### Possible Causes
+
+Same as [KafkaLagAlert](#kafkalagalert) and [KafkaEstimatedLagSecondsAlert](#kafkaestimatedlagsecondsalert), but scoped to the configured topics and consumer groups.
+
+### Impact
+
+Same as [KafkaLagAlert](#kafkalagalert).
+
+### Actions for Investigation
+
+1. Identify the firing alert name and check the topic/group filters in the alert description.
+2. Monitor the affected consumer groups in the Kafka Exporter dashboard.
+
+### Recommended Actions to Resolve Issue
+
+Same as [KafkaLagAlert](#kafkalagalert).
 
 ## KafkaMirrorMakerIsDegradedAlarm
 

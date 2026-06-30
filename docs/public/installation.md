@@ -1390,7 +1390,9 @@ By default, both controllers watch all Kubernetes namespaces.
 | monitoring.dataCollectionInterval                         | string  | no        | 10s                      | The interval value to collect metrics for Telegraf. The default value is `10s`.                                                                                                                                                                                                                                                         |
 | monitoring.kafkaTotalBrokerCount                          | integer | no        | 3                        | The number of brokers in Kafka cluster.                                                                                                                                                                                                                                                                                                 |
 | monitoring.thresholds.gcCountAlert                        | integer | no        | 10                       | The threshold that is used for garbage collections count rate (`Kafka_GC_Count_Alert`) alert.                                                                                                                                                                                                                                           |
-| monitoring.thresholds.lagAlert                            | integer | no        | 1000                     | The threshold that is used for partition lag (`Kafka_Lag_Alert`) alert. This parameter makes sense only if `monitoring.lagExporter.enabled` parameter is set to `true`.                                                                                                                                                                 |
+| monitoring.thresholds.lagAlert                            | integer | no        | 100000                   | The maximum consumer group offset lag (in messages) for the global `KafkaLagAlert` alert. Evaluated as `max(kafka_consumergroup_lag{namespace})`. Set to `-1` to disable the alert. Requires `monitoring.lagExporter.enabled` set to `true`.                                                                                        |
+| monitoring.thresholds.lagAlertSeconds                     | integer | no        | 3600                     | The estimated consumer lag duration in seconds for the global `KafkaEstimatedLagSecondsAlert` alert. Uses the same formula as the Kafka Exporter dashboard: `sum by (consumergroup) (lag) / clamp_min(sum(rate(offset[5m])), 1)`. Set to `-1` to disable. Requires `monitoring.lagExporter.enabled` set to `true`.                      |
+| monitoring.thresholds.lagAlertConfiguration                 | list    | no        | []                       | The list of additional lag alerts with per-entry topic and consumer group filters. Each list item creates one or two Prometheus alerts (offset lag and/or estimated lag seconds). See [Consumer Lag Alerts](#consumer-lag-alerts).                                                                                                    |
 | monitoring.thresholds.partitionCountAlert                 | integer | no        | 4000                     | The threshold that is used for partition count (`KafkaPartitionCountAlert`) alert.                                                                                                                                                                                                                                                      |
 | monitoring.thresholds.brokerSkewAlert                     | integer | no        | 50                       | The threshold in percentage that is used for broker skew (`KafkaBrokerSkewAlert`) alert.                                                                                                                                                                                                                                                |
 | monitoring.thresholds.brokerSkewAlertPartitionCount       | integer | no        |                          | The threshold in partitions that is used for broker skew (`KafkaBrokerSkewAlert`) alert.                                                                                                                                                                                                                                                |
@@ -1408,6 +1410,43 @@ By default, both controllers watch all Kubernetes namespaces.
 | monitoring.serviceMonitor.kmmScrapeTimeout                | string  | no        | 10s                      | The timeout of scrape metrics from the Kafka Mirror Maker monitoring endpoint.                                                                                                                                                                                                                                                          |
 | monitoring.serviceMonitor.lagExporterScrapeInterval       | string  | no        | 60s                      | The interval between scrape metrics from the Kafka exporter endpoint.                                                                                                                                                                                                                                                                   |
 | monitoring.serviceMonitor.lagExporterScrapeTimeout        | string  | no        | 10s                      | The timeout of scrape metrics from the Kafka exporter endpoint.                                                                                                                                                                                                                                                                         |
+
+### Consumer Lag Alerts
+
+Consumer lag alerts require Kafka Exporter (`monitoring.lagExporter.enabled: true`). Global thresholds are configured with `monitoring.thresholds.lagAlert` and `monitoring.thresholds.lagAlertSeconds`. Additional alerts with topic and consumer group filters are configured with `monitoring.thresholds.lagAlertConfiguration`.
+
+Each item in `lagAlertConfiguration` supports the following fields:
+
+| Field | Type | Mandatory | Default | Description |
+|-------|------|-----------|---------|-------------|
+| `alertName` | string | yes | — | The Prometheus alert name. Must be unique within the release. |
+| `topics` | string | no | `.*` | Regular expression matched against the Kafka topic name (`topic=~"<regex>"`). |
+| `groups` | string | no | `.*` | Regular expression matched against the consumer group name (`consumergroup=~"<regex>"`). |
+| `lagAlert` | integer | no | `-1` | Offset lag threshold for this entry. Set to `-1` to skip the offset lag alert for this entry. |
+| `lagAlertSeconds` | integer | no | `-1` | Estimated lag seconds threshold for this entry. Set to `-1` to skip the seconds alert for this entry. |
+
+When both `lagAlert` and `lagAlertSeconds` are enabled for the same entry, the offset alert uses `alertName` and the seconds alert is named `<alertName>Seconds`. When only `lagAlertSeconds` is enabled, the alert name is `alertName` as specified.
+
+Example:
+
+```yaml
+monitoring:
+  lagExporter:
+    enabled: true
+  thresholds:
+    lagAlert: 100000
+    lagAlertSeconds: 3600
+    lagAlertConfiguration:
+      - alertName: CriticalTopicsLag
+        topics: "orders.*"
+        groups: "orders-.*"
+        lagAlert: 50000
+        lagAlertSeconds: 1200
+      - alertName: LowPriorityLag
+        topics: "audit.*"
+        lagAlert: -1
+        lagAlertSeconds: 7200
+```
 
 ### Lag Exporter
 
