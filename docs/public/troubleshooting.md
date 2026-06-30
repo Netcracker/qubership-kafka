@@ -341,6 +341,8 @@ The Kafka data can be lost because its persistence is based on retention.
 ### Alerts
 
 * [KafkaLagAlert](./alerts.md#kafkalagalert)
+* [KafkaEstimatedLagSecondsAlert](./alerts.md#kafkaestimatedlagsecondsalert)
+* [Custom Consumer Lag Alerts](./alerts.md#custom-consumer-lag-alerts)
 
 ### Stack trace
 
