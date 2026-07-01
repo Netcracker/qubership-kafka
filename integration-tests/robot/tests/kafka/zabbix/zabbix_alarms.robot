@@ -11,10 +11,10 @@ ${ALARM_RETRY_TIME}                5min
 ${ALARM_RETRY_INTERVAL}            10s
 
 *** Settings ***
+Resource  ../../shared/keywords.robot
 Library  ../../shared/lib/ZabbixLibrary.py  url=%{ZABBIX_URL}
 ...                                         user=${ZABBIX_USER}
 ...                                         password=${ZABBIX_PASSWORD}
-Resource  ../../shared/keywords.robot
 Library  PlatformLibrary  managed_by_operator=%{KAFKA_IS_MANAGED_BY_OPERATOR}
 Suite Setup  Run Keywords  Clean Up
 ...                        Set Prerequisites
