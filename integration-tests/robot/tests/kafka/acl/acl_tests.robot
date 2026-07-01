@@ -7,12 +7,12 @@ ${OPERATION_RETRY_INTERVAL}                 3s
 ${IDENTITY_PROVIDER_URL}                    %{IDENTITY_PROVIDER_URL}
 
 *** Settings ***
+Resource  ../../shared/keywords.robot
 Library  OAuthLibrary  url=${IDENTITY_PROVIDER_URL}
 ...                    registration_token=${IDENTITY_PROVIDER_REGISTRATION_TOKEN}
 ...                    username=${IDENTITY_PROVIDER_USERNAME}
 ...                    password=${IDENTITY_PROVIDER_PASSWORD}
 ...                    grant_type=client_credentials
-Resource  ../../shared/keywords.robot
 Suite Setup  Setup
 
 *** Keywords ***
