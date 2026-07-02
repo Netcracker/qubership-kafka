@@ -8,6 +8,8 @@ set -e
 AKHQ_WORK=/tmp/akhq
 rm -rf "${AKHQ_WORK}"
 export MICRONAUT_CONFIG_FILES="${AKHQ_WORK}/application.yml"
+export KAFKA_CTL_CONFIG="${AKHQ_WORK}/kafkactl.yml"
+export KCAT_CONFIG="${AKHQ_WORK}/kcat.properties"
 mkdir -p "${AKHQ_WORK}/config/descs" "${AKHQ_WORK}/tls-ks"
 
 SECRETS_DIR="${SECRETS_DIR:-/etc/secrets/akhq-pod-secrets}"
@@ -69,6 +71,115 @@ resolve_security_protocol() {
     security_protocol="$2"
   fi
   echo "$security_protocol"
+}
+
+function kafkactl_sasl_mechanism() {
+  case "${KAFKA_SASL_MECHANISM}" in
+    PLAIN) echo "plain" ;;
+    *) echo "scram-sha512" ;;
+  esac
+}
+
+function kcat_sasl_mechanisms() {
+  case "${KAFKA_SASL_MECHANISM}" in
+    PLAIN) echo "PLAIN" ;;
+    *) echo "SCRAM-SHA-512" ;;
+  esac
+}
+
+function enrich_kcat_properties_with_ssl_configs() {
+  if [[ "${KAFKA_ENABLE_SSL}" == "true" && -f "/tls/ca.crt" ]]; then
+    cat >> ${KCAT_CONFIG} << EOL
+ssl.ca.location=/tls/ca.crt
+EOL
+    if [[ -f "/tls/tls.crt" && -f "/tls/tls.key" ]]; then
+      cat >> ${KCAT_CONFIG} << EOL
+ssl.certificate.location=/tls/tls.crt
+ssl.key.location=/tls/tls.key
+EOL
+    fi
+  fi
+}
+
+function enrich_kafkactl_yml_with_ssl_configs() {
+  if [[ "${KAFKA_ENABLE_SSL}" == "true" && -f "/tls/ca.crt" ]]; then
+    cat >> ${KAFKA_CTL_CONFIG} << EOL
+    tls:
+      enabled: true
+      ca: /tls/ca.crt
+EOL
+    if [[ -f "/tls/tls.crt" && -f "/tls/tls.key" ]]; then
+      cat >> ${KAFKA_CTL_CONFIG} << EOL
+      cert: /tls/tls.crt
+      certKey: /tls/tls.key
+EOL
+    fi
+  fi
+}
+
+function prepare_secured_kafka_cli_configs() {
+  local security_protocol
+  security_protocol=$(resolve_security_protocol "SASL_PLAINTEXT" "SASL_SSL")
+  local mechanism
+  mechanism=$(kafkactl_sasl_mechanism)
+  local kcat_mechanism
+  kcat_mechanism=$(kcat_sasl_mechanisms)
+
+  cat > ${KCAT_CONFIG} << EOL
+bootstrap.servers=${BOOTSTRAP_SERVERS}
+security.protocol=${security_protocol}
+sasl.mechanisms=${kcat_mechanism}
+sasl.username=${KAFKA_AUTH_USERNAME}
+sasl.password=${KAFKA_AUTH_PASSWORD}
+EOL
+  enrich_kcat_properties_with_ssl_configs
+  cat > ${KAFKA_CTL_CONFIG} << EOL
+contexts:
+  default:
+    brokers: [${BOOTSTRAP_SERVERS}]
+    sasl:
+      enabled: true
+      mechanism: ${mechanism}
+      username: ${KAFKA_AUTH_USERNAME}
+      password: ${KAFKA_AUTH_PASSWORD}
+EOL
+  enrich_kafkactl_yml_with_ssl_configs
+}
+
+function prepare_unsecured_kafka_cli_configs() {
+  local security_protocol
+  security_protocol=$(resolve_security_protocol "PLAINTEXT" "SSL")
+
+  cat > ${KCAT_CONFIG} << EOL
+bootstrap.servers=${BOOTSTRAP_SERVERS}
+security.protocol=${security_protocol}
+EOL
+  enrich_kcat_properties_with_ssl_configs
+  cat > ${KAFKA_CTL_CONFIG} << EOL
+contexts:
+  default:
+    brokers: [${BOOTSTRAP_SERVERS}]
+    sasl:
+      enabled: false
+EOL
+  enrich_kafkactl_yml_with_ssl_configs
+}
+
+function prepare_kafka_cli_configs() {
+  : ${KAFKA_SERVICE_NAME:="kafka"}
+  : ${BOOTSTRAP_SERVERS:="${KAFKA_SERVICE_NAME}:9092"}
+  : ${KAFKA_SASL_MECHANISM:="SCRAM-SHA-512"}
+
+  if [[ -n ${KAFKA_AUTH_USERNAME} && -n ${KAFKA_AUTH_PASSWORD} ]]; then
+    prepare_secured_kafka_cli_configs
+  else
+    prepare_unsecured_kafka_cli_configs
+  fi
+  # kafkactl >=5.18 stores the active context next to KAFKA_CTL_CONFIG (must be writable under readOnlyRootFilesystem).
+  cat > "${AKHQ_WORK}/current-context.yml" << EOL
+current-context: default
+EOL
+  cp "${KCAT_CONFIG}" "${AKHQ_WORK}/kafkacat.properties"
 }
 
 
@@ -281,5 +392,7 @@ if [[ "$(ls ${TRUST_CERTS_DIR})" ]]; then
 fi
 
 export JAVA_OPTS="$JAVA_OPTS $HEAP_OPTS -Djavax.net.ssl.trustStore=${DESTINATION_KEYSTORE_PATH} -Djavax.net.ssl.trustStorePassword=changeit"
+
+prepare_kafka_cli_configs
 
 exec "$@"
