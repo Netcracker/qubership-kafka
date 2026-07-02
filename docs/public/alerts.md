@@ -388,7 +388,7 @@ This limit can be overridden with parameter `thresholds.partitionCountAlert` des
 ### Recommended Actions to Resolve Issue
 
 1. Perform rebalance of Kafka cluster if only one pod has overloaded partition number.
-   You can find rebalace command [here](./troubleshooting.md#topics-with-insufficient-replication-factor).
+   You can find the rebalance command in [Topics with Insufficient Replication Factor](./troubleshooting.md#topics-with-insufficient-replication-factor).
 2. Refer [Kafka Works Slowly or Consumes a lot of CPU For All Nodes](./troubleshooting.md#kafka-works-slowly-and-consumes-a-lot-of-cpu-for-all-nodes)
    to see options when the number or partitions are exceeded for whole cluster.
 
