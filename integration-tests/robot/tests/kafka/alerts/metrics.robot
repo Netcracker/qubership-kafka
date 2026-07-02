@@ -4,10 +4,10 @@ ${FIND_METRIC_RETRY_TIME}           5min
 ${FIND_METRIC_RETRY_INTERVAL}       10s
 
 *** Settings ***
+Resource  ../../shared/keywords.robot
 Library  MonitoringLibrary  host=%{PROMETHEUS_URL}
 ...                         username=${PROMETHEUS_USER}
 ...                         password=${PROMETHEUS_PASSWORD}
-Resource  ../../shared/keywords.robot
 
 *** Keywords ***
 Check JMX Metrics Exist In Prometheus
