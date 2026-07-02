@@ -6,16 +6,15 @@ permissions:
   actions: read
 
 on:
-#  schedule:
-#    - cron: '0 1 * * *'
-  push
+  schedule:
+    - cron: '0 1 * * *'
 
 jobs:
   Nightly-Kafka-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@fix/disable_atp # v1.8.0
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@006f4c99bd9167307208d09252aa005208a4af0d # v1.13.2
     with:
       service_branch: 'main'
-      pipeline_branch: 'fix/disable_atp' #this value must match the value after '@' in 'uses'
+      pipeline_branch: '006f4c99bd9167307208d09252aa005208a4af0d' #this value must match the value after '@' in 'uses'
       scope: 'nightly'
       allure: false
     secrets:
