@@ -934,6 +934,80 @@ Configure replicas number for backup-daemon pod
 {{- end }}
 
 {{/*
+  PromQL for offset lag alert (kafka_consumergroup_lag; global max or filtered).
+*/}}
+{{- define "kafka.lagAlertExpr" -}}
+{{- $namespace := required "namespace" .namespace -}}
+{{- if and (not .groups) (not .topics) -}}
+max(kafka_consumergroup_lag{namespace="{{ $namespace }}"})
+{{- else -}}
+{{- $groups := default ".*" .groups -}}
+{{- $topics := default ".*" .topics -}}
+max(kafka_consumergroup_lag{namespace="{{ $namespace }}", consumergroup=~"{{ $groups }}", topic=~"{{ $topics }}"})
+{{- end -}}
+{{- end -}}
+
+{{/*
+  PromQL for estimated lag seconds alert (same formula as Kafka Exporter dashboard).
+*/}}
+{{- define "kafka.lagAlertSecondsExpr" -}}
+{{- $namespace := required "namespace" .namespace -}}
+{{- $groups := default ".*" .groups -}}
+{{- $topics := default ".*" .topics -}}
+sum by (consumergroup) (kafka_consumergroup_lag{namespace="{{ $namespace }}", consumergroup=~"{{ $groups }}", topic=~"{{ $topics }}"}) / clamp_min(sum(rate(kafka_topic_partition_current_offset{namespace="{{ $namespace }}", topic=~"{{ $topics }}"}[5m])), 1)
+{{- end -}}
+
+{{/*
+  PrometheusRule alert: offset lag threshold.
+*/}}
+{{- define "kafka.lagOffsetAlertRule" -}}
+{{- $root := .root -}}
+{{- $threshold := .threshold -}}
+{{- $alertName := .alertName | default (printf "KafkaLagAlert%s" (.nameSuffix | default "")) -}}
+{{- $groups := .groups -}}
+{{- $topics := .topics -}}
+- alert: {{ $alertName }}
+  annotations:
+    {{- if or $groups $topics }}
+    description: 'Consumer group {{`{{ $labels.consumergroup }}`}} has partition lag higher than {{ $threshold }} (topics filter {{ default ".*" $topics | quote }}, groups filter {{ default ".*" $groups | quote }})'
+    {{- else }}
+    description: 'Some of Kafka Service pods have partition lag higher than {{ $threshold }}'
+    {{- end }}
+    summary: Some of Kafka Service pods have partition lag higher than {{ $threshold }}
+  expr: ({{ include "kafka.lagAlertExpr" (dict "namespace" $root.Release.Namespace "groups" $groups "topics" $topics) }}) > {{ $threshold }}
+  for: 3m
+  labels:
+    severity: high
+    namespace: {{ $root.Release.Namespace }}
+    service: {{ $root.Release.Name }}
+{{- end -}}
+
+{{/*
+  PrometheusRule alert: estimated lag seconds threshold.
+*/}}
+{{- define "kafka.lagSecondsAlertRule" -}}
+{{- $root := .root -}}
+{{- $threshold := .threshold -}}
+{{- $alertName := .alertName | default (printf "KafkaEstimatedLagSecondsAlert%s" (.nameSuffix | default "")) -}}
+{{- $groups := .groups -}}
+{{- $topics := .topics -}}
+- alert: {{ $alertName }}
+  annotations:
+    {{- if or $groups $topics }}
+    description: 'Estimated lag seconds for consumer group {{`{{ $labels.consumergroup }}`}} is higher than {{ $threshold }} (topics filter {{ default ".*" $topics | quote }}, groups filter {{ default ".*" $groups | quote }})'
+    {{- else }}
+    description: 'Estimated lag seconds for consumer group {{`{{ $labels.consumergroup }}`}} is higher than {{ $threshold }}'
+    {{- end }}
+    summary: Consumer group estimated lag seconds exceeded threshold
+  expr: ({{ include "kafka.lagAlertSecondsExpr" (dict "namespace" $root.Release.Namespace "groups" $groups "topics" $topics) }}) > {{ $threshold }}
+  for: 3m
+  labels:
+    severity: high
+    namespace: {{ $root.Release.Namespace }}
+    service: {{ $root.Release.Name }}
+{{- end -}}
+
+{{/*
   Pod-template checksums for Helm-only Deployments that mount credential Secrets.
   Rolls Pods on helm upgrade when Secret manifest content changes. Does not react to
   kubectl edit secret alone — use operator patch (see deployment_secret_restart.go) where available.

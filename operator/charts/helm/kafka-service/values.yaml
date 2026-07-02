@@ -242,7 +242,20 @@ monitoring:
   enableAdditionalMetrics: true
   thresholds:
     gcCountAlert: 10
-    lagAlert: 1000
+    lagAlert: 100000
+    lagAlertSeconds: 3600
+    lagAlertConfiguration: []
+    # Examples:
+    # lagAlertConfiguration:
+    #   - alertName: TestTopicsLag
+    #     topics: "test.*"
+    #     groups: "test.*"
+    #     lagAlert: -1
+    #     lagAlertSeconds: 1200
+    #   - alertName: NotImportantLag
+    #     topics: "not-important.*"
+    #     lagAlert: -1
+    #     lagAlertSeconds: 7600
     partitionCountAlert: 4000
     brokerSkewAlert: 50
     brokerLeaderSkewAlert: 50
