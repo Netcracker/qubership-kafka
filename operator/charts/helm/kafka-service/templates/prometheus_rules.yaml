@@ -82,16 +82,29 @@ spec:
             severity: high
             namespace: {{ .Release.Namespace }}
             service: {{ .Release.Name }}
-        - alert: KafkaLagAlert
-          annotations:
-            description: 'Some of Kafka Service pods have partition lag higher than {{ .Values.monitoring.thresholds.lagAlert }}'
-            summary: Some of Kafka Service pods have partition lag higher than {{ .Values.monitoring.thresholds.lagAlert }}
-          expr: max(kafka_consumergroup_group_lag{namespace="{{ .Release.Namespace }}"}) > {{ .Values.monitoring.thresholds.lagAlert }}
-          for: 3m
-          labels:
-            severity: high
-            namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}
+        {{- if ne (.Values.monitoring.thresholds.lagAlert | int) -1 }}
+        {{- include "kafka.lagOffsetAlertRule" (dict "root" . "threshold" .Values.monitoring.thresholds.lagAlert) | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.monitoring.lagExporter.enabled (ne (.Values.monitoring.thresholds.lagAlertSeconds | int) -1) }}
+        {{- include "kafka.lagSecondsAlertRule" (dict "root" . "threshold" .Values.monitoring.thresholds.lagAlertSeconds) | nindent 8 }}
+        {{- end }}
+        {{- range $i, $config := .Values.monitoring.thresholds.lagAlertConfiguration }}
+        {{- $alertName := required (printf "monitoring.thresholds.lagAlertConfiguration[%d].alertName is required" $i) $config.alertName -}}
+        {{- $groups := default ".*" $config.groups -}}
+        {{- $topics := default ".*" $config.topics -}}
+        {{- $lagAlert := default -1 ($config.lagAlert | int) -}}
+        {{- $lagAlertSeconds := default -1 ($config.lagAlertSeconds | int) -}}
+        {{- if ne $lagAlert -1 }}
+        {{- include "kafka.lagOffsetAlertRule" (dict "root" $ "threshold" $lagAlert "alertName" $alertName "groups" $groups "topics" $topics) | nindent 8 }}
+        {{- end }}
+        {{- if and $.Values.monitoring.lagExporter.enabled (ne $lagAlertSeconds -1) }}
+        {{- $secondsAlertName := $alertName -}}
+        {{- if ne $lagAlert -1 }}
+        {{- $secondsAlertName = printf "%sSeconds" $alertName -}}
+        {{- end }}
+        {{- include "kafka.lagSecondsAlertRule" (dict "root" $ "threshold" $lagAlertSeconds "alertName" $secondsAlertName "groups" $groups "topics" $topics) | nindent 8 }}
+        {{- end }}
+        {{- end }}
         {{- if .Values.monitoring.thresholds.partitionCountAlert }}
         - alert: KafkaPartitionCountAlert
           annotations:
