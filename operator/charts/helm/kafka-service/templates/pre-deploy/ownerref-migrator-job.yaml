@@ -30,6 +30,7 @@ spec:
           args:
             - |
               set -euo pipefail
+
               # Ensure jq is present
               command -v jq >/dev/null 2>&1 || { echo "[migrator] jq is required"; exit 1; }
 
