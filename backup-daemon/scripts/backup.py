@@ -32,12 +32,21 @@ REQUEST_HEADERS = {
 CA_CERT_PATH = '/tls/ca.crt'
 TLS_CERT_PATH = '/tls/tls.crt'
 TLS_KEY_PATH = '/tls/tls.key'
+DEFAULT_SECRETS_DIR = '/etc/secrets/backup-daemon-pod-secrets'
+SECRETS_DIR = os.getenv("BACKUP_DAEMON_SECRETS_DIR", DEFAULT_SECRETS_DIR)
 
 loggingLevel = logging.DEBUG if os.getenv(
     'KAFKA_BACKUP_DAEMON_DEBUG') else logging.INFO
 logging.basicConfig(level=loggingLevel,
                     format='[%(asctime)s,%(msecs)03d][%(levelname)s][category=Backup] %(message)s',
                     datefmt='%Y-%m-%dT%H:%M:%S')
+
+def get_env_or_file(name: str):
+    default_file_path = os.path.join(SECRETS_DIR, name)
+    if os.path.isfile(default_file_path):
+        with open(default_file_path, "r", encoding="utf-8") as secret_file:
+            return secret_file.read().strip()
+    return os.getenv(name)
 
 
 class Backup:
@@ -49,8 +58,8 @@ class Backup:
             sys.exit(1)
         kafka_enable_ssl = self.str2bool(os.getenv("KAFKA_ENABLE_SSL", "false"))
         kafka_sasl_mechanism = os.getenv('KAFKA_SASL_MECHANISM', 'SCRAM-SHA-512')
-        kafka_username = os.getenv("KAFKA_USERNAME")
-        kafka_password = os.getenv("KAFKA_PASSWORD")
+        kafka_username = get_env_or_file("KAFKA_USERNAME")
+        kafka_password = get_env_or_file("KAFKA_PASSWORD")
 
         security_protocol = 'SSL' if kafka_enable_ssl else 'PLAINTEXT'
         ssl_cafile = CA_CERT_PATH if kafka_enable_ssl and os.path.exists(CA_CERT_PATH) else None

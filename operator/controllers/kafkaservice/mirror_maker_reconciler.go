@@ -24,6 +24,7 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/controllers/provider"
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -108,14 +109,14 @@ func (r ReconcileMirrorMaker) Reconcile() error {
 
 			if mirrorMakerSpec.RegionName == "" {
 				for _, cluster := range mirrorMakerSpec.Clusters {
-					if err := r.createDeployment(cluster, secretVersion, configurationVersion); err != nil {
+					if err := r.createDeployment(cluster, secret, configurationVersion); err != nil {
 						return err
 					}
 				}
 			} else {
 				for _, cluster := range mirrorMakerSpec.Clusters {
 					if cluster.Name == mirrorMakerSpec.RegionName {
-						if err := r.createDeployment(cluster, secretVersion, configurationVersion); err != nil {
+						if err := r.createDeployment(cluster, secret, configurationVersion); err != nil {
 							return err
 						}
 						break
@@ -156,7 +157,7 @@ func (r ReconcileMirrorMaker) Status() error {
 	return r.reconciler.updateConditions(NewCondition(statusTrue, typeReady, mirrorMakerConditionReason, "Kafka Mirror Maker pods are ready"))
 }
 
-func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, secretVersion string,
+func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, secret *corev1.Secret,
 	configurationVersion string) error {
 	mirrorMakerProvider := r.mirrorMakerProvider
 	mirrorMakerSpec := r.cr.Spec.MirrorMaker
@@ -166,7 +167,7 @@ func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, sec
 	r.logger.Info("Create deployment for cluster " + currentClusterName)
 
 	mirrorMakerDeployment := mirrorMakerProvider.NewMirrorMakerDeploymentForCR(cluster,
-		mirrorMakerSpec.Clusters, secretVersion, configurationVersion, currentClusterName, deploymentName)
+		mirrorMakerSpec.Clusters, secret.ResourceVersion, configurationVersion, currentClusterName, deploymentName)
 	if err := r.reconciler.SetControllerReference(r.cr, mirrorMakerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
@@ -180,7 +181,8 @@ func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, sec
 	if err := r.reconciler.CreateOrUpdateDeployment(mirrorMakerDeployment, r.logger); err != nil {
 		return err
 	}
-	return nil
+	return updateDeploymentSecretRestartAnnotations(
+		r.reconciler.Client, r.cr.Namespace, deploymentName, r.logger, secret)
 }
 
 // updateMirrorMakerStatus updates the status of Kafka Mirror Maker

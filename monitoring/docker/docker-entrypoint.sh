@@ -9,22 +9,29 @@ export KAFKA_CTL_CONFIG=/tmp/monitoring/kafkactl.yml
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e
 if [[ "$DEBUG" == true ]]; then
-  set -x
-  printenv
+  echo "DEBUG=true; secret-safe mode enabled (trace/env dump disabled)."
 fi
+
+SECRETS_DIR="${SECRETS_DIR:-/etc/secrets/monitoring-pod-secrets}"
+
+resolve_secret_value() {
+  local secret_key="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
+KAFKA_USER="$(resolve_secret_value "client_username" "KAFKA_USER")"
+KAFKA_PASSWORD="$(resolve_secret_value "client_password" "KAFKA_PASSWORD")"
 
 : ${KAFKA_SERVICE_NAME:="kafka"}
 : ${KAFKA_TOTAL_BROKERS_COUNT:=-1}
 : ${KAFKA_CLIENT_PORT:=9092}
 : ${KAFKA_PROMETHEUS_PORT:=8080}
-
-# Set environment variables used in telegraf.conf
-export KAFKA_USER=${KAFKA_USER}
-export KAFKA_PASSWORD=${KAFKA_PASSWORD}
-export SM_DB_USERNAME=${SM_DB_USERNAME}
-export SM_DB_PASSWORD=${SM_DB_PASSWORD}
-export PROMETHEUS_USERNAME=${PROMETHEUS_USERNAME}
-export PROMETHEUS_PASSWORD=${PROMETHEUS_PASSWORD}
 
 #Generates addresses with specified port.
 #

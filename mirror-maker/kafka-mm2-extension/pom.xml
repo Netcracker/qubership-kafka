@@ -15,7 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.deploy.skip>true</maven.deploy.skip>
-    <kafka.version>4.1.2</kafka.version>
+    <kafka.version>4.3.0</kafka.version>
   </properties>
 
   <dependencies>
@@ -62,7 +62,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-reload4j</artifactId>
-      <version>2.0.17</version>
+      <version>2.0.18</version>
       <scope>test</scope>
     </dependency>
     <dependency>

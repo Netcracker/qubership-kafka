@@ -129,6 +129,8 @@ services:
   integration-tests:
     user: "0:0"
     read_only: true
+    tmpfs:
+      - /tmp
     image: ghcr.io/netcracker/qubership-kafka-integration-tests:main
     ports:
       - "8090:8080"

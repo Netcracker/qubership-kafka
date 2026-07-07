@@ -21,6 +21,9 @@ spec:
       name: {{ template "kafka.name" . }}-cruise-control
   template:
     metadata:
+      annotations:
+        checksum/kafka-services-secret: {{ include (print $.Template.BasePath "/kafka-services-secret.yaml") . | sha256sum }}
+        checksum/cruise-control-secret: {{ include (print $.Template.BasePath "/cruise-control/cc_secret.yaml") . | sha256sum }}
       labels:
         {{- include "kafka-services.defaultLabels" . | nindent 8 }}
         app.kubernetes.io/name: {{ template "kafka.name" . }}-cruise-control
@@ -71,36 +74,6 @@ spec:
               value: "{{ .Values.cruiseControl.capacity.nwIn }}"
             - name: BROKER_NW_OUT
               value: "{{ .Values.cruiseControl.capacity.nwOut }}"
-            - name: KAFKA_AUTH_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-services-secret
-                  key: client-username
-            - name: KAFKA_AUTH_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-services-secret
-                  key: client-password
-            - name: ADMIN_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-cruise-control-secret
-                  key: admin-username
-            - name: ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-cruise-control-secret
-                  key: admin-password
-            - name: VIEWER_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-cruise-control-secret
-                  key: viewer-username
-            - name: VIEWER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-cruise-control-secret
-                  key: viewer-password
           securityContext:
             {{- include "kafka-service.globalContainerSecurityContext" . | nindent 12 }}
           resources:
@@ -131,6 +104,9 @@ spec:
               mountPath: /cruise-control/additionalConfig
             - name: tmp
               mountPath: /tmp
+            - name: cruise-control-pod-secrets
+              mountPath: /etc/secrets/cruise-control-pod-secrets
+              readOnly: true
           {{- if eq (include "kafka-service.enableTls" . ) "true" }}
             - name: {{ include "kafka-service.tlsSecretName" . }}
               mountPath: "/cruise-control/tls"
@@ -145,6 +121,28 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 256Mi
+        - name: cruise-control-pod-secrets
+          projected:
+            defaultMode: 420
+            sources:
+              - secret:
+                  name: {{ template "kafka.name" . }}-services-secret
+                  items:
+                    - key: client-username
+                      path: client-username
+                    - key: client-password
+                      path: client-password
+              - secret:
+                  name: {{ template "kafka.name" . }}-cruise-control-secret
+                  items:
+                    - key: admin-username
+                      path: admin-username
+                    - key: admin-password
+                      path: admin-password
+                    - key: viewer-username
+                      path: viewer-username
+                    - key: viewer-password
+                      path: viewer-password
         {{- if eq (include "kafka-service.enableTls" . ) "true"}}
         - name: {{ include "kafka-service.tlsSecretName" . }}
           secret:

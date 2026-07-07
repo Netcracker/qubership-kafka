@@ -5,6 +5,7 @@
 # can run with readOnlyRootFilesystem: true.  Static config lives under
 # ${KAFKA_HOME}/config; we copy it to ${KAFKA_CONFIG} on every start.
 : "${KAFKA_WORK:=/tmp/kafka}"
+rm -rf "${KAFKA_WORK}"
 KAFKA_CONFIG="${KAFKA_WORK}/config"
 KAFKA_RUNTIME_BIN="${KAFKA_WORK}/bin"
 export KAFKA_CTL_CONFIG="${KAFKA_RUNTIME_BIN}/kafkactl.yml"
@@ -18,9 +19,31 @@ echo "" >> ${KAFKA_CONFIG}/server.properties
 # Exit immediately if a *pipeline* returns a non-zero status. (Add -x for command tracing)
 set -e
 if [[ "$DEBUG" == true ]]; then
-  set -x
-  printenv
+  echo "DEBUG=true; secret-safe mode enabled (trace/env dump disabled)."
 fi
+
+SECRETS_DIR="${KAFKA_SECRETS_DIR:-${SECRETS_DIR:-/etc/secrets/kafka-pod-secrets}}"
+
+# Resolve secret value from mounted secret files with env fallback.
+# During migration we keep env fallback for compatibility, but files are preferred.
+resolve_secret_value() {
+  local secret_key="$1"
+  local env_var_name="$2"
+  local secret_path="${SECRETS_DIR}/${secret_key}"
+  if [[ -r "${secret_path}" ]]; then
+    tr -d '\r' < "${secret_path}"
+    return 0
+  fi
+  printf "%s" "${!env_var_name:-}"
+}
+
+ADMIN_USERNAME="$(resolve_secret_value "admin-username" "ADMIN_USERNAME")"
+ADMIN_PASSWORD="$(resolve_secret_value "admin-password" "ADMIN_PASSWORD")"
+CLIENT_USERNAME="$(resolve_secret_value "client-username" "CLIENT_USERNAME")"
+CLIENT_PASSWORD="$(resolve_secret_value "client-password" "CLIENT_PASSWORD")"
+IDP_WHITELIST="$(resolve_secret_value "idp-whitelist" "IDP_WHITELIST")"
+ZOOKEEPER_CLIENT_USERNAME="$(resolve_secret_value "zookeeper-client-username" "ZOOKEEPER_CLIENT_USERNAME")"
+ZOOKEEPER_CLIENT_PASSWORD="$(resolve_secret_value "zookeeper-client-password" "ZOOKEEPER_CLIENT_PASSWORD")"
 
 if [[ ${DISABLE_SECURITY} == "false" && -z ${ADMIN_USERNAME} && -z ${ADMIN_PASSWORD} && -z ${CLIENT_USERNAME} && -z ${CLIENT_PASSWORD} ]]; then
   echo "Warning: All credential are not set, security is disabled"
@@ -74,6 +97,21 @@ if [[ "$KRAFT_ENABLED" == "true" ]]; then
   export CONF_KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
   export CONF_KAFKA_CONTROLLER_QUORUM_VOTERS=${VOTERS}
   export CONF_KAFKA_NODE_ID=${BROKER_ID}
+  # The stock Apache server.properties ships controller.quorum.bootstrap.servers=localhost:9093,
+  # which points at the INTER_BROKER listener (SCRAM-SHA-512). The Raft/controller client
+  # authenticates with the controller mechanism (PLAIN), so whenever a node falls back to the
+  # bootstrap endpoint during a leader election it hits the inter-broker listener and fails with
+  # "Authentication failed: Invalid username or password". Point the bootstrap at the CONTROLLER
+  # listener (9096, PLAIN) so the fallback path authenticates against the right listener.
+  export CONF_KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS=${CONF_KAFKA_CONTROLLER_QUORUM_BOOTSTRAP_SERVERS:=localhost:9096}
+  # KRaft controller quorum timeouts. The Apache Kafka defaults (fetch/request 2000ms,
+  # election 1000ms) are too aggressive for CPU-constrained or busy environments: a
+  # single missed Raft fetch triggers a spurious leader election, brokers briefly lose
+  # their controller session and become unreachable for clients. Raise the defaults and
+  # keep them overridable via CONF_KAFKA_* env vars.
+  export CONF_KAFKA_CONTROLLER_QUORUM_FETCH_TIMEOUT_MS=${CONF_KAFKA_CONTROLLER_QUORUM_FETCH_TIMEOUT_MS:=8000}
+  export CONF_KAFKA_CONTROLLER_QUORUM_REQUEST_TIMEOUT_MS=${CONF_KAFKA_CONTROLLER_QUORUM_REQUEST_TIMEOUT_MS:=5000}
+  export CONF_KAFKA_CONTROLLER_QUORUM_ELECTION_TIMEOUT_MS=${CONF_KAFKA_CONTROLLER_QUORUM_ELECTION_TIMEOUT_MS:=3000}
   # For Kraft remove quorum-state file so that we won't enter voter not match error after scaling up/down https://issues.apache.org/jira/browse/KAFKA-14094
   if [ -f "/var/opt/kafka/data/$BROKER_ID/__cluster_metadata-0/quorum-state" ]; then
     echo "Removing quorum-state file"
@@ -751,7 +789,7 @@ if [[ ${ENABLE_AUDIT_LOGS} == "true" ]]; then
     cat >> "${KAFKA_CONFIG}/log4j.properties" << EOL
 log4j.appender.AUDIT=org.apache.log4j.ConsoleAppender
 log4j.appender.AUDIT.layout=org.apache.log4j.PatternLayout
-log4j.appender.AUDIT.layout.ConversionPattern = [%d{ISO8601}][%p] [category=kafka.audit] CEF:1|Qubership|Kafka|3.9.1|AUTHENTICATION|%m|1|result=failed type=audit_log_type%n
+log4j.appender.AUDIT.layout.ConversionPattern = [%d{ISO8601}][%p] [category=kafka.audit] CEF:1|Qubership|Kafka|4.3.0|AUTHENTICATION|%m|1|result=failed type=audit_log_type%n
 
 log4j.logger.org.apache.kafka.common.network.Selector=INFO, AUDIT
 log4j.additivity.org.apache.kafka.common.network.Selector=true

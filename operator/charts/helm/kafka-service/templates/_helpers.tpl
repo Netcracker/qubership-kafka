@@ -733,12 +733,16 @@ Ingress host for Cruise Control
 {{- $root := index . 0 -}}
 {{- $refs := index . 1 | default list -}}
 {{- if and $root.Values.GATEWAY_SYSTEM_NAME $root.Values.GATEWAY_SYSTEM_NAMESPACE }}
-- name: {{ $root.Values.GATEWAY_SYSTEM_NAME }}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: {{ $root.Values.GATEWAY_SYSTEM_NAME }}
   namespace: {{ $root.Values.GATEWAY_SYSTEM_NAMESPACE }}
   port: 443
 {{- else if gt (len $refs) 0 }}
 {{- range $refs }}
-- name: {{ .name }}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: {{ .name }}
   namespace: {{ .namespace }}
   port: 443
 {{- end }}
@@ -928,6 +932,101 @@ Configure replicas number for backup-daemon pod
   {{- "not_found" }}
   {{- end }}
 {{- end }}
+
+{{/*
+  PromQL for offset lag alert (kafka_consumergroup_lag; global max or filtered).
+*/}}
+{{- define "kafka.lagAlertExpr" -}}
+{{- $namespace := required "namespace" .namespace -}}
+{{- if and (not .groups) (not .topics) -}}
+max(kafka_consumergroup_lag{namespace="{{ $namespace }}"})
+{{- else -}}
+{{- $groups := default ".*" .groups -}}
+{{- $topics := default ".*" .topics -}}
+max(kafka_consumergroup_lag{namespace="{{ $namespace }}", consumergroup=~"{{ $groups }}", topic=~"{{ $topics }}"})
+{{- end -}}
+{{- end -}}
+
+{{/*
+  PromQL for estimated lag seconds alert (same formula as Kafka Exporter dashboard).
+*/}}
+{{- define "kafka.lagAlertSecondsExpr" -}}
+{{- $namespace := required "namespace" .namespace -}}
+{{- $groups := default ".*" .groups -}}
+{{- $topics := default ".*" .topics -}}
+sum by (consumergroup) (kafka_consumergroup_lag{namespace="{{ $namespace }}", consumergroup=~"{{ $groups }}", topic=~"{{ $topics }}"}) / clamp_min(sum(rate(kafka_topic_partition_current_offset{namespace="{{ $namespace }}", topic=~"{{ $topics }}"}[5m])), 1)
+{{- end -}}
+
+{{/*
+  PrometheusRule alert: offset lag threshold.
+*/}}
+{{- define "kafka.lagOffsetAlertRule" -}}
+{{- $root := .root -}}
+{{- $threshold := .threshold -}}
+{{- $alertName := .alertName | default (printf "KafkaLagAlert%s" (.nameSuffix | default "")) -}}
+{{- $groups := .groups -}}
+{{- $topics := .topics -}}
+- alert: {{ $alertName }}
+  annotations:
+    {{- if or $groups $topics }}
+    description: 'Consumer group {{`{{ $labels.consumergroup }}`}} has partition lag higher than {{ $threshold }} (topics filter {{ default ".*" $topics | quote }}, groups filter {{ default ".*" $groups | quote }})'
+    {{- else }}
+    description: 'Some of Kafka Service pods have partition lag higher than {{ $threshold }}'
+    {{- end }}
+    summary: Some of Kafka Service pods have partition lag higher than {{ $threshold }}
+  expr: ({{ include "kafka.lagAlertExpr" (dict "namespace" $root.Release.Namespace "groups" $groups "topics" $topics) }}) > {{ $threshold }}
+  for: 3m
+  labels:
+    severity: high
+    namespace: {{ $root.Release.Namespace }}
+    service: {{ $root.Release.Name }}
+{{- end -}}
+
+{{/*
+  PrometheusRule alert: estimated lag seconds threshold.
+*/}}
+{{- define "kafka.lagSecondsAlertRule" -}}
+{{- $root := .root -}}
+{{- $threshold := .threshold -}}
+{{- $alertName := .alertName | default (printf "KafkaEstimatedLagSecondsAlert%s" (.nameSuffix | default "")) -}}
+{{- $groups := .groups -}}
+{{- $topics := .topics -}}
+- alert: {{ $alertName }}
+  annotations:
+    {{- if or $groups $topics }}
+    description: 'Estimated lag seconds for consumer group {{`{{ $labels.consumergroup }}`}} is higher than {{ $threshold }} (topics filter {{ default ".*" $topics | quote }}, groups filter {{ default ".*" $groups | quote }})'
+    {{- else }}
+    description: 'Estimated lag seconds for consumer group {{`{{ $labels.consumergroup }}`}} is higher than {{ $threshold }}'
+    {{- end }}
+    summary: Consumer group estimated lag seconds exceeded threshold
+  expr: ({{ include "kafka.lagAlertSecondsExpr" (dict "namespace" $root.Release.Namespace "groups" $groups "topics" $topics) }}) > {{ $threshold }}
+  for: 3m
+  labels:
+    severity: high
+    namespace: {{ $root.Release.Namespace }}
+    service: {{ $root.Release.Name }}
+{{- end -}}
+
+{{/*
+  Pod-template checksums for Helm-only Deployments that mount credential Secrets.
+  Rolls Pods on helm upgrade when Secret manifest content changes. Does not react to
+  kubectl edit secret alone — use operator patch (see deployment_secret_restart.go) where available.
+*/}}
+{{- define "integrationTests.podSecretsChecksumAnnotations" -}}
+checksum/kafka-services-secret: {{ include (print $.Template.BasePath "/kafka-services-secret.yaml") . | sha256sum }}
+{{- if .Values.backupDaemon.install }}
+checksum/backup-daemon-secret: {{ include (print $.Template.BasePath "/backup-daemon/backup-daemon-secret.yaml") . | sha256sum }}
+{{- end }}
+{{- if and .Values.backupDaemon.s3.enabled }}
+checksum/backup-daemon-s3-secret: {{ include (print $.Template.BasePath "/backup-daemon/backup-daemon-s3-secret.yaml") . | sha256sum }}
+{{- end }}
+{{- if or (and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install) .Values.integrationTests.identityProviderUrl (and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install) }}
+checksum/integration-tests-secret: {{ include (print $.Template.BasePath "/integration_tests/secret.yaml") . | sha256sum }}
+{{- end }}
+{{- if .Values.integrationTests.atpReport.enabled }}
+checksum/integration-tests-atp-storage-secret: {{ include (print $.Template.BasePath "/integration_tests/atp-storage-secret.yaml") . | sha256sum }}
+{{- end }}
+{{- end -}}
 
 {{- define "kafka.monitoredImages" -}}
   {{- printf "deployment %s-service-operator kafka-service-operator %s, " (include "kafka.name" .) (include "find_image" (list . "kafka-service-operator")) -}}

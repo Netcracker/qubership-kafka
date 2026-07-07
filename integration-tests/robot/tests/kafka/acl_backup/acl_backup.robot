@@ -1,13 +1,10 @@
 *** Variables ***
 ${KAFKA_BACKUP_DAEMON_HOST}                 %{BACKUP_DAEMON_HOST}
 ${KAFKA_BACKUP_DAEMON_PORT}                 %{BACKUP_DAEMON_PORT}
-${KAFKA_BACKUP_DAEMON_USER}                 %{BACKUP_DAEMON_USER}
-${KAFKA_BACKUP_DAEMON_PASSWORD}             %{BACKUP_DAEMON_PASSWORD}
+${KAFKA_BACKUP_DAEMON_USER}                 ${BACKUP_DAEMON_USER}
+${KAFKA_BACKUP_DAEMON_PASSWORD}             ${BACKUP_DAEMON_PASSWORD}
 ${KAFKA_BACKUP_DAEMON_PROTOCOL}             %{BACKUP_DAEMON_PROTOCOL}
 ${IDENTITY_PROVIDER_URL}                    %{IDENTITY_PROVIDER_URL}
-${IDENTITY_PROVIDER_REGISTRATION_TOKEN}     %{IDENTITY_PROVIDER_REGISTRATION_TOKEN}
-${IDENTITY_PROVIDER_USERNAME}               %{IDENTITY_PROVIDER_USERNAME}
-${IDENTITY_PROVIDER_PASSWORD}               %{IDENTITY_PROVIDER_PASSWORD}
 ${BACKUP_RESTORE_TIMEOUT}                   20s
 ${KAFKA_BACKUP_TOPIC}                       kafka-backup-acl-topic
 ${OPERATION_RETRY_COUNT}                    30
@@ -17,13 +14,13 @@ ${ROLE}                                     kafka
 
 
 *** Settings ***
+Resource  ../../shared/keywords.robot
 Library  RequestsLibrary
 Library  OAuthLibrary  url=${IDENTITY_PROVIDER_URL}
 ...                    registration_token=${IDENTITY_PROVIDER_REGISTRATION_TOKEN}
 ...                    username=${IDENTITY_PROVIDER_USERNAME}
 ...                    password=${IDENTITY_PROVIDER_PASSWORD}
 ...                    grant_type=client_credentials
-Resource  ../../shared/keywords.robot
 Suite Setup  Prepare
 
 *** Keywords ***

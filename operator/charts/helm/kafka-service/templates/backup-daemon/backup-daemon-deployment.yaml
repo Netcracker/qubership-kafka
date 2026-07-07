@@ -3,6 +3,7 @@
 {{ $storageClass := eq (include "backupDaemon.storageClassDefined" .) "true" }}
 {{- $s3AliasesData := fromYaml (include "backupDaemon.s3Aliases" .) }}
 {{- $hasS3Aliases := not (empty $s3AliasesData.items) }}
+{{- $backupDaemonSecretsDir := printf "/etc/secrets/%s-backup-daemon-pod-secrets" (include "kafka.name" .) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -98,6 +99,33 @@ spec:
           secret:
             secretName: {{ template "kafka.name" . }}-backup-daemon-s3-aliases
       {{- end }}
+        - name: backup-daemon-pod-secrets
+          projected:
+            defaultMode: 420
+            sources:
+              - secret:
+                  name: {{ template "kafka.name" . }}-services-secret
+                  items:
+                    - key: client-username
+                      path: KAFKA_USERNAME
+                    - key: client-password
+                      path: KAFKA_PASSWORD
+              - secret:
+                  name: {{ template "kafka.name" . }}-backup-daemon-secret
+                  items:
+                    - key: username
+                      path: BACKUP_DAEMON_API_CREDENTIALS_USERNAME
+                    - key: password
+                      path: BACKUP_DAEMON_API_CREDENTIALS_PASSWORD
+              {{- if .Values.backupDaemon.s3.enabled }}
+              - secret:
+                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
+                  items:
+                    - key: s3-key-id
+                      path: S3_KEY_ID
+                    - key: s3-key-secret
+                      path: S3_KEY_SECRET
+              {{- end }}
       {{- if and (eq (include "kafka-service.enableTls" .) "true") (include "kafka-service.tlsSecretName" .) }}
         - name: ssl-certs
           secret:
@@ -136,6 +164,9 @@ spec:
             mountPath: /aliases/
             readOnly: true
         {{- end }}
+          - name: backup-daemon-pod-secrets
+            mountPath: {{ $backupDaemonSecretsDir | quote }}
+            readOnly: true
           env:
             - name: PYTHONDONTWRITEBYTECODE
               value: "1"
@@ -151,43 +182,15 @@ spec:
               value: {{ include "kafka-service.saslMechanism" . }}
             - name: KAFKA_ENABLE_SSL
               value: {{ include "kafka-service.enableTls" . | quote }}
-            - name: KAFKA_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-services-secret
-                  key: client-username
-            - name: KAFKA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-services-secret
-                  key: client-password
+            - name: BACKUP_DAEMON_SECRETS_DIR
+              value: {{ $backupDaemonSecretsDir | quote }}
             - name: S3_ALIASES_USED
               value: {{ $hasS3Aliases | quote }}
-            - name: BACKUP_DAEMON_API_CREDENTIALS_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-backup-daemon-secret
-                  key: username
-            - name: BACKUP_DAEMON_API_CREDENTIALS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-backup-daemon-secret
-                  key: password
             {{- if .Values.backupDaemon.s3.enabled }}
             - name: S3_ENABLED
               value: "true"
             - name: S3_URL
               value: {{ .Values.backupDaemon.s3.url | quote }}
-            - name: S3_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
-                  key: s3-key-id
-            - name: S3_KEY_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "kafka.name" . }}-backup-daemon-s3-secret
-                  key: s3-key-secret
             - name: S3_BUCKET
               value: {{ .Values.backupDaemon.s3.bucket | quote }}
             {{- if and (include "backupDaemon.s3.tlsSecretName" .) .Values.backupDaemon.s3.sslVerify .Values.backupDaemon.s3.enabled }}

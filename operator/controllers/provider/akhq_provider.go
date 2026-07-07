@@ -245,7 +245,6 @@ func (arp AkhqResourceProvider) NewAkhqDeployment(protobufConfigMapVersion strin
 		},
 	}
 	envVars := arp.getAkhqEnvironmentVariables(protobufConfigMapVersion)
-	envVars = append(envVars, arp.getSecretEnvs()...)
 
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -355,6 +354,79 @@ func (arp AkhqResourceProvider) getAkhqVolumes(deserializationConfigMaps []*core
 			},
 		})
 	}
+	defaultMode := int32(0644)
+	projections := []corev1.VolumeProjection{
+		{
+			Secret: &corev1.SecretProjection{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: fmt.Sprintf("%s-services-secret", arp.cr.Name),
+				},
+				Items: []corev1.KeyToPath{
+					{Key: "client-username", Path: "client-username"},
+					{Key: "client-password", Path: "client-password"},
+				},
+			},
+		},
+		{
+			Secret: &corev1.SecretProjection{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "akhq-secret",
+				},
+				Items: []corev1.KeyToPath{
+					{Key: "akhq_default_user", Path: "akhq_default_user"},
+					{Key: "akhq_default_password", Path: "akhq_default_password"},
+				},
+			},
+		},
+		{
+			Secret: &corev1.SecretProjection{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "akhq-security-configuration",
+				},
+				Items: []corev1.KeyToPath{
+					{Key: "security_groups_config", Path: "security_groups_config"},
+					{Key: "basic_auth_users_config", Path: "basic_auth_users_config"},
+					{Key: "ldap_server_config", Path: "ldap_server_config"},
+					{Key: "ldap_users_config", Path: "ldap_users_config"},
+				},
+			},
+		},
+	}
+	if arp.cr.Spec.Akhq.Ldap.Enabled {
+		projections = append(projections, corev1.VolumeProjection{
+			Secret: &corev1.SecretProjection{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "akhq-ldap-secret",
+				},
+				Items: []corev1.KeyToPath{
+					{Key: "LDAP_ADMIN_USER", Path: "LDAP_ADMIN_USER"},
+					{Key: "LDAP_ADMIN_PASSWORD", Path: "LDAP_ADMIN_PASSWORD"},
+				},
+			},
+		})
+	}
+	if arp.spec.SchemaRegistryUrl != "" {
+		projections = append(projections, corev1.VolumeProjection{
+			Secret: &corev1.SecretProjection{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "schema-registry-secret",
+				},
+				Items: []corev1.KeyToPath{
+					{Key: "username", Path: "username"},
+					{Key: "password", Path: "password"},
+				},
+			},
+		})
+	}
+	volumes = append(volumes, corev1.Volume{
+		Name: "akhq-pod-secrets",
+		VolumeSource: corev1.VolumeSource{
+			Projected: &corev1.ProjectedVolumeSource{
+				DefaultMode: &defaultMode,
+				Sources:     projections,
+			},
+		},
+	})
 
 	volumes = append(volumes, getTmpVolume("32Mi")) // JVM UI
 
@@ -402,6 +474,11 @@ func (arp AkhqResourceProvider) getAkhqVolumeMounts(deserializationConfigMaps []
 	if arp.cr.Spec.Akhq.Ldap.Enabled {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: "ldap-config", MountPath: "/app/config/ldap"})
 	}
+	volumeMounts = append(volumeMounts, corev1.VolumeMount{
+		Name:      "akhq-pod-secrets",
+		MountPath: "/etc/secrets/akhq-pod-secrets",
+		ReadOnly:  true,
+	})
 	volumeMounts = append(volumeMounts, getTmpVolumeMount())
 	return volumeMounts
 }
@@ -459,75 +536,6 @@ func (arp AkhqResourceProvider) getAkhqEnvironmentVariables(protobufConfigMapVer
 			{
 				Name:  "SCHEMA_REGISTRY_TYPE",
 				Value: arp.spec.SchemaRegistryType,
-			},
-		}...)
-	}
-	return envVars
-}
-
-func (arp AkhqResourceProvider) getSecretEnvs() []corev1.EnvVar {
-	kafkaSecretName := fmt.Sprintf("%s-services-secret", arp.cr.Name)
-	akhqSecretName := "akhq-secret"
-	schemaRegistrySecretName := "schema-registry-secret"
-	ldapSecretName := "akhq-ldap-secret"
-	akhqSecurityConfigurationName := "akhq-security-configuration"
-	envVars := []corev1.EnvVar{
-		{
-			Name:      "KAFKA_AUTH_USERNAME",
-			ValueFrom: getSecretEnvVarSource(kafkaSecretName, "client-username"),
-		},
-		{
-			Name:      "KAFKA_AUTH_PASSWORD",
-			ValueFrom: getSecretEnvVarSource(kafkaSecretName, "client-password"),
-		},
-		{
-			Name:      "AKHQ_DEFAULT_USER",
-			ValueFrom: getSecretEnvVarSource(akhqSecretName, "akhq_default_user"),
-		},
-		{
-			Name:      "AKHQ_DEFAULT_PASSWORD",
-			ValueFrom: getSecretEnvVarSource(akhqSecretName, "akhq_default_password"),
-		},
-		{
-			Name:      "SECURITY_GROUPS_CONFIGURATION",
-			ValueFrom: getSecretEnvVarSource(akhqSecurityConfigurationName, securityGroupConfigK8SKey),
-		},
-		{
-			Name:      "BASIC_AUTH_USERS_CONFIGURATION",
-			ValueFrom: getSecretEnvVarSource(akhqSecurityConfigurationName, basicGroupsConfigK8SKey),
-		},
-		{
-			Name:      "LDAP_SERVER_CONFIGURATION",
-			ValueFrom: getSecretEnvVarSource(akhqSecurityConfigurationName, ldapServerConfigK8SKey),
-		},
-		{
-			Name:      "LDAP_USERS_CONFIGURATION",
-			ValueFrom: getSecretEnvVarSource(akhqSecurityConfigurationName, ldapUsersConfigK8SKey),
-		},
-	}
-
-	if arp.cr.Spec.Akhq.Ldap.Enabled {
-		envVars = append(envVars, []corev1.EnvVar{
-			{
-				Name:      "LDAP_ADMIN_USER",
-				ValueFrom: getSecretEnvVarSource(ldapSecretName, "LDAP_ADMIN_USER"),
-			},
-			{
-				Name:      "LDAP_ADMIN_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(ldapSecretName, "LDAP_ADMIN_PASSWORD"),
-			},
-		}...)
-	}
-
-	if arp.spec.SchemaRegistryUrl != "" {
-		envVars = append(envVars, []corev1.EnvVar{
-			{
-				Name:      "SCHEMA_REGISTRY_USERNAME",
-				ValueFrom: getSecretEnvVarSource(schemaRegistrySecretName, "username"),
-			},
-			{
-				Name:      "SCHEMA_REGISTRY_PASSWORD",
-				ValueFrom: getSecretEnvVarSource(schemaRegistrySecretName, "password"),
 			},
 		}...)
 	}
