@@ -42,9 +42,9 @@ RUN chmod +x /docker-entrypoint.sh
 
 
 
-# Set the Alpine version to 3.24
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories
+# Set the Alpine version to 3.23
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
 
 
 RUN set -x \
