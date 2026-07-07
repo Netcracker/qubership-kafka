@@ -7,10 +7,10 @@ ${ALERT_RETRY_TIME}                 10min
 ${ALERT_RETRY_INTERVAL}             10s
 
 *** Settings ***
+Resource  ../../shared/keywords.robot
 Library  MonitoringLibrary  host=%{PROMETHEUS_URL}
 ...                         username=${PROMETHEUS_USER}
 ...                         password=${PROMETHEUS_PASSWORD}
-Resource  ../../shared/keywords.robot
 Library     RetryFailed
 Test Teardown    Run Keyword If Test Failed    Sleep    10s
 
