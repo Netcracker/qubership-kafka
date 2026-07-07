@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.23 AS builder
+FROM eclipse-temurin:21-jdk-alpine-3.24 AS builder
 
 ENV CC_VERSION=2.5.146
 
@@ -39,7 +39,7 @@ RUN set -x \
     && tar -zxvf /tmp/cruise-control-ui.tar.gz -C /cruise-control \
     && rm -f /tmp/cruise-control-ui.tar.gz
 # --------------- Final stage ---------------
-FROM eclipse-temurin:21-jdk-alpine-3.23
+FROM eclipse-temurin:21-jdk-alpine-3.24
 
 RUN mkdir -p /cruise-control
 
@@ -67,7 +67,7 @@ RUN chmod a+rw -R .
 ARG TMP_DIR="/tmp"
 
 # Download kafkactl
-ARG KAFKACTL_VERSION=5.18.0
+ARG KAFKACTL_VERSION=5.19.0
 ARG TARGETARCH
 
 RUN set -x \
@@ -82,9 +82,7 @@ RUN set -x \
     && rm -rf ${TMP_DIR}
 
 # Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
+RUN apk add --update --upgrade --no-cache \
         pcre2 curl gnutls libcurl jq gnupg libexpat musl-utils libssl3 libcrypto3 openssl libpng binutils 
 
 EXPOSE 9090

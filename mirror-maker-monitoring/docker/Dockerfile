@@ -1,4 +1,4 @@
-FROM telegraf:1.38.2-alpine
+FROM telegraf:1.39.1-alpine
 
 ENV KMM_MONITORING_HOME=/opt/kafka-mirror-maker-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
@@ -8,9 +8,9 @@ RUN mkdir -p ${KMM_MONITORING_HOME}
 COPY docker/config/requirements.txt ${KMM_MONITORING_HOME}/requirements.txt
 COPY exec-scripts/ ${KMM_MONITORING_HOME}/exec-scripts/
 
-# Set the Alpine version to 3.23
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+# Set the Alpine version to 3.24
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories
 
 # Install misc. tools
 RUN set -x \
