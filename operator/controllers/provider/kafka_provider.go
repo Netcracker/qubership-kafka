@@ -933,7 +933,7 @@ func (krp KafkaResourceProvider) getSecretFilesVolume() *corev1.Volume {
 	if krp.cr.Spec.SecretName == "" {
 		return nil
 	}
-	defaultMode := int32(0400)
+	defaultMode := int32(0644)
 	return &corev1.Volume{
 		Name: "kafka-secrets",
 		VolumeSource: corev1.VolumeSource{
