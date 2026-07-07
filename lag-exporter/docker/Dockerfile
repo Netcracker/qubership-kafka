@@ -1,6 +1,6 @@
 FROM docker.io/danielqsj/kafka-exporter:v1.9.0 AS builder
 
-FROM alpine:3.23
+FROM alpine:3.24
 
 RUN apk add --no-cache bash python3 tini curl ca-certificates
 
@@ -8,9 +8,7 @@ COPY --from=builder /bin/kafka_exporter /bin/kafka_exporter
 RUN chmod +x /bin/kafka_exporter
 
 # Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
+RUN apk add --update --upgrade --no-cache \
         pcre2 curl gnutls libcurl jq musl-utils
 
 COPY docker/config_parser.py /opt/config_parser.py
