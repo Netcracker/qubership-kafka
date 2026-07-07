@@ -230,7 +230,7 @@ func (r *Reconciler) DeletePersistentVolumeClaim(persistentVolumeClaim *corev1.P
 }
 
 func (r *Reconciler) CreateOrUpdateDeployment(deployment *appsv1.Deployment, logger logr.Logger) error {
-	_, err := r.FindDeployment(deployment.Name, deployment.Namespace, logger)
+	foundDeployment, err := r.FindDeployment(deployment.Name, deployment.Namespace, logger)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info("Creating a new Deployment",
 			"Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
@@ -240,6 +240,8 @@ func (r *Reconciler) CreateOrUpdateDeployment(deployment *appsv1.Deployment, log
 	} else {
 		logger.Info("Updating the found Deployment",
 			"Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
+		deployment.ResourceVersion = foundDeployment.ResourceVersion
+		deployment.Annotations = util.JoinMaps(foundDeployment.Annotations, deployment.Annotations)
 		return r.Client.Update(context.TODO(), deployment)
 	}
 }
