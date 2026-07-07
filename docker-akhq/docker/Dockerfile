@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk-alpine-3.24
+FROM eclipse-temurin:25-jdk-alpine-3.23
 
 USER 0:0
 
