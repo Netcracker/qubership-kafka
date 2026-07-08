@@ -40,12 +40,10 @@ RUN set -x \
 RUN set -x && apk upgrade --no-cache --available
 
 # Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
+RUN  apk add --update --upgrade --no-cache \
         pcre2 curl gnutls libcurl jq
 
-ARG KAFKACTL_VERSION="5.18.0"
+ARG KAFKACTL_VERSION="5.19.0"
 ARG TARGETARCH
 RUN set -x \
     && wget \

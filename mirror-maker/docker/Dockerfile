@@ -46,7 +46,7 @@ RUN set -x \
     && useradd -s /bin/bash -r -g kafka --uid=1000 kafka \
     && usermod -a -G 0 kafka
 
-ARG KAFKA_VERSION=4.3.0
+ARG KAFKA_VERSION=4.3.1
 ARG DISTRO_NAME=kafka_2.13-${KAFKA_VERSION}
 ARG KAFKA_DISTRO_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
@@ -137,9 +137,7 @@ RUN mkdir -p "${KAFKA_HOME}" \
 RUN set -x && apk upgrade --no-cache --available
 
 # Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
+RUN apk add --update --upgrade --no-cache \
         pcre2 curl gnutls libcurl jq musl-utils libssl3 libcrypto3 openssl binutils musl-utils
 
 USER 1000:0
