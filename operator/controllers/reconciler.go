@@ -15,12 +15,15 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/Netcracker/qubership-kafka/operator/util"
@@ -230,20 +233,27 @@ func (r *Reconciler) DeletePersistentVolumeClaim(persistentVolumeClaim *corev1.P
 }
 
 func (r *Reconciler) CreateOrUpdateDeployment(deployment *appsv1.Deployment, logger logr.Logger) error {
-	foundDeployment, err := r.FindDeployment(deployment.Name, deployment.Namespace, logger)
+	_, err := r.FindDeployment(deployment.Name, deployment.Namespace, logger)
 	if err != nil && errors.IsNotFound(err) {
 		logger.Info("Creating a new Deployment",
 			"Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
 		return r.Client.Create(context.TODO(), deployment)
 	} else if err != nil {
 		return err
-	} else {
-		logger.Info("Updating the found Deployment",
-			"Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
-		deployment.ResourceVersion = foundDeployment.ResourceVersion
-		deployment.Annotations = util.JoinMaps(foundDeployment.Annotations, deployment.Annotations)
-		return r.Client.Update(context.TODO(), deployment)
 	}
+	desired := deployment.DeepCopy()
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		foundDeployment, err := r.FindDeployment(desired.Name, desired.Namespace, logger)
+		if err != nil {
+			return err
+		}
+		toUpdate := desired.DeepCopy()
+		toUpdate.ResourceVersion = foundDeployment.ResourceVersion
+		toUpdate.Annotations = util.JoinMaps(foundDeployment.Annotations, desired.Annotations)
+		logger.Info("Updating the found Deployment",
+			"Deployment.Namespace", toUpdate.Namespace, "Deployment.Name", toUpdate.Name)
+		return r.Client.Update(context.TODO(), toUpdate)
+	})
 }
 
 func (r *Reconciler) DeleteDeployment(deployment *appsv1.Deployment, logger logr.Logger) error {
@@ -470,11 +480,17 @@ func (r *Reconciler) WatchSecret(secretName string, obj runtime.Object, logger l
 	secret, err := r.FindSecret(secretName, cr.GetNamespace(), logger)
 	if err != nil {
 		return nil, err
-	} else {
-		if err := r.SetControllerReference(cr, secret, r.Scheme); err != nil {
+	}
+	ownerReferencesBefore := secret.OwnerReferences
+	if err := r.SetControllerReference(cr, secret, r.Scheme); err != nil {
+		return nil, err
+	}
+	if !equality.Semantic.DeepEqual(ownerReferencesBefore, secret.OwnerReferences) {
+		if err := r.UpdateSecret(secret, logger); err != nil {
 			return nil, err
 		}
-		if err := r.UpdateSecret(secret, logger); err != nil {
+		secret, err = r.FindSecret(secretName, cr.GetNamespace(), logger)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -498,20 +514,41 @@ func (r *Reconciler) SetControllerReference(owner, controlled runtime.Object, sc
 	return controllerutil.SetControllerReference(ownerStructured, controlledStructured, scheme)
 }
 
-func (r *Reconciler) UpdateSecret(secret *corev1.Secret, logger logr.Logger) error {
-	foundSecret := &corev1.Secret{}
-	err := r.Client.Get(context.TODO(),
-		types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace},
-		foundSecret)
-	if err != nil && errors.IsNotFound(err) {
-		logger.Error(err, fmt.Sprintf("Secret [%s] must exist", secret.Name))
-		return err
-	} else if err != nil {
-		return err
-	} else {
-		logger.Info("Updating the found secret", "Secret.Namespace", secret.Namespace, "Secret.Name", secret.Name)
-		return r.Client.Update(context.TODO(), secret)
-	}
+func (r *Reconciler) UpdateSecret(desired *corev1.Secret, logger logr.Logger) error {
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		latest := &corev1.Secret{}
+		err := r.Client.Get(context.TODO(),
+			types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace},
+			latest)
+		if err != nil && errors.IsNotFound(err) {
+			logger.Error(err, fmt.Sprintf("Secret [%s] must exist", desired.Name))
+			return err
+		}
+		if err != nil {
+			return err
+		}
+		modified := false
+		if !equality.Semantic.DeepEqual(latest.OwnerReferences, desired.OwnerReferences) {
+			latest.OwnerReferences = desired.OwnerReferences
+			modified = true
+		}
+		if desired.Data != nil {
+			for key, value := range desired.Data {
+				if !bytes.Equal(latest.Data[key], value) {
+					if latest.Data == nil {
+						latest.Data = map[string][]byte{}
+					}
+					latest.Data[key] = value
+					modified = true
+				}
+			}
+		}
+		if !modified {
+			return nil
+		}
+		logger.Info("Updating the found secret", "Secret.Namespace", latest.Namespace, "Secret.Name", latest.Name)
+		return r.Client.Update(context.TODO(), latest)
+	})
 }
 
 // CleanSecretData
