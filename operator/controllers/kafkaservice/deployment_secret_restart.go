@@ -23,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -63,16 +64,18 @@ func updateDeploymentSecretRestartAnnotations(
 	logger logr.Logger,
 	secrets ...*corev1.Secret,
 ) error {
-	deployment := &appsv1.Deployment{}
-	err := c.Get(context.TODO(), types.NamespacedName{Name: deploymentName, Namespace: namespace}, deployment)
-	if errors.IsNotFound(err) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if !applyAutoRestartSecretAnnotations(deployment, logger, secrets...) {
-		return nil
-	}
-	return c.Update(context.TODO(), deployment)
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		deployment := &appsv1.Deployment{}
+		err := c.Get(context.TODO(), types.NamespacedName{Name: deploymentName, Namespace: namespace}, deployment)
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if !applyAutoRestartSecretAnnotations(deployment, logger, secrets...) {
+			return nil
+		}
+		return c.Update(context.TODO(), deployment)
+	})
 }
