@@ -5,6 +5,7 @@ permissions:
   actions: read
 on:
   release:
+  workflow_dispatch: {}
   # types: [created]
   # push:
   #   branches:
