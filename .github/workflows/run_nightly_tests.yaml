@@ -14,7 +14,7 @@ jobs:
     uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@9fcb2de51b4d510b52ffca883515bdb388cbc16f # v1.14.0
     with:
       service_branch: 'main'
-      pipeline_branch: '9fcb2de51b4d510b52ffca883515bdb388cbc16f' #this value must match the value after '@' in 'uses'
+      pipeline_branch: '9fcb2de51b4d510b52ffca883515bdb388cbc16f' # v1.14.0 renovate: depName=Netcracker/qubership-test-pipelines
       scope: 'nightly'
       allure: false
       verify_timeout_minutes: 30
