@@ -737,14 +737,12 @@ Ingress host for Cruise Control
   kind: Gateway
   name: {{ $root.Values.GATEWAY_SYSTEM_NAME }}
   namespace: {{ $root.Values.GATEWAY_SYSTEM_NAMESPACE }}
-  port: 443
 {{- else if gt (len $refs) 0 }}
 {{- range $refs }}
 - group: gateway.networking.k8s.io
   kind: Gateway
   name: {{ .name }}
   namespace: {{ .namespace }}
-  port: 443
 {{- end }}
 {{- end }}
 {{- end -}}
