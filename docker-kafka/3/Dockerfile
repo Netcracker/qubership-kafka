@@ -41,7 +41,7 @@ RUN set -x \
 
 ARG KAFKA_VERSION=3.9.2
 ARG DISTRO_NAME=kafka_2.12-${KAFKA_VERSION}
-ARG KAFKA_DISTRO_URL="https://archive.apache.org/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
+ARG KAFKA_DISTRO_URL="https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/${DISTRO_NAME}.tgz"
 # Download Apache Kafka and install
 RUN set -x \
     && export DISTR_DIR="$(mktemp -d)" \
