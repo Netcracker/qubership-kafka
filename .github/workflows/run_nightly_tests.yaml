@@ -6,8 +6,7 @@ permissions:
   actions: read
 
 on:
-  schedule:
-    - cron: '0 1 * * *'
+  push
 
 jobs:
   Nightly-Kafka-Pipeline:
