@@ -1,6 +1,6 @@
-This section describes using integration tests based on [Robot Framework](http://robotframework.org).
+This section describes using integration tests based on [Robot Framework](https://robotframework.org/).
 
-Base docker image for Integration Tests: https://github.com/Netcracker/qubership-docker-integration-tests
+Base docker image for Integration Tests: <https://github.com/Netcracker/qubership-docker-integration-tests>
 
 # Run Tests Locally
 
@@ -8,14 +8,14 @@ For the full local setup (Docker Compose stack, build instructions, and test com
 
 # Test Suites
 
-| Suite | Tags | What it covers |
-|---|---|---|
-| `kafka/crud/topic_tests.robot` | `kafka_crud` | Topic creation, partition change, deletion |
-| `kafka/cp_tests/consumer_producer_tests.robot` | `kafka_consumer_producer` | Produce and consume a message end-to-end |
-| `kafka/backup/backup.robot` | `backup` | Full/granular backup, restore, eviction, unauthorized access |
-| `kafka/acl_backup/acl_backup.robot` | `backup` | ACL backup and restore |
-| `kafka/acl/acl_tests.robot` | — | ACL CRUD operations |
-| `kafka/ha/ha_tests.robot` | — | High-availability scenarios |
+| Suite                                          | Tags                      | What it covers                                               |
+| ---------------------------------------------- | ------------------------- | ------------------------------------------------------------ |
+| `kafka/crud/topic_tests.robot`                 | `kafka_crud`              | Topic creation, partition change, deletion                   |
+| `kafka/cp_tests/consumer_producer_tests.robot` | `kafka_consumer_producer` | Produce and consume a message end-to-end                     |
+| `kafka/backup/backup.robot`                    | `backup`                  | Full/granular backup, restore, eviction, unauthorized access |
+| `kafka/acl_backup/acl_backup.robot`            | `backup`                  | ACL backup and restore                                       |
+| `kafka/acl/acl_tests.robot`                    | —                         | ACL CRUD operations                                          |
+| `kafka/ha/ha_tests.robot`                      | —                         | High-availability scenarios                                  |
 
 # Mandatory Test Coverage
 

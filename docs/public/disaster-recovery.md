@@ -637,7 +637,7 @@ You can perform the switchover using the `SiteManager` functionality or Kafka di
 
 <!-- #GFCFilterMarkerStart# -->
 For more information about `SiteManager`, refer to 
-[Site Manager](https://github.com/Netcracker/DRNavigator/tree/main/README.md) article.
+[Site Manager](https://github.com/Netcracker/DRNavigator/blob/main/README.md) article.
 <!-- #GFCFilterMarkerEnd# -->
 
 If you want to perform a switchover manually, you need to switch `standby` Kafka cluster to `active` mode and then switch `active`

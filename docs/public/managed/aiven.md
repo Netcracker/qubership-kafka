@@ -29,7 +29,7 @@ To monitor Aiven Kafka you need to perform the following steps before deploy:
 
 1. Enable Prometheus on Aiven project:
 
-   * Follow the [Aiven Prometheus guide](https://developer.aiven.io/docs/platform/howto/integrations/prometheus-metrics.html) 
+   * Follow the [Aiven Prometheus guide](https://aiven.io/docs/platform/howto/integrations/prometheus-metrics) 
      to enable metrics collecting.
    
    ![Aiven Prometheus](../images/aiven_prometheus.png)

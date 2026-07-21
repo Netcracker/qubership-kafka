@@ -1,7 +1,7 @@
 # Requirements
 
 1. [Docker](https://www.docker.io/gettingstarted/#h_installation)
-2. [Docker Compose](http://docs.docker.com/compose/install/)
+2. [Docker Compose](https://docs.docker.com/compose/install/)
 
 # Security
 

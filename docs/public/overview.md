@@ -80,5 +80,5 @@ In addition to command line tooling for management and administration tasks, Kaf
   to publish (write) a stream of events to one or more Kafka topics.
 * The Consumer API, [https://kafka.apache.org/documentation/#consumerapi](https://kafka.apache.org/documentation/#consumerapi)
   to subscribe to (read) one or more topics and to process the stream of events produced to them.
-* The Kafka Streams API, [https://kafka.apache.org/documentation/streams](https://kafka.apache.org/documentation/streams)
+* The Kafka Streams API, [https://kafka.apache.org/documentation/streams/](https://kafka.apache.org/documentation/streams/)
   to implement stream processing applications and microservices.
