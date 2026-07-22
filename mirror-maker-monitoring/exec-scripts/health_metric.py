@@ -75,7 +75,7 @@ def _get_status_code(alive_nodes: int, total_nodes: int):
 
 
 def _get_list_of_servers(servers: str):
-    return [element.replace("'", "") for element in servers[1:-1].split(",")]
+    return [element.strip().replace("'", "").replace('"', '') for element in servers[1:-1].split(",") if element]
 
 
 def run():
