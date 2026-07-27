@@ -462,7 +462,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 	if kraftEnabled {
 		var voters []string
 		for i := 1; i <= krp.spec.Replicas; i++ {
-			voters = append(voters, fmt.Sprintf("%d@%s-%d.kafka-broker.%s:9096", i, krp.cr.Name, i, krp.cr.Namespace))
+			voters = append(voters, fmt.Sprintf("%d@%s-%d.%s.%s:9096", i, krp.cr.Name, i, domainName, krp.cr.Namespace))
 		}
 		envVars = append(envVars, []corev1.EnvVar{
 			{Name: "KRAFT_ENABLED", Value: "true"},
@@ -609,7 +609,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 	voters = append(voters, "3000@localhost:9092")
 	if migrated {
 		for i := 1; i <= krp.spec.Replicas; i++ {
-			voters = append(voters, fmt.Sprintf("%d@%s-%d.kafka-broker.%s:9096", i, krp.cr.Name, i, krp.cr.Namespace))
+			voters = append(voters, fmt.Sprintf("%d@%s-%d.%s.%s:9096", i, krp.cr.Name, i, domainName, krp.cr.Namespace))
 		}
 	}
 
