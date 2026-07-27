@@ -193,21 +193,6 @@ Configure Kafka monitoring type
 {{- end -}}
 
 {{/*
-Whether monitoring credentials are configured (secret required).
-*/}}
-{{- define "monitoring.credentialsConfigured" -}}
-{{- if (eq (include "monitoring.type" .) "influxdb") -}}
-{{- $username := coalesce .Values.global.secrets.monitoring.smDbUsername .Values.monitoring.smDbUsername -}}
-{{- $password := coalesce .Values.global.secrets.monitoring.smDbPassword .Values.monitoring.smDbPassword -}}
-{{- if and $username $password -}}true{{- end -}}
-{{- else -}}
-{{- $username := coalesce .Values.global.secrets.monitoring.prometheusUsername .Values.monitoring.prometheusUsername -}}
-{{- $password := coalesce .Values.global.secrets.monitoring.prometheusPassword .Values.monitoring.prometheusPassword -}}
-{{- if and $username $password -}}true{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Configure Kafka Mirror Maker monitoring type
 */}}
 {{- define "mirrorMakerMonitoring.type" -}}
