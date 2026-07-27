@@ -446,7 +446,7 @@ func (r *ReconcileKafka) updateBrokerDeploymentForMigration(brokerId int, replic
 	} else {
 		var voters []string
 		for i := 1; i <= replicas; i++ {
-			voters = append(voters, fmt.Sprintf("%d@%s-%d.kafka-broker.%s:9096", i, r.cr.Name, i, r.cr.Namespace))
+			voters = append(voters, fmt.Sprintf("%d@%s-%d.%s-broker.%s:9096", i, r.cr.Name, i, r.cr.Name, r.cr.Namespace))
 		}
 		voters = append(voters, fmt.Sprintf("3000@%s-%s:9092", r.cr.Name, "kraft-controller"))
 		additionalEnvs = []corev1.EnvVar{
