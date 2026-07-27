@@ -43,10 +43,11 @@ import (
 var ErrNoKafkaPods = stderrors.New("no Kafka pods found")
 
 const (
-	kafkaConditionReason              = "KafkaReadinessStatus"
-	kafkaHashName                     = "spec"
-	autoRestartAnnotation             = "kafkaservice.netcracker.com/auto-restart"
-	resourceVersionAnnotationTemplate = "%s/resource-version"
+	kafkaConditionReason                       = "KafkaReadinessStatus"
+	kafkaHashName                              = "spec"
+	autoRestartAnnotation                      = "kafkaservice.netcracker.com/auto-restart"
+	resourceVersionAnnotationTemplate          = "%s/resource-version"
+	kraftMigrationControllerTroubleshootingURL = "/docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready"
 )
 
 type ReconcileKafka struct {
@@ -226,6 +227,12 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		}
 
 		if step < 2 {
+			if err := r.ensureMigrationControllerIsReady(); err != nil {
+				return err
+			}
+		}
+
+		if step < 2 {
 			// ZooKeeper -> Kraft migration step two, updating brokers and waiting for migration
 			log.Info("Updating brokers and waiting for migration")
 			if err := r.updateBrokersAndWaitMigrationResult(zkClusterID, currentReplicas); err != nil {
@@ -398,14 +405,14 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err != nil {
 		return err
 	}
-     
+
 	var clusterID string
-    if kraft {
-        clusterID, err = r.resolveClusterID()
-        if err != nil && err != ErrNoKafkaPods {
-		   return err
-	    }
-    }
+	if kraft {
+		clusterID, err = r.resolveClusterID()
+		if err != nil && err != ErrNoKafkaPods {
+			return err
+		}
+	}
 
 	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, clusterID)
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
@@ -526,6 +533,26 @@ func (r *ReconcileKafka) updateMigrationControllerWithoutZooKeeper(zkClusterID s
 	return nil
 }
 
+func (r *ReconcileKafka) ensureMigrationControllerIsReady() error {
+	controllerName := fmt.Sprintf("%s-%s", r.cr.Name, "kraft-controller")
+	if _, err := r.reconciler.FindDeployment(controllerName, r.cr.Namespace, r.logger); err != nil {
+		if errors.IsNotFound(err) {
+			return fmt.Errorf("kraft migration controller deployment %q was not found. See troubleshooting: %s", controllerName, kraftMigrationControllerTroubleshootingURL)
+		}
+		return err
+	}
+
+	labels := map[string]string{
+		"name":      controllerName,
+		"component": "kafka-controller",
+	}
+	if !r.reconciler.AreDeploymentsReady(labels, r.cr.Namespace, r.logger) {
+		return fmt.Errorf("kraft migration controller deployment %q is not ready yet. Wait until its readiness probe succeeds before continuing migration. See troubleshooting: %s", controllerName, kraftMigrationControllerTroubleshootingURL)
+	}
+
+	return nil
+}
+
 func (r *ReconcileKafka) updateBrokersAndWaitMigrationResult(zkClusterID string, currentReplicas int) error {
 	for brokerId := 1; brokerId <= currentReplicas; brokerId++ {
 		if err := r.updateBrokerDeploymentForMigration(brokerId, currentReplicas, zkClusterID, false); err != nil {
@@ -633,8 +660,8 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
 	if len(podNames) == 0 {
-        return "", ErrNoKafkaPods
-    }
+		return "", ErrNoKafkaPods
+	}
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
 	return strings.TrimSpace(zkClusterID), commandErr
@@ -850,7 +877,7 @@ func (r *ReconcileKafka) waitUntilControllerIsReady(maxWaitingInterval int) erro
 	})
 	if err != nil {
 		r.logger.Error(err, "Deployment kafka-kraft-controller failed.")
-		return err
+		return fmt.Errorf("kraft migration controller is not ready. See troubleshooting: %s: %w", kraftMigrationControllerTroubleshootingURL, err)
 	}
 	return nil
 }
