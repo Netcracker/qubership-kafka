@@ -538,7 +538,7 @@ kraft migration controller deployment "kafka-kraft-controller" was not found. Se
    * PVC is bound, if persistent storage is configured.
    * TLS secrets and trusted/public certificates are mounted correctly.
    * ZooKeeper connectivity and credentials are valid while migration is still in progress.
-5. After the controller becomes ready, rerun the reconcile or upgrade job.
+5. After the controller becomes ready, restart `kafka-operator` to rerun reconcile, or rerun the upgrade job if the migration is executed by an upgrade procedure.
 
 For manual validation steps and expected controller configuration, refer to [Kraft migration guide](./kraft-migration.md#creating-kraft-controller).
 
