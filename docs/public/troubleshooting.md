@@ -14,6 +14,7 @@ The following topics are covered in this chapter:
 * [Timed Out Waiting for ZooKeeper Connection](#timed-out-waiting-for-zookeeper-connection)
 * [ConnectionLoss Error for ZooKeeper Connection](#connectionloss-error-for-zookeeper-connection)
 * [NoAuthException for ZooKeeper Connection](#noauthexception-for-zookeeper-connection)
+* [Kraft Migration Controller Is Not Ready](#kraft-migration-controller-is-not-ready)
 * [Repeated Occurrence of Warn Log: "Resetting first dirty offset of \[Partition\] is invalid"](#repeated-occurrence-of-warn-log-resetting-first-dirty-offset-of-partition-is-invalid)
 * [Long Rebalance For Consumer Groups after Starting Kafka Brokers](#long-rebalance-for-consumer-groups-after-starting-kafka-brokers)
 * [Kafka and NFS. Performance Degradation](#kafka-and-nfs-performance-degradation)
@@ -503,6 +504,47 @@ Execute following commands from any ZooKeeper pod.
 ### Recommendations
 
 Not applicable
+
+## Kraft Migration Controller Is Not Ready
+
+### Description
+
+During ZooKeeper to Kraft migration, the temporary `kraft-controller` deployment must exist and become ready before the operator proceeds to metadata migration on Kafka brokers.
+
+If the deployment is missing or its readiness probe does not pass, the migration stops before Step 2.
+
+### Alerts
+
+Not applicable
+
+### Stack trace
+
+```text
+kraft migration controller deployment "kafka-kraft-controller" is not ready yet. Wait until its readiness probe succeeds before continuing migration. See troubleshooting: /docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready
+```
+
+or
+
+```text
+kraft migration controller deployment "kafka-kraft-controller" was not found. See troubleshooting: /docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready
+```
+
+### How to solve
+
+1. Check that the `kraft-controller` deployment exists in the Kafka namespace.
+2. Verify that the deployment has an available replica and the controller pod is in `Ready` state.
+3. Inspect controller pod events and logs to identify why the readiness probe is failing.
+4. Verify that the controller has all required dependencies for startup:
+   * PVC is bound, if persistent storage is configured.
+   * TLS secrets and trusted/public certificates are mounted correctly.
+   * ZooKeeper connectivity and credentials are valid while migration is still in progress.
+5. After the controller becomes ready, restart `kafka-operator` to rerun reconcile, or rerun the upgrade job if the migration is executed by an upgrade procedure.
+
+For manual validation steps and expected controller configuration, refer to [Kraft migration guide](./kraft-migration.md#creating-kraft-controller).
+
+### Recommendations
+
+If the controller starts slowly in your environment, consider increasing `kafka.kraft.migrationTimeout`.
 
 ## Repeated Occurrence of Warn Log: "Resetting first dirty offset of \[Partition\] is invalid"
 
