@@ -171,6 +171,7 @@ func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, sec
 	if err := r.reconciler.SetControllerReference(r.cr, mirrorMakerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
+	applyAutoRestartSecretAnnotations(mirrorMakerDeployment, r.logger, secret)
 	mirrorMakerService := mirrorMakerProvider.GetService(deploymentName)
 	if err := r.reconciler.SetControllerReference(r.cr, mirrorMakerService, r.reconciler.Scheme); err != nil {
 		return err
