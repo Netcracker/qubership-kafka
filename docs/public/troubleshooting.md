@@ -473,6 +473,7 @@ org.I0Itec.zkclient.exception.ZkException: org.apache.zookeeper.KeeperException$
 Execute following commands from any ZooKeeper pod.
 
 1. Create the JAAS configuration file:
+
   ```sh
     cat >> ${ZOOKEEPER_HOME}/conf/client_jaas.conf << EOL
     Client {
@@ -482,6 +483,7 @@ Execute following commands from any ZooKeeper pod.
         };
     EOL
   ```
+
    Note that ZooKeeper admin's username and password should be used.
 2. Specify path to the JAAS configuration file in the JVM property `java.security.auth.login.config`.
   For example, for `zkCli.sh` client, it is necessary to use the following command:
