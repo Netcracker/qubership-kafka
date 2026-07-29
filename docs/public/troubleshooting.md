@@ -490,11 +490,14 @@ Execute following commands from any ZooKeeper pod.
     ```sh
     export CLIENT_JVMFLAGS=-"Djava.security.auth.login.config=${ZOOKEEPER_HOME}/conf/client_jaas.conf" && ./bin/zkCli.sh
     ```
+	
 3. Set the permissions for `/config` and `/broker` znodes for any user.
+  
   ```text
    setAcl -R /config world:anyone:cdrwa
    setAcl -R /brokers world:anyone:cdrwa 
   ```
+
 4. Restart Kafka pods.
 
 ### Recommendations
@@ -579,14 +582,17 @@ First of all, you need to make sure you have exactly this problem:
 
 1. You need to determine invalid log partitions. You can find their names in the log message.
   For example, the message:
+
     ```text
     Resetting first dirty offset of event-aggregator-develop.ea.aggregate-freezer-develop.ea.streaming.frozenaggregates.table-changelog-5 to log start offset 4504225 since the checkpointed offset 3959401 is invalid. 
     ```
+    
    Contains the name of the invalid partition  
    `event-aggregator-develop.ea.aggregate-freezer-develop.ea.streaming.frozenaggregates.table-changelog-5`.
    Also, you can find empty (zero-byte) log files via the command `find /var/opt/kafka/data -size 0`.
-2. You need to check whether the file `/var/opt/kafka/data/<broker-id>/cleaner-offset-checkpoint` contains an offset for
+3. You need to check whether the file `/var/opt/kafka/data/<broker-id>/cleaner-offset-checkpoint` contains an offset for
   the found invalid partitions. For example:
+
    ```sh
     __consumer_offsets 33 8361
     __consumer_offsets 23 2096
@@ -603,11 +609,13 @@ The better way to delete invalid logs is:
 2. Remove all incorrect partition logs that are found in the previous step using `ssh` to connect to Persistent Volume storage.
   Partitions are placed in the `/var/opt/kafka/data/<broker-id>` directory.
    For example:
+   
     ```sh
     rm -f /var/opt/kafka/data/1/event-aggregator-develop.ea.aggregate-freezer-develop.ea.streaming.frozenaggregates.table-changelog-5/00000000000004504225.log
     ```
-3. Start Kafka broker.
-4. Repeat Steps 1-3 for each Kafka broker where you have faced this issue.
+    
+4. Start Kafka broker.
+5. Repeat Steps 1-3 for each Kafka broker where you have faced this issue.
 
 **Note**: If you do not have access to Persistence Volumes directly, you can skip Step 1 and remove files via the terminal.  
 Then, restart the Kafka pod.
@@ -1300,19 +1308,23 @@ To rectify the issue of high partition distribution, execute the following steps
 
 1. Access the Kafka pod.
 2. Modify a topic by updating `cleanup.policy` and `retention.ms` using the command:
+  
   ```bash
     ./bin/kafka-configs.sh --bootstrap-server localhost:9092 --command-config bin/adminclient.properties --entity-type topics --entity-name *<your_topic_name>* --alter --add-config cleanup.policy=delete
 
      ./bin/kafka-configs.sh --bootstrap-server localhost:9092 --command-config bin/adminclient.properties --entity-type topics --entity-name *<your_topic_name>* --alter --add-config retention.ms=3600000 
   ```
+
 3. Restart kafka pods(Scale down and up all Kafka pods)
 4. Revert the changes made to cleanup.policy and retention.ms properties for all altered Kafka topics using the following commands:
+  
   ```sh
      ./bin/kafka-configs.sh --bootstrap-server localhost:9092 --command-config bin/adminclient.properties --entity-type topics --entity-name *<your_topic_name*> --alter --add-config cleanup.policy=compact
 
      ./bin/kafka-configs.sh --bootstrap-server localhost:9092 --command-config bin/adminclient.properties --entity-type topics --entity-name *<your_topic_name*> --alter --add-config retention.ms=604800000
   ```
-   Alternatively, you can perform the same actions through the AKHQ UI. Search for the topic with the highest consumption and adjust  
+  
+  Alternatively, you can perform the same actions through the AKHQ UI. Search for the topic with the highest consumption and adjust  
    the `cleanup.policy` and `retention.ms` values.
    **Note**: Ensure to create backups of the current `cleanup.policy` and `retention.ms` attributes to avoid data loss during  
    the reversion process.
@@ -1338,6 +1350,7 @@ There can be 2 reason for this issue:
   To resolve this issue refer to [How to deploy several Kafka clusters with one ZooKeeper](/docs/public/installation.md#how-to-deploy-several-kafka-clusters-with-one-zookeeper).
 2. There are Kafka pods in terminating status which block ZNode.
   To resolve this issue you can force delete terminating pods. For example:
+
    ```bash
    kubectl delete pod kafka-1-dsa7dsa7d77 --force -n kafka-namespace
    ```
@@ -1441,24 +1454,32 @@ Not applicable
 To solve this issue, follow the next steps:
 
 1. Set `unclean.leader.election.enable=true` property in Kafka custom resource (CR).
+  
   ```yaml
       kafka:
         environmentVariables:
           - CONF_KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=true
   ```
+   
    **Note**: This won't work in case you set this parameter directly on topic.  
    You need to change this parameter on each problematic topic as in the following example:
-    ```sh
+    
+	```sh
     ./bin/kafka-configs.sh --bootstrap-server localhost:9092 --command-config bin/adminclient.properties --entity-type topics --entity-name *<your_topic_name>* --alter --add-config unclean.leader.election.enable=true
     ```
+	
 2. Run the script to rebalance leaders:
+  
   ```sh
     ./bin/kafka-partitions.sh rebalance_leaders
   ```
+
 3. Check if all topics are working fine via topic describe command or AKHQ:
+  
   ```sh
     ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --command-config bin/adminclient.properties
   ```
+
 4. Delete `unclean.leader.election.enable=true` from CR, that will make Kafka brokers to restart without this property,
   it will force the Kafka brokers to restart with the updated configuration.
 
@@ -1474,32 +1495,44 @@ Problem still persist on Zookeeper side, you should follow next steps to resolve
 
 1. Configure the Zookeeper admin client, refer to [ZooKeeper Secure Client](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/security.md#zookeeper-clients-security-properties)
 2. Check that topic, which you are unable to create, is in to-delete topics node:
+  
   ```sh
     ls /admin/delete_topics
   ```
+
 3. If there are problematic topics in the output, then you have to delete them by the following command:
+  
   ```sh
     deleteall /admin/delete_topics
   ```
+
    After deletion, recreate `delete_topics node`:
-    ```sh
+    
+	```sh
     create /admin/delete_topics
     ```
+	
    **Note**: If `ls /admin/delete_topics` command output contains working topics, you should delete only problematic ones using following  
    command for each topic:
-    ```sh
+    
+	```sh
     deleteall /admin/delete_topics/<your_topic_name>
     ```
+	
 4. Go to Kafka and check if there are still broker partitions of problematic topics. Check for all partitions by the following command:
+  
   ```sh
     ls /var/opt/kafka/data/<BROKER_ID>
   ```
+
    Delete all partitions which related to problematic topic
-    ```sh
+    
+	```sh
     rm -rf /var/opt/kafka/data/<BROKER_ID>/test-topic-0
     rm -rf /var/opt/kafka/data/<BROKER_ID>/test-topic-1
     ...
     ```
+	
    **Important**: It is mandatory to delete broken topics partitions from ALL brokers in the cluster.
 5. Repeat steps with topic leaders rebalance.
 
