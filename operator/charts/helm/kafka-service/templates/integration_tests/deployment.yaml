@@ -82,7 +82,7 @@ spec:
               value: {{ include "kafka-service.bootstrapServers" . }}
               {{- end }}
             - name: KAFKA_HOST
-              value: {{ .Values.integrationTests.kafkaHost }}
+              value: {{ include "integrationTests.kafkaHost" . }}
             - name: KAFKA_PORT
               value: {{ .Values.integrationTests.kafkaPort | quote }}
             - name: KAFKA_ENABLE_SSL
