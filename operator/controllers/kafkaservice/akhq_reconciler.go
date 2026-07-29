@@ -148,6 +148,7 @@ func (r ReconcileAkhq) Reconcile() error {
 		if err := r.reconciler.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
+		applyAutoRestartSecretAnnotations(deployment, r.logger, akhqSecret, kafkaServicesSecret, ldapSecret)
 		if err := r.reconciler.CreateOrUpdateDeployment(deployment, r.logger); err != nil {
 			return err
 		}

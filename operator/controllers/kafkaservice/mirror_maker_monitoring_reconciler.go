@@ -87,6 +87,7 @@ func (r ReconcileMirrorMakerMonitoring) Reconcile() error {
 		if err := r.reconciler.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
+		applyAutoRestartSecretAnnotations(deployment, r.logger, mirrorMakerMonitoringSecret)
 		if err := r.reconciler.CreateOrUpdateDeployment(deployment, r.logger); err != nil {
 			return err
 		}
