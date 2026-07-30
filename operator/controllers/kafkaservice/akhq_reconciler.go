@@ -161,12 +161,6 @@ func (r ReconcileAkhq) Reconcile() error {
 		r.logger.Info("AKHQ configuration didn't change, skipping reconcile loop")
 	}
 
-	if err := updateDeploymentSecretRestartAnnotations(
-		r.reconciler.Client, r.cr.Namespace, r.akhqProvider.GetServiceName(), r.logger,
-		akhqSecret, kafkaServicesSecret, ldapSecret); err != nil {
-		return err
-	}
-
 	r.reconciler.ResourceVersions[akhqSecret.Name] = akhqSecret.ResourceVersion
 	r.reconciler.ResourceVersions[kafkaServicesSecret.Name] = kafkaServicesSecret.ResourceVersion
 	r.reconciler.ResourceVersions[protobufConfigMap.Name] = protobufConfigMap.ResourceVersion

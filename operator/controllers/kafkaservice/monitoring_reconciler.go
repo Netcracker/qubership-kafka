@@ -121,12 +121,6 @@ func (r ReconcileMonitoring) Reconcile() error {
 		r.logger.Info("Kafka monitoring configuration didn't change, skipping reconcile loop")
 	}
 
-	if err := updateDeploymentSecretRestartAnnotations(
-		r.reconciler.Client, r.cr.Namespace, r.monitoringProvider.GetServiceName(), r.logger,
-		monitoringSecret, kafkaServicesSecret); err != nil {
-		return err
-	}
-
 	r.reconciler.ResourceVersions[monitoringSecret.Name] = monitoringSecret.ResourceVersion
 	r.reconciler.ResourceVersions[kafkaServicesSecret.Name] = kafkaServicesSecret.ResourceVersion
 	r.reconciler.ResourceHashes[monitoringHashName] = monitoringHash
