@@ -15,6 +15,7 @@ The following topics are covered in this chapter:
 * [ConnectionLoss Error for ZooKeeper Connection](#connectionloss-error-for-zookeeper-connection)
 * [NoAuthException for ZooKeeper Connection](#noauthexception-for-zookeeper-connection)
 * [Kraft Migration Controller Is Not Ready](#kraft-migration-controller-is-not-ready)
+* [Kraft Migration Controller Pod Fails with Permission Denied on Data Directory](#kraft-migration-controller-pod-fails-with-permission-denied-on-data-directory)
 * [Repeated Occurrence of Warn Log: "Resetting first dirty offset of \[Partition\] is invalid"](#repeated-occurrence-of-warn-log-resetting-first-dirty-offset-of-partition-is-invalid)
 * [Long Rebalance For Consumer Groups after Starting Kafka Brokers](#long-rebalance-for-consumer-groups-after-starting-kafka-brokers)
 * [Kafka and NFS. Performance Degradation](#kafka-and-nfs-performance-degradation)
@@ -534,6 +535,7 @@ kraft migration controller deployment "kafka-kraft-controller" was not found. Se
 1. Check that the `kraft-controller` deployment exists in the Kafka namespace.
 2. Verify that the deployment has an available replica and the controller pod is in `Ready` state.
 3. Inspect controller pod events and logs to identify why the readiness probe is failing.
+   If logs contain `Permission denied` under `/var/opt/kafka/data`, see [Kraft Migration Controller Pod Fails with Permission Denied on Data Directory](#kraft-migration-controller-pod-fails-with-permission-denied-on-data-directory).
 4. Verify that the controller has all required dependencies for startup:
    * PVC is bound, if persistent storage is configured.
    * TLS secrets and trusted/public certificates are mounted correctly.
@@ -545,6 +547,44 @@ For manual validation steps and expected controller configuration, refer to [Kra
 ### Recommendations
 
 If the controller starts slowly in your environment, consider increasing `kafka.kraft.migrationTimeout`.
+
+## Kraft Migration Controller Pod Fails with Permission Denied on Data Directory
+
+### Description
+
+During ZooKeeper to Kraft migration, the temporary `kraft-controller` pod may fail to start when writing to the data directory on a Persistent Volume.
+
+### Alerts
+
+Not applicable
+
+### Stack trace
+
+```text
+mkdir: cannot create directory ‘/var/opt/kafka/data/3000’: Permission denied
+```
+
+or a similar `Permission denied` error when creating directories under `/var/opt/kafka/data`.
+
+### How to solve
+
+Set `fsGroup` in the Kafka CR pod security context so that kubelet grants the Kraft migration controller process write access to the volume:
+
+```yaml
+kafka:
+  securityContext: {
+    "fsGroup": 1000
+  }
+```
+
+On cloud environments where `global.cloudIntegrationEnabled` is enabled, you can also set `INFRA_KAFKA_FS_GROUP` instead.
+
+After updating the values, upgrade the Helm release (or update the Kafka CR) and restart the `kraft-controller` pod.
+
+### Recommendations
+
+Use a value that matches the user the Kafka image runs as (by default UID/GID `1000`).
+Do not hardcode `fsGroup` in environments where the platform assigns the filesystem group (for example, OpenShift SCC).
 
 ## Repeated Occurrence of Warn Log: "Resetting first dirty offset of \[Partition\] is invalid"
 
