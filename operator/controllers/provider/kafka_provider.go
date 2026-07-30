@@ -44,7 +44,7 @@ const (
 	defaultTopicReassignmentTimeoutSeconds = 300
 	defaultBrokerDeploymentScaleInEnabled  = false
 	zooKeeperClusterID                     = "U5tHX5uHQnmsniDS54EF_w"
-	veleroExcludeFromBackupAnnotation      = "velero.io/exclude-from-backup"
+	veleroExcludeFromBackupLabel           = "velero.io/exclude-from-backup"
 )
 
 type KafkaResourceProvider struct {
@@ -367,6 +367,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 	kafkaLabels := krp.GetKafkaLabels()
 	kafkaLabels["name"] = deploymentName
 	kafkaLabels["app.kubernetes.io/instance"] = fmt.Sprintf("%s-%s", deploymentName, krp.cr.Namespace)
+	kafkaLabels[veleroExcludeFromBackupLabel] = "true"
 	selectorLabels := krp.GetSelectorLabels()
 	selectorLabels["name"] = deploymentName
 	kafkaCustomLabels := krp.GetKafkaCustomLabels(kafkaLabels)
@@ -523,9 +524,6 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 			Name:      deploymentName,
 			Namespace: krp.cr.Namespace,
 			Labels:    kafkaLabels,
-			Annotations: map[string]string{
-				veleroExcludeFromBackupAnnotation: "true",
-			},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Strategy:                appsv1.DeploymentStrategy{Type: appsv1.RecreateDeploymentStrategyType},
