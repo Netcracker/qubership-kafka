@@ -18,7 +18,7 @@
 {{ fail (printf "It is forbidden to upgrade to Kafka 4.x from previous versions which worked on ZooKeeper or Migration still in progress.\n You must migrate Kafka to Kraft mode before upgrading to 4.x versions, please refer to our migration guide - https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md") -}}
 {{- end }}
 {{- if eq (include "validateKafkaName" .) "false" -}}
-{{ fail "\nError: global.name cannot be changed after install.\nRenaming the Kafka CR breaks PersistentVolumeClaims and related resources.\n" -}}
+{{ fail "\nError: global.name cannot be changed after install." -}}
 {{- end }}
 apiVersion: {{ .Values.operator.apiGroup }}/v1
 kind: Kafka
