@@ -29,7 +29,6 @@ import (
 
 // applyAutoRestartSecretAnnotations sets pod-template annotations from Secret resourceVersion when the
 // Secret has kafkaservice.netcracker.com/auto-restart: "true". Returns true if annotations changed
-// (a pod-template change triggers a rolling restart for startup-only entrypoints).
 func applyAutoRestartSecretAnnotations(deployment *appsv1.Deployment, logger logr.Logger, secrets ...*corev1.Secret) bool {
 	modified := false
 	for _, secret := range secrets {
@@ -55,9 +54,6 @@ func applyAutoRestartSecretAnnotations(deployment *appsv1.Deployment, logger log
 }
 
 // updateDeploymentSecretRestartAnnotations patches an existing Deployment in the cluster.
-// This matches the backup-daemon flow: load live object (with resourceVersion), set pod-template
-// annotations, then Update — so secret rotation triggers a rollout even when the reconciler
-// skips rebuilding the full Deployment spec.
 func updateDeploymentSecretRestartAnnotations(
 	c client.Client,
 	namespace, deploymentName string,

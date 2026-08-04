@@ -95,12 +95,6 @@ func (r ReconcileMirrorMakerMonitoring) Reconcile() error {
 		r.logger.Info("Kafka Mirror Maker monitoring configuration didn't change, skipping reconcile loop")
 	}
 
-	if err := updateDeploymentSecretRestartAnnotations(
-		r.reconciler.Client, r.cr.Namespace, r.mirrorMakerMonitoringProvider.GetServiceName(), r.logger,
-		mirrorMakerMonitoringSecret); err != nil {
-		return err
-	}
-
 	r.reconciler.ResourceVersions[mirrorMakerMonitoringSecret.Name] = mirrorMakerMonitoringSecret.ResourceVersion
 	r.reconciler.ResourceHashes[mirrorMakerMonitoringHashName] = mirrorMakerMonitoringHash
 	r.reconciler.ResourceHashes[disasterRecoveryHashName] = disasterRecoveryHash
