@@ -77,12 +77,21 @@ func (r ReconcileKafka) Reconcile() error {
 		return err
 	}
 
-	kafkaConfigurationChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash ||
-		(kafkaSecret.Name != "" && r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion)
+	secretChanged := kafkaSecret.Name != "" &&
+		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
+	kafkaConfigurationChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash || secretChanged
 
 	if !kafkaConfigurationChanged {
 		r.logger.Info("Kafka configuration didn't change, skipping reconcile loop")
 	} else {
+		// On KRaft, update SCRAM via kafka-configs.sh in a running pod before rolling brokers
+		// so JAAS/kcat (loaded on restart) match the credential store.
+		if secretChanged && r.cr.Spec.Kraft.Enabled && !r.kafkaProvider.IsSecurityDisabled() {
+			if err = r.syncKraftScramCredentials(kafkaSecret); err != nil {
+				return err
+			}
+		}
+
 		if r.cr.Spec.Replicas > 0 {
 			if err = r.processKafkaReplicas(kafkaSecret); err != nil {
 				return err
@@ -784,6 +793,61 @@ func (r *ReconcileKafka) getKafkaCertificates() (*controllers.SslCertificates, e
 		return sslCertificates, nil
 	}
 	return &controllers.SslCertificates{}, nil
+}
+
+// syncKraftScramCredentials updates SCRAM users in a still-running broker via kafka-configs.sh
+// before restart. The pod's adminclient.properties still has the old client credentials
+// (written at last start), so the command can authenticate while applying new passwords from the Secret.
+func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) error {
+	adminUsername := string(kafkaSecret.Data["admin-username"])
+	adminPassword := string(kafkaSecret.Data["admin-password"])
+	clientUsername := string(kafkaSecret.Data["client-username"])
+	clientPassword := string(kafkaSecret.Data["client-password"])
+	if adminUsername == "" || adminPassword == ""  {
+		r.logger.Info("Skipping KRaft SCRAM sync: admin credentials are not set in Kafka secret")
+		return nil
+	}
+
+	pods, err := r.reconciler.FindPodList(r.cr.Namespace, r.kafkaProvider.GetSelectorLabels())
+	if err != nil {
+		return err
+	}
+	pod := controllers.GetFirstAvailablePod(pods)
+	if pod == nil {
+		r.logger.Info("Skipping KRaft SCRAM sync: no ready Kafka pod")
+		return nil
+	}
+
+	users := []struct{ name, password string }{
+		{adminUsername, adminPassword},
+	}
+	if clientUsername != "" {
+		users = append(users, struct{ name, password string }{clientUsername, clientPassword})
+	}
+	for _, user := range users {
+		if err := r.updateScramUserInPod(pod.Name, user.name, user.password); err != nil {
+			return fmt.Errorf("failed to update SCRAM user %q in pod %s: %w", user.name, pod.Name, err)
+		}
+	}
+	r.logger.Info("Synced KRaft SCRAM credentials via pod exec before broker restart", "pod", pod.Name)
+	return nil
+}
+
+func (r *ReconcileKafka) updateScramUserInPod(podName, username, password string) error {
+	escUser := strings.ReplaceAll(username, `'`, `'"'"'`)
+	escPass := strings.ReplaceAll(password, `'`, `'"'"'`)
+	script := fmt.Sprintf(`
+adminclient="${KAFKA_HOME}/bin/adminclient.properties"
+if [ -f /tmp/kafka/bin/adminclient.properties ]; then
+  adminclient=/tmp/kafka/bin/adminclient.properties
+fi
+${KAFKA_HOME}/bin/kafka-configs.sh --bootstrap-server localhost:9092 \
+  --command-config "$adminclient" \
+  --alter --entity-type users --entity-name '%s' \
+  --add-config 'SCRAM-SHA-512=[password=%s]'
+`, escUser, escPass)
+	_, err := r.runCommandInPod(podName, "kafka", r.cr.Namespace, []string{"/bin/sh", "-c", script})
+	return err
 }
 
 func (r *ReconcileKafka) getCurrentDeploymentsCount() (int, error) {
