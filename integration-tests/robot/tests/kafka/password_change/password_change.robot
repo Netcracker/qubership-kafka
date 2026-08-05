@@ -35,18 +35,19 @@ Setup
     Set Suite Variable  ${ORIGINAL_CLIENT_PASSWORD}  ${client_password}
     Set Suite Variable  ${KAFKA_SECRET}  ${secret}
 
-    Import Kafka Library With Credentials  ${client_username}  ${client_password}
+    # KafkaOld keeps original credentials for the whole suite (re-import with same alias is ignored by RF)
+    Import Kafka Library With Credentials  ${client_username}  ${client_password}  KafkaOld
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Create Suite Admin Client
-    AuthKafka.Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
+    KafkaOld.Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
 
 Create Suite Admin Client
-    ${admin}=  AuthKafka.Create Admin Client
+    ${admin}=  KafkaOld.Create Admin Client
     Set Suite Variable  ${admin}
 
 Cleanup
     Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
-    Run Keyword If  '${admin}' != '${NONE}'  AuthKafka.Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
+    Run Keyword If  '${admin}' != '${NONE}'  KafkaOld.Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
     ${admin}=  Set Variable  ${None}
 
 Decode Secret Value
@@ -67,7 +68,7 @@ Patch Client Password
     Patch Secret  ${KAFKA_SECRET_NAME}  %{KAFKA_OS_PROJECT}  ${body}
 
 Import Kafka Library With Credentials
-    [Arguments]  ${username}  ${password}
+    [Arguments]  ${username}  ${password}  ${alias}
     Import Library  ../../shared/lib/KafkaLibrary.py
     ...  bootstrap_servers=${KAFKA_BOOTSTRAP_SERVERS}
     ...  namespace=%{KAFKA_OS_PROJECT}
@@ -76,13 +77,13 @@ Import Kafka Library With Credentials
     ...  username=${username}
     ...  password=${password}
     ...  enable_ssl=%{KAFKA_ENABLE_SSL}
-    ...  WITH NAME  AuthKafka
+    ...  WITH NAME  ${alias}
 
 Restore Client Password
     Patch Client Password  ${ORIGINAL_CLIENT_PASSWORD}
     Wait For Kafka Brokers Ready
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Produce And Consume With Credentials  ${CLIENT_USERNAME}  ${ORIGINAL_CLIENT_PASSWORD}
+    ...  Produce And Consume With Old Credentials
     Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
 
 Kafka Brokers Are Ready
@@ -94,31 +95,43 @@ Wait For Kafka Brokers Ready
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Kafka Brokers Are Ready
 
-Check Consumed Message
+Check Consumed Message With New Credentials
     [Arguments]  ${consumer}  ${topic_name}  ${message}
-    ${received_message}=  AuthKafka.Consume Message  ${consumer}  ${topic_name}
+    ${received_message}=  KafkaNew.Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${received_message}  ${message}
 
-Produce And Consume With Credentials
-    [Arguments]  ${username}  ${password}
-    Import Kafka Library With Credentials  ${username}  ${password}
-    ${producer}=  AuthKafka.Create Kafka Producer
-    ${message}=  AuthKafka.Create Test Message
-    AuthKafka.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}
-    ${consumer}=  AuthKafka.Create Kafka Consumer  ${TOPIC_NAME}
+Check Consumed Message With Old Credentials
+    [Arguments]  ${consumer}  ${topic_name}  ${message}
+    ${received_message}=  KafkaOld.Consume Message  ${consumer}  ${topic_name}
+    Should Contain  ${received_message}  ${message}
+
+Produce And Consume With Old Credentials
+    ${producer}=  KafkaOld.Create Kafka Producer
+    ${message}=  KafkaOld.Create Test Message
+    KafkaOld.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}
+    ${consumer}=  KafkaOld.Create Kafka Consumer  ${TOPIC_NAME}
     Wait Until Keyword Succeeds  ${CONSUME_MESSAGE_RETRY_COUNT}  ${CONSUME_MESSAGE_RETRY_INTERVAL}
-    ...  Check Consumed Message  ${consumer}  ${TOPIC_NAME}  ${message}
-    AuthKafka.Close Kafka Consumer  ${consumer}
+    ...  Check Consumed Message With Old Credentials  ${consumer}  ${TOPIC_NAME}  ${message}
+    KafkaOld.Close Kafka Consumer  ${consumer}
     ${producer}=  Set Variable  ${None}
     ${consumer}=  Set Variable  ${None}
 
-Produce With Credentials Should Fail
-    [Arguments]  ${username}  ${password}
-    Import Kafka Library With Credentials  ${username}  ${password}
-    ${producer}=  AuthKafka.Create Kafka Producer
-    ${message}=  AuthKafka.Create Test Message
+Produce And Consume With New Credentials
+    ${producer}=  KafkaNew.Create Kafka Producer
+    ${message}=  KafkaNew.Create Test Message
+    KafkaNew.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}
+    ${consumer}=  KafkaNew.Create Kafka Consumer  ${TOPIC_NAME}
+    Wait Until Keyword Succeeds  ${CONSUME_MESSAGE_RETRY_COUNT}  ${CONSUME_MESSAGE_RETRY_INTERVAL}
+    ...  Check Consumed Message With New Credentials  ${consumer}  ${TOPIC_NAME}  ${message}
+    KafkaNew.Close Kafka Consumer  ${consumer}
+    ${producer}=  Set Variable  ${None}
+    ${consumer}=  Set Variable  ${None}
+
+Produce With Old Credentials Should Fail
+    ${producer}=  KafkaOld.Create Kafka Producer
+    ${message}=  KafkaOld.Create Test Message
     Run Keyword And Expect Error  *
-    ...  AuthKafka.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}  retries=${1}  delay=${1}
+    ...  KafkaOld.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}  retries=${1}  delay=${1}
     ${producer}=  Set Variable  ${None}
 
 *** Test Cases ***
@@ -130,17 +143,18 @@ Test Client Password Change
     ...  autoRestartOnSecretChange is disabled, password change restart is not automatic
 
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  AuthKafka.Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
-    Produce And Consume With Credentials  ${CLIENT_USERNAME}  ${ORIGINAL_CLIENT_PASSWORD}
+    ...  KafkaOld.Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
+    Produce And Consume With Old Credentials
 
     ${new_password}=  Generate Random String  16  [LETTERS][NUMBERS]
     Set Suite Variable  ${PASSWORD_RESTORED}  ${FALSE}
     Patch Client Password  ${new_password}
+    Import Kafka Library With Credentials  ${CLIENT_USERNAME}  ${new_password}  KafkaNew
 
     Wait For Kafka Brokers Ready
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Produce And Consume With Credentials  ${CLIENT_USERNAME}  ${new_password}
+    ...  Produce And Consume With New Credentials
 
-    Produce With Credentials Should Fail  ${CLIENT_USERNAME}  ${ORIGINAL_CLIENT_PASSWORD}
+    Produce With Old Credentials Should Fail
 
     [Teardown]  Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
