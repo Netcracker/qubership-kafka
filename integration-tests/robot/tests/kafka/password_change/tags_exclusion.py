@@ -28,11 +28,10 @@ def check_parameters_are_present(environ, *variable_names) -> bool:
 
 def get_excluded_tags(environ) -> list:
     managed_by_operator = environ.get('KAFKA_IS_MANAGED_BY_OPERATOR', 'true').lower()
-    if not check_parameters_are_specified(environ,
-                                          'OS_URL',
-                                          'KAFKA_USER',
-                                          'KAFKA_PASSWORD') \
+    disable_security = environ.get('KAFKA_DISABLE_SECURITY', 'false').lower()
+    if not check_parameters_are_specified(environ, 'OS_URL') \
             or check_parameters_are_present(environ, 'EXTERNAL_KAFKA') \
-            or managed_by_operator in ('false', '0', 'no'):
+            or managed_by_operator in ('false', '0', 'no') \
+            or disable_security in ('true', '1', 'yes'):
         return ['kafka_password_change']
     return []

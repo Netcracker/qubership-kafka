@@ -105,6 +105,8 @@ Produce With Credentials Should Fail
 Test Client Password Change
     [Tags]  kafka_password_change  kafka
     ${client_username}  ${client_password}  ${secret}=  Get Client Credentials From Kafka Secret
+    Pass Execution If  '${client_username}' == '${EMPTY}' or '${client_password}' == '${EMPTY}'
+    ...  Kafka client credentials are empty, password change is not applicable
     Set Suite Variable  ${CLIENT_USERNAME}  ${client_username}
     Set Suite Variable  ${ORIGINAL_CLIENT_PASSWORD}  ${client_password}
 

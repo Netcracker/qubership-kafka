@@ -84,8 +84,6 @@ func (r ReconcileKafka) Reconcile() error {
 	if !kafkaConfigurationChanged {
 		r.logger.Info("Kafka configuration didn't change, skipping reconcile loop")
 	} else {
-		// On KRaft, update SCRAM via kafka-configs.sh in a running pod before rolling brokers
-		// so JAAS/kcat (loaded on restart) match the credential store.
 		if secretChanged && r.cr.Spec.Kraft.Enabled && !r.kafkaProvider.IsSecurityDisabled() {
 			if err = r.syncKraftScramCredentials(kafkaSecret); err != nil {
 				return err
@@ -795,9 +793,6 @@ func (r *ReconcileKafka) getKafkaCertificates() (*controllers.SslCertificates, e
 	return &controllers.SslCertificates{}, nil
 }
 
-// syncKraftScramCredentials updates SCRAM users in a still-running broker via kafka-configs.sh
-// before restart. The pod's adminclient.properties still has the old client credentials
-// (written at last start), so the command can authenticate while applying new passwords from the Secret.
 func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) error {
 	adminUsername := string(kafkaSecret.Data["admin-username"])
 	adminPassword := string(kafkaSecret.Data["admin-password"])
