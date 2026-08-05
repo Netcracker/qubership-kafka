@@ -33,7 +33,6 @@ Setup
     ...  Kafka client credentials are empty, password change is not applicable
     Set Suite Variable  ${CLIENT_USERNAME}  ${client_username}
     Set Suite Variable  ${ORIGINAL_CLIENT_PASSWORD}  ${client_password}
-    Set Suite Variable  ${KAFKA_SECRET}  ${secret}
 
     # KafkaOld keeps original credentials for the whole suite (re-import with same alias is ignored by RF)
     Import Kafka Library With Credentials  ${client_username}  ${client_password}  KafkaOld
@@ -45,10 +44,16 @@ Create Suite Admin Client
     ${admin}=  KafkaOld.Create Admin Client
     Set Suite Variable  ${admin}
 
+Close Suite Admin Client
+    Return From Keyword If  '${admin}' == '${NONE}'
+    Evaluate  $admin.close()
+    Set Suite Variable  ${admin}  ${NONE}
+
 Cleanup
     Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
+    Run Keyword If  '${admin}' == '${NONE}'  Create Suite Admin Client
     Run Keyword If  '${admin}' != '${NONE}'  KafkaOld.Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
-    ${admin}=  Set Variable  ${None}
+    Close Suite Admin Client
 
 Decode Secret Value
     [Arguments]  ${value}
@@ -80,6 +85,7 @@ Import Kafka Library With Credentials
     ...  WITH NAME  ${alias}
 
 Restore Client Password
+    Close Suite Admin Client
     Patch Client Password  ${ORIGINAL_CLIENT_PASSWORD}
     Wait For Services Secret Password  ${ORIGINAL_CLIENT_PASSWORD}
     Restart Kafka Brokers
@@ -98,10 +104,27 @@ Services Secret Password Should Be
     ${password}=  Decode Secret Value  ${secret.data['client-password']}
     Should Be Equal  ${password}  ${expected_password}
 
+Get Kafka Pod Uids
+    ${pods}=  Get Pods By Service Name  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
+    ${uids}=  Create List
+    FOR  ${pod}  IN  @{pods}
+        Append To List  ${uids}  ${pod.metadata.uid}
+    END
+    ${uids}=  Evaluate  tuple(sorted($uids))
+    RETURN  ${uids}
+
 Restart Kafka Brokers
+    ${uids_before}=  Get Kafka Pod Uids
+    Log  Scaling down Kafka brokers, pod uids=${uids_before}
     Scale Down Deployment Entities By Service Name  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}  with_check=True
+    ${ready}=  Number Of Pods In Ready Status  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
+    Should Be Equal As Integers  ${ready}  0
+    Log  Scaling up Kafka brokers
     Scale Up Deployment Entities By Service Name  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}  with_check=True  replicas=1
     Wait For Kafka Brokers Ready
+    ${uids_after}=  Get Kafka Pod Uids
+    Log  Kafka brokers restarted, pod uids=${uids_after}
+    Should Not Be Equal  ${uids_before}  ${uids_after}
 
 Kafka Brokers Are Ready
     ${ready}=  Number Of Pods In Ready Status  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
@@ -130,6 +153,7 @@ Produce And Consume With Old Credentials
     Wait Until Keyword Succeeds  ${CONSUME_MESSAGE_RETRY_COUNT}  ${CONSUME_MESSAGE_RETRY_INTERVAL}
     ...  Check Consumed Message With Old Credentials  ${consumer}  ${TOPIC_NAME}  ${message}
     KafkaOld.Close Kafka Consumer  ${consumer}
+    Evaluate  $producer.close()
     ${producer}=  Set Variable  ${None}
     ${consumer}=  Set Variable  ${None}
 
@@ -141,6 +165,7 @@ Produce And Consume With New Credentials
     Wait Until Keyword Succeeds  ${CONSUME_MESSAGE_RETRY_COUNT}  ${CONSUME_MESSAGE_RETRY_INTERVAL}
     ...  Check Consumed Message With New Credentials  ${consumer}  ${TOPIC_NAME}  ${message}
     KafkaNew.Close Kafka Consumer  ${consumer}
+    Evaluate  $producer.close()
     ${producer}=  Set Variable  ${None}
     ${consumer}=  Set Variable  ${None}
 
@@ -149,6 +174,7 @@ Produce With Old Credentials Should Fail
     ${message}=  KafkaOld.Create Test Message
     Run Keyword And Expect Error  *
     ...  KafkaOld.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}  retries=${1}  delay=${1}
+    Evaluate  $producer.close()
     ${producer}=  Set Variable  ${None}
 
 *** Test Cases ***
@@ -158,11 +184,14 @@ Test Client Password Change
     ...  KafkaOld.Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
     Produce And Consume With Old Credentials
 
+    # Close clients before SCRAM sync: otherwise KafkaOld admin reconnects with old password and spams auth errors
+    Close Suite Admin Client
     ${new_password}=  Generate Random String  16  [LETTERS][NUMBERS]
     Set Suite Variable  ${PASSWORD_RESTORED}  ${FALSE}
     Patch Client Password  ${new_password}
-    # Wait until operator reconciles (SCRAM sync on KRaft + services-secret update), then restart brokers ourselves
+    # Operator reconciles while brokers are still up (KRaft SCRAM sync via exec)
     Wait For Services Secret Password  ${new_password}
+    # Force broker restart so JAAS/kcat pick up the new password
     Restart Kafka Brokers
     Import Kafka Library With Credentials  ${CLIENT_USERNAME}  ${new_password}  KafkaNew
 
