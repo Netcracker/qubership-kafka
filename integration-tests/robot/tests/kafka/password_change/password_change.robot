@@ -38,7 +38,7 @@ Setup
     Import Kafka Library With Credentials  ${client_username}  ${client_password}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Create Suite Admin Client
-    Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
+    AuthKafka.Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
 
 Create Suite Admin Client
     ${admin}=  AuthKafka.Create Admin Client
@@ -46,7 +46,7 @@ Create Suite Admin Client
 
 Cleanup
     Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
-    Run Keyword If  '${admin}' != '${NONE}'  Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
+    Run Keyword If  '${admin}' != '${NONE}'  AuthKafka.Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
     ${admin}=  Set Variable  ${None}
 
 Decode Secret Value
@@ -96,19 +96,19 @@ Wait For Kafka Brokers Ready
 
 Check Consumed Message
     [Arguments]  ${consumer}  ${topic_name}  ${message}
-    ${received_message}=  Consume Message  ${consumer}  ${topic_name}
+    ${received_message}=  AuthKafka.Consume Message  ${consumer}  ${topic_name}
     Should Contain  ${received_message}  ${message}
 
 Produce And Consume With Credentials
     [Arguments]  ${username}  ${password}
     Import Kafka Library With Credentials  ${username}  ${password}
     ${producer}=  AuthKafka.Create Kafka Producer
-    ${message}=  Create Test Message
-    Produce Message  ${producer}  ${TOPIC_NAME}  ${message}
+    ${message}=  AuthKafka.Create Test Message
+    AuthKafka.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}
     ${consumer}=  AuthKafka.Create Kafka Consumer  ${TOPIC_NAME}
     Wait Until Keyword Succeeds  ${CONSUME_MESSAGE_RETRY_COUNT}  ${CONSUME_MESSAGE_RETRY_INTERVAL}
     ...  Check Consumed Message  ${consumer}  ${TOPIC_NAME}  ${message}
-    Close Kafka Consumer  ${consumer}
+    AuthKafka.Close Kafka Consumer  ${consumer}
     ${producer}=  Set Variable  ${None}
     ${consumer}=  Set Variable  ${None}
 
@@ -116,9 +116,9 @@ Produce With Credentials Should Fail
     [Arguments]  ${username}  ${password}
     Import Kafka Library With Credentials  ${username}  ${password}
     ${producer}=  AuthKafka.Create Kafka Producer
-    ${message}=  Create Test Message
+    ${message}=  AuthKafka.Create Test Message
     Run Keyword And Expect Error  *
-    ...  Produce Message  ${producer}  ${TOPIC_NAME}  ${message}  retries=${1}  delay=${1}
+    ...  AuthKafka.Produce Message  ${producer}  ${TOPIC_NAME}  ${message}  retries=${1}  delay=${1}
     ${producer}=  Set Variable  ${None}
 
 *** Test Cases ***
@@ -130,7 +130,7 @@ Test Client Password Change
     ...  autoRestartOnSecretChange is disabled, password change restart is not automatic
 
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
+    ...  AuthKafka.Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
     Produce And Consume With Credentials  ${CLIENT_USERNAME}  ${ORIGINAL_CLIENT_PASSWORD}
 
     ${new_password}=  Generate Random String  16  [LETTERS][NUMBERS]
