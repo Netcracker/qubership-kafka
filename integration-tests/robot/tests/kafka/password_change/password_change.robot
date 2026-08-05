@@ -14,20 +14,39 @@ Suite Teardown  Cleanup
 
 *** Keywords ***
 Setup
-    ${admin}=  Create Admin Client
-    Set Suite Variable  ${admin}
+    # Defaults first so Suite Teardown is safe even if Setup fails later
+    Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
+    Set Suite Variable  ${admin}  ${NONE}
+    Set Suite Variable  ${ORIGINAL_CLIENT_PASSWORD}  ${EMPTY}
+    Set Suite Variable  ${CLIENT_USERNAME}  ${EMPTY}
+    Set Suite Variable  ${BROKERS_COUNT}  ${0}
     ${postfix}=  Generate Random String  5
     Set Suite Variable  ${TOPIC_NAME_PATTERN}  ${TOPIC_NAME}-.{5}
     Set Suite Variable  ${TOPIC_NAME}  ${TOPIC_NAME}-${postfix}
-    Set Suite Variable  ${ORIGINAL_CLIENT_PASSWORD}  ${EMPTY}
-    Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
+
     ${brokers_count}=  Get Active Deployment Entities Count For Service  %{KAFKA_OS_PROJECT}  %{KAFKA_HOST}
     Set Suite Variable  ${BROKERS_COUNT}  ${brokers_count}
+    Wait For Kafka Brokers Ready
+
+    ${client_username}  ${client_password}  ${secret}=  Get Client Credentials From Kafka Secret
+    Pass Execution If  '${client_username}' == '${EMPTY}' or '${client_password}' == '${EMPTY}'
+    ...  Kafka client credentials are empty, password change is not applicable
+    Set Suite Variable  ${CLIENT_USERNAME}  ${client_username}
+    Set Suite Variable  ${ORIGINAL_CLIENT_PASSWORD}  ${client_password}
+    Set Suite Variable  ${KAFKA_SECRET}  ${secret}
+
+    Import Kafka Library With Credentials  ${client_username}  ${client_password}
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Create Suite Admin Client
     Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
+
+Create Suite Admin Client
+    ${admin}=  AuthKafka.Create Admin Client
+    Set Suite Variable  ${admin}
 
 Cleanup
     Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
-    Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
+    Run Keyword If  '${admin}' != '${NONE}'  Delete Topic By Pattern  ${admin}  ${TOPIC_NAME_PATTERN}
     ${admin}=  Set Variable  ${None}
 
 Decode Secret Value
@@ -68,6 +87,7 @@ Restore Client Password
 
 Kafka Brokers Are Ready
     ${ready}=  Number Of Pods In Ready Status  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
+    Should Be True  ${BROKERS_COUNT} > 0
     Should Be Equal As Integers  ${ready}  ${BROKERS_COUNT}
 
 Wait For Kafka Brokers Ready
@@ -104,19 +124,14 @@ Produce With Credentials Should Fail
 *** Test Cases ***
 Test Client Password Change
     [Tags]  kafka_password_change  kafka
-    ${client_username}  ${client_password}  ${secret}=  Get Client Credentials From Kafka Secret
-    Pass Execution If  '${client_username}' == '${EMPTY}' or '${client_password}' == '${EMPTY}'
-    ...  Kafka client credentials are empty, password change is not applicable
-    Set Suite Variable  ${CLIENT_USERNAME}  ${client_username}
-    Set Suite Variable  ${ORIGINAL_CLIENT_PASSWORD}  ${client_password}
-
-    ${annotations}=  Set Variable  ${secret.metadata.annotations}
+    ${annotations}=  Set Variable  ${KAFKA_SECRET.metadata.annotations}
     ${auto_restart}=  Evaluate  ($annotations or {}).get('kafkaservice.netcracker.com/auto-restart', 'false')
     Pass Execution If  '${auto_restart}' != 'true'
     ...  autoRestartOnSecretChange is disabled, password change restart is not automatic
 
-    Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
-    Produce And Consume With Credentials  ${client_username}  ${client_password}
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
+    Produce And Consume With Credentials  ${CLIENT_USERNAME}  ${ORIGINAL_CLIENT_PASSWORD}
 
     ${new_password}=  Generate Random String  16  [LETTERS][NUMBERS]
     Set Suite Variable  ${PASSWORD_RESTORED}  ${FALSE}
@@ -124,8 +139,8 @@ Test Client Password Change
 
     Wait For Kafka Brokers Ready
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Produce And Consume With Credentials  ${client_username}  ${new_password}
+    ...  Produce And Consume With Credentials  ${CLIENT_USERNAME}  ${new_password}
 
-    Produce With Credentials Should Fail  ${client_username}  ${client_password}
+    Produce With Credentials Should Fail  ${CLIENT_USERNAME}  ${ORIGINAL_CLIENT_PASSWORD}
 
     [Teardown]  Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
