@@ -81,10 +81,27 @@ Import Kafka Library With Credentials
 
 Restore Client Password
     Patch Client Password  ${ORIGINAL_CLIENT_PASSWORD}
-    Wait For Kafka Brokers Ready
+    Wait For Services Secret Password  ${ORIGINAL_CLIENT_PASSWORD}
+    Restart Kafka Brokers
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Produce And Consume With Old Credentials
     Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
+
+Wait For Services Secret Password
+    [Arguments]  ${expected_password}
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Services Secret Password Should Be  ${expected_password}
+
+Services Secret Password Should Be
+    [Arguments]  ${expected_password}
+    ${secret}=  Get Secret  %{KAFKA_HOST}-services-secret  %{KAFKA_OS_PROJECT}
+    ${password}=  Decode Secret Value  ${secret.data['client-password']}
+    Should Be Equal  ${password}  ${expected_password}
+
+Restart Kafka Brokers
+    Scale Down Deployment Entities By Service Name  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}  with_check=True
+    Scale Up Deployment Entities By Service Name  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}  with_check=True  replicas=1
+    Wait For Kafka Brokers Ready
 
 Kafka Brokers Are Ready
     ${ready}=  Number Of Pods In Ready Status  %{KAFKA_HOST}  %{KAFKA_OS_PROJECT}
@@ -137,11 +154,6 @@ Produce With Old Credentials Should Fail
 *** Test Cases ***
 Test Client Password Change
     [Tags]  kafka_password_change  kafka
-    ${annotations}=  Set Variable  ${KAFKA_SECRET.metadata.annotations}
-    ${auto_restart}=  Evaluate  ($annotations or {}).get('kafkaservice.netcracker.com/auto-restart', 'false')
-    Pass Execution If  '${auto_restart}' != 'true'
-    ...  autoRestartOnSecretChange is disabled, password change restart is not automatic
-
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  KafkaOld.Create Topic  ${admin}  ${TOPIC_NAME}  ${1}  ${1}
     Produce And Consume With Old Credentials
@@ -149,9 +161,11 @@ Test Client Password Change
     ${new_password}=  Generate Random String  16  [LETTERS][NUMBERS]
     Set Suite Variable  ${PASSWORD_RESTORED}  ${FALSE}
     Patch Client Password  ${new_password}
+    # Wait until operator reconciles (SCRAM sync on KRaft + services-secret update), then restart brokers ourselves
+    Wait For Services Secret Password  ${new_password}
+    Restart Kafka Brokers
     Import Kafka Library With Credentials  ${CLIENT_USERNAME}  ${new_password}  KafkaNew
 
-    Wait For Kafka Brokers Ready
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Produce And Consume With New Credentials
 
