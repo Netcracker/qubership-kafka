@@ -568,13 +568,14 @@ or a similar `Permission denied` error when creating directories under `/var/opt
 
 ### How to solve
 
-Set `fsGroup` in the Kafka CR pod security context so that kubelet grants the Kraft migration controller process write access to the volume:
+Set `fsGroup` in the kafka-kraft-controller deployment.yml security context so that kubelet grants the KRaft migration controller process write access to the volume::
 
 ```yaml
-kafka:
-  securityContext: {
-    "fsGroup": 1000
-  }
+securityContext:
+   runAsNonRoot: true
+   fsGroup: 1000
+   seccompProfile:
+      type: RuntimeDefault
 ```
 
 On cloud environments where `global.cloudIntegrationEnabled` is enabled, you can also set `INFRA_KAFKA_FS_GROUP` instead.
