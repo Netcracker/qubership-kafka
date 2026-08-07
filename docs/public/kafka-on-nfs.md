@@ -23,7 +23,7 @@ Our two new brokers were sitting there quietly doing very little.
 ![Unused brokers](/docs/public/images/kafka-on-nfs.unused-brokers.png)
 
 We put together a 
-[little script](https://web.archive.org/web/20230407085902/https://gist.github.com/WheresAlice/c347e6b909d0bbc4256bb891e74c3191)
+[little script](https://web.archive.org/web/20220817165145/https://gist.github.com/wheresalice/c347e6b909d0bbc4256bb891e74c3191)
 that would perform the reallocation of partitions across the cluster. And immediately after running this we started seeing brokers crashing
 with errors about deleting data:
 

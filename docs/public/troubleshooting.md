@@ -43,7 +43,7 @@ This problem can be detected on the ZooKeeper monitoring dashboard. It is indica
 Kafka uses ZooKeeper for controller election, cluster membership management, topic configuration, and storing ACL information.
 
 For more information about Kafka data structures, refer to
-[https://cwiki.apache.org/confluence/display/KAFKA/Kafka+data+structures+in+Zookeeper].
+[https://cwiki.apache.org/confluence/spaces/KAFKA/pages/30753468/Kafka+data+structures+in+Zookeeper].
 
 These functions are affected in case of ZooKeeper failure.
 
@@ -69,7 +69,7 @@ EndOfStreamException: Unable to read additional data from server sessionid 0x300
 
 ### How to solve
 
-To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/troubleshooting.md).
+To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/blob/main/docs/public/troubleshooting.md).
 
 ### Recommendations
 
@@ -368,7 +368,7 @@ kafka.zookeeper.ZooKeeperClientTimeoutException: Timed out waiting for connectio
 ```
 
 Since Kafka cannot connect to ZooKeeper, you need to make sure your ZooKeeper cluster is fully operated.
-To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/troubleshooting.md).
+To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/blob/main/docs/public/troubleshooting.md).
 
 ### Alerts
 
@@ -427,7 +427,7 @@ KeeperErrorCode = ConnectionLoss for
 
 ### How to solve
 
-To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/tree/main/docs/public/troubleshooting.md).
+To identify the reason for ZooKeeper failure and suggested actions for restoration, refer to [Zookeeper Troubleshooting Guide](https://github.com/Netcracker/qubership-zookeeper/blob/main/docs/public/troubleshooting.md).
 
 ### Recommendations
 
@@ -644,7 +644,7 @@ As previously mentioned, the only drawback to this is a longer delay before part
 (where the consumer cannot be cleanly shutdown with `close()`).
 This should be rare in practice.
 
-For more information, refer to [Kafka Consumers](https://docs.confluent.io/3.0.0/clients/consumer.html).
+For more information, refer to [Kafka Consumers](https://docs.confluent.io/platform/current/clients/consumer.html).
 
 You can also adjust the following Kafka Broker's properties:
 
@@ -836,7 +836,7 @@ java.lang.InternalError: a fault occurred in a recent unsafe memory access opera
 ```
 
 It means there are some issues with file system, memory or JVM. There are a lot of causes lead to this issue.
-Some information about causes described in [Stack Overflow answer](https://stackoverflow.com/a/45536678) or
+Some information about causes described in Stack Overflow answer (`https://stackoverflow.com/a/45536678`) or
 ticket [KAFKA-5628](https://issues.apache.org/jira/browse/KAFKA-5628).
 
 ### Alerts

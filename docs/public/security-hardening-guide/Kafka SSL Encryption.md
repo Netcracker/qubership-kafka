@@ -38,9 +38,10 @@ CONF_KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=
 Note that the folder with Keystores and Trust Stores (`/var/private/ssl` in this example) should be placed on PV. 
 
 In this example Kafka has two interfaces:
- - `INTERNAL` (used by clients in OpenShift environment): port `9092`, Encrypted with SSL, SASL Authentication enabled.
- - `INTER_BROKER` (used by Kafka cluster to communicate between brokers): port `9093`, Plaintext (without SSL), SASL Authentication enabled.
- 
+
+- `INTERNAL` (used by clients in OpenShift environment): port `9092`, Encrypted with SSL, SASL Authentication enabled.
+- `INTER_BROKER` (used by Kafka cluster to communicate between brokers): port `9093`, Plaintext (without SSL), SASL Authentication enabled.
+
 If you want to enable SSL for external clients (outside Openshift), specify:
 
 ```
@@ -75,8 +76,7 @@ You can check connection using the following command:
 
 ### Official documentation
 
-For more information and examples about Kafka encryption with SSL see Confluent official [Encryption with SSL](https://docs.confluent.io/current/kafka/encryption.html).
-
+For more information and examples about Kafka encryption with SSL see Confluent official [Encryption with SSL](https://docs.confluent.io/platform/current/security/protect-data/encrypt-tls.html).
 
 ## 2-way authentication (Encryption and Authentication with SSL)
 
@@ -106,8 +106,9 @@ CONF_KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=
 Note that the folder with Keystores and Trust Stores (`/var/private/ssl` in this example) should be placed on PV.
 
 In this example Kafka has two interfaces:
- - `INTERNAL` (used by clients in OpenShift environment): port `9092`, Encrypted with SSL, SSL Authentication enabled.
- - `INTER_BROKER` (used by Kafka cluster to communicate between brokers): port `9093`, Plaintext (without SSL), SASL Authentication enabled.
+
+- `INTERNAL` (used by clients in OpenShift environment): port `9092`, Encrypted with SSL, SSL Authentication enabled.
+- `INTER_BROKER` (used by Kafka cluster to communicate between brokers): port `9093`, Plaintext (without SSL), SASL Authentication enabled.
 
 Pay attention to the environment variable `CONF_KAFKA_SSL_CLIENT_AUTH=required`, 
 it enables brokers to authenticate clients' certificates.
@@ -147,4 +148,4 @@ You can check connection using the following command:
 
 ### Official documentation
 
-For more information and examples about Kafka encryption and authentication with SSL see Confluent official [Encryption and Authentication with SSL](https://docs.confluent.io/current/kafka/authentication_ssl.html).
+For more information and examples about Kafka encryption and authentication with SSL see Confluent official [Encryption and Authentication with SSL](https://docs.confluent.io/platform/current/security/authentication/mutual-tls/overview.html).
