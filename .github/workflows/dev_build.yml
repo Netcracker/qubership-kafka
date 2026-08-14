@@ -52,71 +52,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  prepare:
-    name: "Prepare Images and Metadata"
-    runs-on: ubuntu-latest
-    outputs:
-      components: ${{ steps.load.outputs.components }}
-      platforms: ${{ steps.load.outputs.platforms }}
-      tags: "${{ steps.meta.outputs.result }}"
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: true
-          fetch-depth: 0
-
-      - name: Changed Files
-        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        id: changed-files
-        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
-        with:
-          json: true
-          write_output_files: true # .github/outputs/all_changed_files.json
-
-      - id: load
-        name: Load Components and Platforms
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" == "release" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            components=$(jq -c '.components' .github/dev-build-config.cfg)
-          fi
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request" || "$GITHUB_EVENT_NAME" == "push" ]]; then
-            all_changed_files=$(jq -c '.' .github/outputs/all_changed_files.json)
-            if [ "$all_changed_files" != "null" ]; then
-                chmod +x .github/scripts/matrix.sh
-                components=$(./.github/scripts/matrix.sh ".github/dev-build-config.cfg" ".github/outputs/all_changed_files.json")
-            fi
-          fi
-          echo "components=${components}" >> "$GITHUB_OUTPUT"
-          echo "platforms=$(jq -c '.platforms' .github/dev-build-config.cfg)" >> "$GITHUB_OUTPUT"
-
-      - name: Create tags for images
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@8d542a426ce561c7dce745f6b9cee068d1d7e101 #v2.0.10
-        id: meta
-        with:
-          default-template: "{{ref-name}}"
-          extra-tags: ${{ github.event.inputs.tags || '' }}
-          replace-symbol: ${{ github.event.inputs.replace-symbol || '_'}}
-
   build:
-    name: ${{ matrix.component.name }} Image Build
-    needs: [prepare]
-    runs-on: ubuntu-latest
+    name: "Build images"
     permissions:
-      contents: read
+      contents: write
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        component: ${{ fromJson(needs.prepare.outputs.components) }}
-    steps:
-      - name: Docker
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@8d542a426ce561c7dce745f6b9cee068d1d7e101 #v2.0.10
-        with:
-          ref: ${{ github.ref }}
-          dry-run: ${{ github.event.inputs.dry-run || github.event_name == 'pull_request' }}
-          download-artifact: false
-          component: ${{ toJson(matrix.component) }}
-          platforms: ${{ needs.prepare.outputs.platforms }}
-          tags: ${{ needs.prepare.outputs.tags }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    secrets: inherit
+    uses: netcracker/qubership-workflow-hub/.github/workflows/re-infra-docker-build.yaml@910-feat-add-declarative-config-driven-common-cicd-pipelines
+    with:
+      config-file: ".github/dev-build-config.cfg"
+      dry-run: ${{ github.event.inputs.dry-run || github.event_name == 'pull_request' }}
+      tags: ${{ github.event.inputs.tags || '' }}
+      replace-symbol: ${{ github.event.inputs.replace-symbol || '_' }}
+      diff-build: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+      max-parallel: 4
