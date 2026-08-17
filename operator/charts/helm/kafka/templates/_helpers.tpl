@@ -430,17 +430,15 @@ Returns "true" if the name is allowed, "false" otherwise.
 Assumes at most one Kafka CR per namespace.
 */}}
 {{- define "validateKafkaName" -}}
-  {{- $nameAllowed := true -}}
   {{- $desiredName := include "kafka.name" . -}}
   {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
   {{- $kafkaList := lookup $apiVersion "Kafka" .Release.Namespace "" -}}
   {{- if and $kafkaList $kafkaList.items -}}
     {{- $existingName := (index $kafkaList.items 0).metadata.name -}}
-    {{- if ne $existingName $desiredName -}}
-      {{- $nameAllowed = false -}}
-    {{- end -}}
+    {{- printf "%t" (eq $existingName $desiredName) -}}
+  {{- else -}}
+    {{- printf "%t" true -}}
   {{- end -}}
-  {{- printf "%t" $nameAllowed -}}
 {{- end -}}
 
 {{- define "validateKafkaUpgrade" -}}
