@@ -6,7 +6,7 @@
 # Example file can be found there:
 # https://github.com/Netcracker/.github/blob/main/config/examples/auto-labeler-config.yaml
 
-name: Automatic PR Labeler
+name: "[REUSABLE] Automatic PR Labeler"
 
 on:
   workflow_call:

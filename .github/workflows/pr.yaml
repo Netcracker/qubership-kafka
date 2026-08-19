@@ -12,4 +12,5 @@ jobs:
       pr_number: ${{ github.event.pull_request.number }}
       type: ${{ github.event.action }}
       branch: ${{ github.event.pull_request.head.ref }}
+      base-branch: ${{ github.event.pull_request.base.ref }}
     secrets: inherit
