@@ -18,6 +18,10 @@ on:
         description: "The branch to trigger the workflow on"
         required: true
         type: string
+      base-ref:
+        description: "The base branch to compare changes against"
+        required: false
+        type: string
 permissions:
   contents: read
 
@@ -77,4 +81,4 @@ jobs:
         VALIDATE_ALL_CODEBASE: false
         # To report GitHub Actions status checks
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEFAULT_BRANCH: ${{ inputs.ref }}
+        DEFAULT_BRANCH: ${{ inputs.base-ref }}

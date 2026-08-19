@@ -15,6 +15,10 @@ on:
         description: "The branch to trigger the workflow on"
         required: true
         type: string
+      base-branch:
+        description: "The base branch to compare changes against"
+        required: false
+        type: string
 
 jobs:
   pr-labeler:
@@ -39,3 +43,4 @@ jobs:
     uses: myborislavrorg/qubership-kafka-tests/.github/workflows/re-super-linter.yaml@main
     with:
       ref: ${{ inputs.branch }}
+      base-ref: ${{ inputs.base-branch }}
