@@ -1,18 +1,19 @@
 The following topics are covered in this chapter:
 
 <!-- TOC -->
-* [Kafka Service](#kafka-service)
-  * [Repository structure](#repository-structure)
-  * [How to start](#how-to-start)
-    * [Deploy to k8s](#deploy-to-k8s)
-      * [Pure helm](#pure-helm)
-    * [Smoke tests](#smoke-tests)
-    * [How to debug](#how-to-debug)
-      * [Kafka Operator](#kafka-operator)
-      * [Kafka-Services Operator](#kafka-services-operator)
-    * [How to troubleshoot](#how-to-troubleshoot)
-  * [Evergreen strategy](#evergreen-strategy)
-  * [Useful links](#useful-links)
+- [Kafka Service](#kafka-service)
+  - [Repository structure](#repository-structure)
+  - [How to start](#how-to-start)
+    - [Deploy to k8s](#deploy-to-k8s)
+      - [Pure helm](#pure-helm)
+    - [Smoke tests](#smoke-tests)
+    - [How to debug](#how-to-debug)
+      - [Kafka Operator](#kafka-operator)
+      - [Kafka-Services Operator](#kafka-services-operator)
+    - [How to troubleshoot](#how-to-troubleshoot)
+  - [Evergreen strategy](#evergreen-strategy)
+  - [Useful links](#useful-links)
+  - [AI Agents Information](#ai-agents-information)
 <!-- TOC -->
 
 # Kafka Service
@@ -114,3 +115,8 @@ To keep the component up to date, the following activities should be performed r
 ## AI Agents Information
 
 [AGENTS.md](/AGENTS.md)
+
+
+
+
+-----------------
