@@ -9,7 +9,7 @@
 # .github/super-linter.env
 # Configuration files for individual linters should be placed in .github/linters
 
-name: Lint Code Base
+name: "[REUSABLE] Lint Code Base"
 
 on:
   workflow_call:
