@@ -1,0 +1,41 @@
+name: "[REUSABLE] Generic PR Workflow"
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        description: "The number of the pull request to trigger the workflow on"
+        required: true
+        type: number
+      type:
+        description: "The type of pull request event to trigger the workflow"
+        required: true
+        type: string
+      branch:
+        description: "The branch to trigger the workflow on"
+        required: true
+        type: string
+
+jobs:
+  pr-labeler:
+    permissions:
+      pull-requests: write
+      contents: read
+      issues: write
+    secrets: inherit
+    if: ${{ 'created' == inputs.type || 'synchronize' == inputs.type || 'reopened' == inputs.type }}
+    uses: myborislavrorg/qubership-kafka-tests/.github/workflows/re-automatic-pr-labeler.yaml@main
+    with:
+      pr_number: ${{ inputs.pr_number }}
+      ref: ${{ inputs.branch }}
+
+  super-linter:
+    permissions:
+      contents: read
+      packages: read
+      # To report GitHub Actions status checks
+      statuses: write
+    secrets: inherit
+    uses: myborislavrorg/qubership-kafka-tests/.github/workflows/re-super-linter.yaml@main
+    with:
+      ref: ${{ inputs.branch }}

@@ -1,0 +1,15 @@
+name: PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - '**'
+jobs:
+  pr:
+    uses: myborislavrorg/qubership-kafka-tests/.github/workflows/re-pr.yaml@main
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+      type: ${{ github.event.action }}
+      branch: ${{ github.event.pull_request.head.ref }}
+    secrets: inherit
