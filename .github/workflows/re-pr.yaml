@@ -23,7 +23,7 @@ jobs:
       contents: read
       issues: write
     secrets: inherit
-    if: ${{ 'created' == inputs.type || 'synchronize' == inputs.type || 'reopened' == inputs.type }}
+    if: ${{ inputs.type == 'opened' || inputs.type == 'synchronize' || inputs.type == 'reopened' }}
     uses: myborislavrorg/qubership-kafka-tests/.github/workflows/re-automatic-pr-labeler.yaml@main
     with:
       pr_number: ${{ inputs.pr_number }}
