@@ -443,7 +443,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 			Name:  "HEAP_OPTS",
 			Value: fmt.Sprintf("-Xms%dm -Xmx%dm", krp.cr.Spec.HeapSize, krp.cr.Spec.HeapSize),
 		},
-		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.isSecurityDisabled())},
+		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.IsSecurityDisabled())},
 		{Name: "CLOCK_SKEW", Value: strconv.Itoa(getClockSkew(oauth))},
 		{Name: "JWK_SOURCE_TYPE", Value: getJwkSourceType(oauth)},
 		{
@@ -637,7 +637,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 			Name:  "HEAP_OPTS",
 			Value: fmt.Sprintf("-Xms%dm -Xmx%dm", krp.cr.Spec.HeapSize, krp.cr.Spec.HeapSize),
 		},
-		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.isSecurityDisabled())},
+		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.IsSecurityDisabled())},
 		{Name: "CLOCK_SKEW", Value: strconv.Itoa(getClockSkew(oauth))},
 		{Name: "JWK_SOURCE_TYPE", Value: getJwkSourceType(oauth)},
 		{
@@ -753,7 +753,7 @@ func (krp KafkaResourceProvider) GetZooKeeperFullName() string {
 	return zooKeeperAddress
 }
 
-func (krp KafkaResourceProvider) isSecurityDisabled() bool {
+func (krp KafkaResourceProvider) IsSecurityDisabled() bool {
 	if krp.cr.Spec.DisableSecurity != nil {
 		return *krp.cr.Spec.DisableSecurity
 	}
