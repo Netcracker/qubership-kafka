@@ -123,6 +123,16 @@ global:
         user: ""
         password: ""
 
+# Annotations copied to the Backup Daemon PVC rendered by this chart.
+# Example:
+#   pvc:
+#     metadata:
+#       annotations:
+#         argocd.argoproj.io/sync-options: Prune=false
+pvc:
+  metadata:
+    annotations: {}
+
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main
   replicas: 1

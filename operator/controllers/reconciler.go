@@ -198,6 +198,9 @@ func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.P
 			"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
 		foundPersistentVolumeClaim.ObjectMeta.OwnerReferences = nil
 		foundPersistentVolumeClaim.Labels = util.JoinMaps(foundPersistentVolumeClaim.Labels, persistentVolumeClaim.Labels)
+		if len(persistentVolumeClaim.Annotations) > 0 {
+			foundPersistentVolumeClaim.Annotations = util.JoinMaps(foundPersistentVolumeClaim.Annotations, persistentVolumeClaim.Annotations)
+		}
 		err = r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
 		if err != nil {
 			// There is no ability to update PVC for some environments.
