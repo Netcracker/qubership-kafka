@@ -79,7 +79,6 @@ Restore Client Password
     ${uids_before}=  Get Kafka Pod Uids
     Patch Client Password  ${ORIGINAL_CLIENT_PASSWORD}
     Wait For Operator Password Rollout  ${ORIGINAL_CLIENT_PASSWORD}  ${uids_before}
-    Wait For Mounted Secret Password  ${ORIGINAL_CLIENT_PASSWORD}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Produce And Consume With Current Credentials
     Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
@@ -93,18 +92,6 @@ Services Secret Password Should Be
     [Arguments]  ${expected_password}
     ${secret}=  Get Secret  %{KAFKA_HOST}-services-secret  %{KAFKA_OS_PROJECT}
     ${password}=  Decode Secret Value  ${secret.data['client-password']}
-    Should Be Equal  ${password}  ${expected_password}
-
-Wait For Mounted Secret Password
-    [Arguments]  ${expected_password}
-    ${secrets_dir}=  Evaluate  os.getenv('INTEGRATION_TESTS_SECRETS_DIR') or ''  modules=os
-    Return From Keyword If  '${secrets_dir}' == '${EMPTY}'
-    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Mounted Secret Password Should Be  ${secrets_dir}  ${expected_password}
-
-Mounted Secret Password Should Be
-    [Arguments]  ${secrets_dir}  ${expected_password}
-    ${password}=  Evaluate  pathlib.Path($secrets_dir, 'KAFKA_PASSWORD').read_text(encoding='utf-8').rstrip('\\r\\n')  modules=pathlib
     Should Be Equal  ${password}  ${expected_password}
 
 Get Kafka Pod Uids
