@@ -79,6 +79,9 @@ Restore Client Password
     ${uids_before}=  Get Kafka Pod Uids
     Patch Client Password  ${ORIGINAL_CLIENT_PASSWORD}
     Wait For Operator Password Rollout  ${ORIGINAL_CLIENT_PASSWORD}  ${uids_before}
+    Wait For Mounted Secret Password  ${ORIGINAL_CLIENT_PASSWORD}
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Produce And Consume With Current Credentials
     Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
 
 Wait For Services Secret Password
@@ -90,6 +93,20 @@ Services Secret Password Should Be
     [Arguments]  ${expected_password}
     ${secret}=  Get Secret  %{KAFKA_HOST}-services-secret  %{KAFKA_OS_PROJECT}
     ${password}=  Decode Secret Value  ${secret.data['client-password']}
+    Should Be Equal  ${password}  ${expected_password}
+
+Wait For Mounted Secret Password
+    [Arguments]  ${expected_password}
+    # SecretData.py re-reads this file on every suite. Kubelet can lag behind the API secret,
+    # so later suites (e.g. rebalance) would still send the new password after restore.
+    ${secrets_dir}=  Evaluate  os.getenv('INTEGRATION_TESTS_SECRETS_DIR') or ''  modules=os
+    Return From Keyword If  '${secrets_dir}' == '${EMPTY}'
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Mounted Secret Password Should Be  ${secrets_dir}  ${expected_password}
+
+Mounted Secret Password Should Be
+    [Arguments]  ${secrets_dir}  ${expected_password}
+    ${password}=  Evaluate  pathlib.Path($secrets_dir, 'KAFKA_PASSWORD').read_text(encoding='utf-8').rstrip('\\r\\n')  modules=pathlib
     Should Be Equal  ${password}  ${expected_password}
 
 Get Kafka Pod Uids
@@ -183,7 +200,7 @@ Test Client Password Change
     # KafkaLibrary still has suite-start SecretData password (= original)
     Produce With Current Credentials Should Fail
 
-    # Always put the original password back so the cluster is left as before the test
+    # Restore and prove the original password works again (Kafka + test-pod secret mount)
     Restore Client Password
 
     [Teardown]  Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
