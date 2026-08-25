@@ -82,7 +82,7 @@ Restore Client Password
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Produce And Consume With Current Credentials
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
-    ...  Connect With Reloaded SecretData Credentials
+    ...  SecretData Password Should Be  ${ORIGINAL_CLIENT_PASSWORD}
     Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
 
 Wait For Services Secret Password
@@ -148,11 +148,10 @@ Produce And Consume With Current Credentials
     KafkaLibrary.Close Kafka Consumer  ${consumer}
     Evaluate  $producer.close()
 
-Connect With Reloaded SecretData Credentials
+SecretData Password Should Be
+    [Arguments]  ${expected_password}
     Import Variables  %{ROBOT_HOME}/SecretData.py
-    Import Kafka Library With Credentials  ${KAFKA_USER}  ${KAFKA_PASSWORD}  KafkaSecretData
-    ${admin}=  KafkaSecretData.Create Admin Client
-    Evaluate  $admin.close()
+    Should Be Equal  ${KAFKA_PASSWORD}  ${expected_password}
 
 Produce And Consume With New Credentials
     ${producer}=  KafkaNew.Create Kafka Producer
