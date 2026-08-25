@@ -81,6 +81,8 @@ Restore Client Password
     Wait For Operator Password Rollout  ${ORIGINAL_CLIENT_PASSWORD}  ${uids_before}
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
     ...  Produce And Consume With Current Credentials
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Connect With Reloaded SecretData Credentials
     Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
 
 Wait For Services Secret Password
@@ -145,6 +147,12 @@ Produce And Consume With Current Credentials
     ...  Check Consumed Message  ${consumer}  ${TOPIC_NAME}  ${message}
     KafkaLibrary.Close Kafka Consumer  ${consumer}
     Evaluate  $producer.close()
+
+Connect With Reloaded SecretData Credentials
+    Import Variables  %{ROBOT_HOME}/SecretData.py
+    Import Kafka Library With Credentials  ${KAFKA_USER}  ${KAFKA_PASSWORD}  KafkaSecretData
+    ${admin}=  KafkaSecretData.Create Admin Client
+    Evaluate  $admin.close()
 
 Produce And Consume With New Credentials
     ${producer}=  KafkaNew.Create Kafka Producer
