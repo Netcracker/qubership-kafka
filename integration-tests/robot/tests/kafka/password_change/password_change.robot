@@ -97,8 +97,6 @@ Services Secret Password Should Be
 
 Wait For Mounted Secret Password
     [Arguments]  ${expected_password}
-    # SecretData.py re-reads this file on every suite. Kubelet can lag behind the API secret,
-    # so later suites (e.g. rebalance) would still send the new password after restore.
     ${secrets_dir}=  Evaluate  os.getenv('INTEGRATION_TESTS_SECRETS_DIR') or ''  modules=os
     Return From Keyword If  '${secrets_dir}' == '${EMPTY}'
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
@@ -200,7 +198,7 @@ Test Client Password Change
     # KafkaLibrary still has suite-start SecretData password (= original)
     Produce With Current Credentials Should Fail
 
-    # Restore and prove the original password works again (Kafka + test-pod secret mount)
+    # Always put the original password back so the cluster is left as before the test
     Restore Client Password
 
     [Teardown]  Run Keyword If  ${PASSWORD_RESTORED} == ${FALSE}  Restore Client Password
