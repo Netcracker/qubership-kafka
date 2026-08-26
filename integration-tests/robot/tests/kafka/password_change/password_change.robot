@@ -79,6 +79,10 @@ Restore Client Password
     ${uids_before}=  Get Kafka Pod Uids
     Patch Client Password  ${ORIGINAL_CLIENT_PASSWORD}
     Wait For Operator Password Rollout  ${ORIGINAL_CLIENT_PASSWORD}  ${uids_before}
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Produce And Consume With Current Credentials
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  SecretData Password Should Be  ${ORIGINAL_CLIENT_PASSWORD}
     Set Suite Variable  ${PASSWORD_RESTORED}  ${TRUE}
 
 Wait For Services Secret Password
@@ -143,6 +147,11 @@ Produce And Consume With Current Credentials
     ...  Check Consumed Message  ${consumer}  ${TOPIC_NAME}  ${message}
     KafkaLibrary.Close Kafka Consumer  ${consumer}
     Evaluate  $producer.close()
+
+SecretData Password Should Be
+    [Arguments]  ${expected_password}
+    Import Variables  %{ROBOT_HOME}/SecretData.py
+    Should Be Equal  ${KAFKA_PASSWORD}  ${expected_password}
 
 Produce And Consume With New Credentials
     ${producer}=  KafkaNew.Create Kafka Producer
