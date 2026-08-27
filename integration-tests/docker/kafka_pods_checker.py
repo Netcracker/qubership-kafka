@@ -23,7 +23,7 @@ external = environ.get("EXTERNAL_KAFKA") is not None
 namespace = environ.get("KAFKA_OS_PROJECT")
 kafka = environ.get("KAFKA_HOST")
 backup_daemon = environ.get("BACKUP_DAEMON_HOST")
-timeout = 600
+timeout = 1800
 # Kafka can be updated by the operator node-by-node (rolling upgrade). During such an
 # upgrade all deployments may momentarily report "ready" in the gap between two pods
 # being rolled, so a single ready observation is not enough to assume the cluster is

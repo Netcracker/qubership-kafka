@@ -342,7 +342,7 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 			return err
 		}
 		if r.cr.Spec.RollingUpdate {
-			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
+			if err := r.waitUntilBrokerIsReady(brokerId, 900); err != nil {
 				return err
 			}
 		}
