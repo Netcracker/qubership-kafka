@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    crd.netcracker.com/version: 1.9.0
+    crd.netcracker.com/version: 1.11.0
     controller-gen.kubebuilder.io/version: v0.11.1
   creationTimestamp: null
   name: kafkas.netcracker.com
@@ -941,6 +941,16 @@ spec:
                 type: object
               podReadinessTimeout:
                 type: integer
+              pvc:
+                properties:
+                  metadata:
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                type: object
               priorityClassName:
                 type: string
               racks:
@@ -1172,6 +1182,13 @@ spec:
                 properties:
                   status:
                     type: string
+                type: object
+              pvcStatus:
+                properties:
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    type: object
                 type: object
             type: object
         type: object

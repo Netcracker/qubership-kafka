@@ -17,6 +17,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os"
 
 	kafka "github.com/Netcracker/qubership-kafka/operator/api/v1"
@@ -125,6 +126,11 @@ func (r *KafkaReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		}
 	}
 
+	reqLogger.Info("Updating PVC status")
+	if err = r.updatePvcStatus(instance); err != nil {
+		return reconcile.Result{}, err
+	}
+
 	if isCustomResourceChanged {
 		if instance.Spec.WaitForPodsReady {
 			if err = r.updateConditions(NewCondition(statusFalse,
@@ -223,6 +229,16 @@ func (r *KafkaReconciler) writeFailedStatus(errorMessage string) {
 	if err := r.updateConditions(NewCondition(statusFalse, typeFailed, kafkaServiceConditionReason, errorMessage)); err != nil {
 		log.Error(err, "An error occurred while updating the status condition")
 	}
+}
+
+// updatePvcStatus stores the last applied PVC annotations in status for subsequent reconciles.
+func (r *KafkaReconciler) updatePvcStatus(cr *kafka.Kafka) error {
+	if maps.Equal(cr.Status.PVCStatus.Annotations, cr.Spec.PVC.Annotations) {
+		return nil
+	}
+	return r.StatusUpdater.UpdateStatusWithRetry(func(instance *kafka.Kafka) {
+		instance.Status.PVCStatus.Annotations = cr.Spec.PVC.Annotations
+	})
 }
 
 // buildReconcilers returns service reconcilers in accordance with custom resource.
