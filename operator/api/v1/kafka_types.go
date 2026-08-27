@@ -133,12 +133,11 @@ type Ssl struct {
 
 // Storage defines volumes of Kafka
 type Storage struct {
-	ClassName   []string          `json:"className,omitempty"`
-	Size        string            `json:"size"`
-	Volumes     []string          `json:"volumes,omitempty"`
-	Nodes       []string          `json:"nodes,omitempty"`
-	Labels      []string          `json:"labels,omitempty"`
-	Annotations map[string]string `json:"annotations,omitempty"`
+	ClassName []string `json:"className,omitempty"`
+	Size      string   `json:"size"`
+	Volumes   []string `json:"volumes,omitempty"`
+	Nodes     []string `json:"nodes,omitempty"`
+	Labels    []string `json:"labels,omitempty"`
 }
 
 type KafkaBrokerStatus struct {

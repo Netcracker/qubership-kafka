@@ -102,10 +102,6 @@ spec:
       - {{ . }}
   {{- end }}
 {{- end }}
-{{- with ((.Values.pvc).metadata).annotations }}
-    annotations:
-      {{- toYaml . | nindent 6 }}
-{{- end }}
 {{- if .Values.kafka.getRacksFromNodeLabels }}
   getRacksFromNodeLabels: {{ .Values.kafka.getRacksFromNodeLabels }}
   {{- if .Values.kafka.nodeLabelNameForRack }}
@@ -251,10 +247,6 @@ spec:
       {{- range .Values.kafka.migrationController.storage.labels }}
         - {{ . }}
       {{- end }}
-    {{- end }}
-    {{- with ((.Values.pvc).metadata).annotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
     {{- end }}
   {{- end }}
 {{- end }}

@@ -883,10 +883,6 @@ spec:
                     type: object
                   storage:
                     properties:
-                      annotations:
-                        additionalProperties:
-                          type: string
-                        type: object
                       className:
                         items:
                           type: string
@@ -1075,10 +1071,6 @@ spec:
                 type: object
               storage:
                 properties:
-                  annotations:
-                    additionalProperties:
-                      type: string
-                    type: object
                   className:
                     items:
                       type: string
@@ -1794,10 +1786,6 @@ spec:
             type: object
           storage:
             properties:
-              annotations:
-                additionalProperties:
-                  type: string
-                type: object
               className:
                 items:
                   type: string

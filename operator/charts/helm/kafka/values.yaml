@@ -34,17 +34,6 @@ global:
   # For backward compatibility
   externalKafka:
     enabled: false
-
-# Annotations copied to Kafka broker and kraft-controller PVCs created by the operator.
-# Example:
-#   pvc:
-#     metadata:
-#       annotations:
-#         argocd.argoproj.io/sync-options: Prune=false
-pvc:
-  metadata:
-    annotations: {}
-
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
   replicas: 1
