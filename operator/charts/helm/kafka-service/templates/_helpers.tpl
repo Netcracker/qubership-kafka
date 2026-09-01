@@ -135,19 +135,27 @@ Configure Kafka service account
 {{- coalesce .Values.operator.serviceAccount (printf "%s-service-operator" (include "kafka.name" .)) -}}
 {{- end -}}
 
+{{/*
+Integration tests Kafka hostname (defaults to global.name)
+*/}}
+{{- define "integrationTests.kafkaHost" -}}
+{{- coalesce .Values.integrationTests.kafkaHost (include "kafka.name" .) -}}
+{{- end -}}
+
 
 {{/*
 DNS names used to generate TLS certificate with "Subject Alternative Name" field
 */}}
 {{- define "kafka.certDnsNames" -}}
   {{- $kafkaName := include "kafka.name" . -}}
-  {{- $dnsNames := list "localhost" $kafkaName (printf "%s.%s" $kafkaName .Release.Namespace) (printf "%s.%s" $kafkaName "kafka-broker") (printf "%s.%s.%s" $kafkaName "kafka-broker" .Release.Namespace) (printf "%s.%s.svc" $kafkaName .Release.Namespace) -}}
+  {{- $brokerService := printf "%s-broker" $kafkaName -}}
+  {{- $dnsNames := list "localhost" $kafkaName (printf "%s.%s" $kafkaName .Release.Namespace) (printf "%s.%s" $kafkaName $brokerService) (printf "%s.%s.%s" $kafkaName $brokerService .Release.Namespace) (printf "%s.%s.svc" $kafkaName .Release.Namespace) -}}
   {{- $brokers := include "kafka.replicas" . -}}
   {{- $kafkaNamespace := .Release.Namespace -}}
   {{- range $i, $e := until ($brokers | int) -}}
     {{- $dnsNames = append $dnsNames (printf "%s-%d" $kafkaName (add $i 1)) -}}
     {{- $dnsNames = append $dnsNames (printf "%s-%d.%s" $kafkaName (add $i 1) $kafkaNamespace) -}}
-    {{- $dnsNames = append $dnsNames (printf "%s-%d.kafka-broker.%s" $kafkaName (add $i 1) $kafkaNamespace) -}}
+    {{- $dnsNames = append $dnsNames (printf "%s-%d.%s.%s" $kafkaName (add $i 1) $brokerService $kafkaNamespace) -}}
   {{- end -}}
   {{- $dnsNames = concat $dnsNames .Values.kafka.tls.subjectAlternativeName.additionalDnsNames -}}
   {{- $dnsNames | toYaml -}}

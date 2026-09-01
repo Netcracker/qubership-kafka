@@ -148,6 +148,7 @@ func (r ReconcileAkhq) Reconcile() error {
 		if err := r.reconciler.SetControllerReference(r.cr, deployment, r.reconciler.Scheme); err != nil {
 			return err
 		}
+		applyAutoRestartSecretAnnotations(deployment, r.logger, akhqSecret, kafkaServicesSecret, ldapSecret)
 		if err := r.reconciler.CreateOrUpdateDeployment(deployment, r.logger); err != nil {
 			return err
 		}
@@ -158,12 +159,6 @@ func (r ReconcileAkhq) Reconcile() error {
 		}
 	} else {
 		r.logger.Info("AKHQ configuration didn't change, skipping reconcile loop")
-	}
-
-	if err := updateDeploymentSecretRestartAnnotations(
-		r.reconciler.Client, r.cr.Namespace, r.akhqProvider.GetServiceName(), r.logger,
-		akhqSecret, kafkaServicesSecret, ldapSecret); err != nil {
-		return err
 	}
 
 	r.reconciler.ResourceVersions[akhqSecret.Name] = akhqSecret.ResourceVersion

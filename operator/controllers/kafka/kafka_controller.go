@@ -17,16 +17,20 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"os"
+
 	kafka "github.com/Netcracker/qubership-kafka/operator/api/v1"
 	"github.com/Netcracker/qubership-kafka/operator/controllers"
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"os"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -188,9 +192,30 @@ func (r *KafkaReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return e.ObjectNew.GetResourceVersion() != e.ObjectOld.GetResourceVersion()
 		},
 	}
+	mapSecretToKafka := handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, obj client.Object) []reconcile.Request {
+		secret, ok := obj.(*corev1.Secret)
+		if !ok {
+			return nil
+		}
+		kafkaList := &kafka.KafkaList{}
+		if err := r.Client.List(ctx, kafkaList, client.InNamespace(secret.GetNamespace())); err != nil {
+			return nil
+		}
+		var requests []reconcile.Request
+		for i := range kafkaList.Items {
+			item := &kafkaList.Items[i]
+			if item.Spec.SecretName == secret.GetName() {
+				requests = append(requests, reconcile.Request{
+					NamespacedName: types.NamespacedName{Name: item.Name, Namespace: item.Namespace},
+				})
+			}
+		}
+		return requests
+	})
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kafka.Kafka{}).
 		Owns(&corev1.Secret{}, builder.WithPredicates(namespacePredicate, dummyPredicate)).
+		Watches(&corev1.Secret{}, mapSecretToKafka, builder.WithPredicates(namespacePredicate, dummyPredicate)).
 		Complete(r)
 }
 
