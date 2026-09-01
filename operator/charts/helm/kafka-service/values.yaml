@@ -551,7 +551,7 @@ integrationTests:
   # Example: https://kube:6443
   url: ""
   kafkaIsManagedByOperator: true
-  kafkaHost: "kafka"
+  kafkaHost: ""
   kafkaPort: 9092
   kafkaPvNames: "pv-1,pv-2,pv-3"
   kafkaVolumeSize: "2"

@@ -43,10 +43,11 @@ import (
 var ErrNoKafkaPods = stderrors.New("no Kafka pods found")
 
 const (
-	kafkaConditionReason              = "KafkaReadinessStatus"
-	kafkaHashName                     = "spec"
-	autoRestartAnnotation             = "kafkaservice.netcracker.com/auto-restart"
-	resourceVersionAnnotationTemplate = "%s/resource-version"
+	kafkaConditionReason                       = "KafkaReadinessStatus"
+	kafkaHashName                              = "spec"
+	autoRestartAnnotation                      = "kafkaservice.netcracker.com/auto-restart"
+	resourceVersionAnnotationTemplate          = "%s/resource-version"
+	kraftMigrationControllerTroubleshootingURL = "/docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready"
 )
 
 type ReconcileKafka struct {
@@ -76,12 +77,19 @@ func (r ReconcileKafka) Reconcile() error {
 		return err
 	}
 
-	kafkaConfigurationChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash ||
-		(kafkaSecret.Name != "" && r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion)
+	secretChanged := kafkaSecret.Name != "" &&
+		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
+	kafkaConfigurationChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash || secretChanged
 
 	if !kafkaConfigurationChanged {
 		r.logger.Info("Kafka configuration didn't change, skipping reconcile loop")
 	} else {
+		if secretChanged && r.cr.Spec.Kraft.Enabled && !r.kafkaProvider.IsSecurityDisabled() {
+			if err = r.syncKraftScramCredentials(kafkaSecret); err != nil {
+				return err
+			}
+		}
+
 		if r.cr.Spec.Replicas > 0 {
 			if err = r.processKafkaReplicas(kafkaSecret); err != nil {
 				return err
@@ -221,6 +229,12 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 			if err := r.reconciler.StatusUpdater.UpdateStatusWithRetry(func(instance *kafka.Kafka) {
 				instance.Status.KraftMigrationStatus.Status = "Created Kraft controller with connection to ZooKeeper"
 			}); err != nil {
+				return err
+			}
+		}
+
+		if step < 2 {
+			if err := r.ensureMigrationControllerIsReady(); err != nil {
 				return err
 			}
 		}
@@ -398,14 +412,14 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err != nil {
 		return err
 	}
-     
+
 	var clusterID string
-    if kraft {
-        clusterID, err = r.resolveClusterID()
-        if err != nil && err != ErrNoKafkaPods {
-		   return err
-	    }
-    }
+	if kraft {
+		clusterID, err = r.resolveClusterID()
+		if err != nil && err != ErrNoKafkaPods {
+			return err
+		}
+	}
 
 	brokerDeployment := r.kafkaProvider.NewKafkaBrokerDeploymentForCR(brokerId, rack, kraft, clusterID)
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
@@ -439,7 +453,7 @@ func (r *ReconcileKafka) updateBrokerDeploymentForMigration(brokerId int, replic
 	} else {
 		var voters []string
 		for i := 1; i <= replicas; i++ {
-			voters = append(voters, fmt.Sprintf("%d@%s-%d.kafka-broker.%s:9096", i, r.cr.Name, i, r.cr.Namespace))
+			voters = append(voters, fmt.Sprintf("%d@%s-%d.%s-broker.%s:9096", i, r.cr.Name, i, r.cr.Name, r.cr.Namespace))
 		}
 		voters = append(voters, fmt.Sprintf("3000@%s-%s:9092", r.cr.Name, "kraft-controller"))
 		additionalEnvs = []corev1.EnvVar{
@@ -521,6 +535,26 @@ func (r *ReconcileKafka) updateMigrationControllerWithoutZooKeeper(zkClusterID s
 
 	if err := r.waitUntilControllerIsReady(r.cr.Spec.Kraft.MigrationTimeout); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (r *ReconcileKafka) ensureMigrationControllerIsReady() error {
+	controllerName := fmt.Sprintf("%s-%s", r.cr.Name, "kraft-controller")
+	if _, err := r.reconciler.FindDeployment(controllerName, r.cr.Namespace, r.logger); err != nil {
+		if errors.IsNotFound(err) {
+			return fmt.Errorf("kraft migration controller deployment %q was not found. See troubleshooting: %s", controllerName, kraftMigrationControllerTroubleshootingURL)
+		}
+		return err
+	}
+
+	labels := map[string]string{
+		"name":      controllerName,
+		"component": "kafka-controller",
+	}
+	if !r.reconciler.AreDeploymentsReady(labels, r.cr.Namespace, r.logger) {
+		return fmt.Errorf("kraft migration controller deployment %q is not ready yet. Wait until its readiness probe succeeds before continuing migration. See troubleshooting: %s", controllerName, kraftMigrationControllerTroubleshootingURL)
 	}
 
 	return nil
@@ -633,8 +667,8 @@ func (r ReconcileKafka) getZooKeeperClusterID() (string, error) {
 	}
 	podNames := controllers.GetActualPodNames(foundPodList.Items)
 	if len(podNames) == 0 {
-        return "", ErrNoKafkaPods
-    }
+		return "", ErrNoKafkaPods
+	}
 	zkClusterID, commandErr := r.runCommandInPod(podNames[0], "kafka", r.cr.Namespace,
 		[]string{"/bin/sh", "-c", "${KAFKA_HOME}/bin/get-cluster-id.sh"})
 	return strings.TrimSpace(zkClusterID), commandErr
@@ -759,6 +793,58 @@ func (r *ReconcileKafka) getKafkaCertificates() (*controllers.SslCertificates, e
 	return &controllers.SslCertificates{}, nil
 }
 
+func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) error {
+	adminUsername := string(kafkaSecret.Data["admin-username"])
+	adminPassword := string(kafkaSecret.Data["admin-password"])
+	clientUsername := string(kafkaSecret.Data["client-username"])
+	clientPassword := string(kafkaSecret.Data["client-password"])
+	if adminUsername == "" || adminPassword == ""  {
+		r.logger.Info("Skipping KRaft SCRAM sync: admin credentials are not set in Kafka secret")
+		return nil
+	}
+
+	pods, err := r.reconciler.FindPodList(r.cr.Namespace, r.kafkaProvider.GetSelectorLabels())
+	if err != nil {
+		return err
+	}
+	pod := controllers.GetFirstAvailablePod(pods)
+	if pod == nil {
+		r.logger.Info("Skipping KRaft SCRAM sync: no ready Kafka pod")
+		return nil
+	}
+
+	users := []struct{ name, password string }{
+		{adminUsername, adminPassword},
+	}
+	if clientUsername != "" {
+		users = append(users, struct{ name, password string }{clientUsername, clientPassword})
+	}
+	for _, user := range users {
+		if err := r.updateScramUserInPod(pod.Name, user.name, user.password); err != nil {
+			return fmt.Errorf("failed to update SCRAM user %q in pod %s: %w", user.name, pod.Name, err)
+		}
+	}
+	r.logger.Info("Synced KRaft SCRAM credentials via pod exec before broker restart", "pod", pod.Name)
+	return nil
+}
+
+func (r *ReconcileKafka) updateScramUserInPod(podName, username, password string) error {
+	escUser := strings.ReplaceAll(username, `'`, `'"'"'`)
+	escPass := strings.ReplaceAll(password, `'`, `'"'"'`)
+	script := fmt.Sprintf(`
+adminclient="${KAFKA_HOME}/bin/adminclient.properties"
+if [ -f /tmp/kafka/bin/adminclient.properties ]; then
+  adminclient=/tmp/kafka/bin/adminclient.properties
+fi
+${KAFKA_HOME}/bin/kafka-configs.sh --bootstrap-server localhost:9092 \
+  --command-config "$adminclient" \
+  --alter --entity-type users --entity-name '%s' \
+  --add-config 'SCRAM-SHA-512=[password=%s]'
+`, escUser, escPass)
+	_, err := r.runCommandInPod(podName, "kafka", r.cr.Namespace, []string{"/bin/sh", "-c", script})
+	return err
+}
+
 func (r *ReconcileKafka) getCurrentDeploymentsCount() (int, error) {
 	deployments, err := r.reconciler.FindKafkaDeployments(r.cr)
 	if err != nil {
@@ -850,7 +936,7 @@ func (r *ReconcileKafka) waitUntilControllerIsReady(maxWaitingInterval int) erro
 	})
 	if err != nil {
 		r.logger.Error(err, "Deployment kafka-kraft-controller failed.")
-		return err
+		return fmt.Errorf("kraft migration controller is not ready. See troubleshooting: %s: %w", kraftMigrationControllerTroubleshootingURL, err)
 	}
 	return nil
 }
