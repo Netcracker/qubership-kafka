@@ -11,7 +11,7 @@ on:
 
 jobs:
   Nightly-Kafka-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@9fcb2de51b4d510b52ffca883515bdb388cbc16f # v1.14.0
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/kafka.yaml@57a9fbc96d458a7bdc37cb919bad53937d7d08dd # v1.15.0
     with:
       service_branch: 'main'
       pipeline_branch: '9fcb2de51b4d510b52ffca883515bdb388cbc16f' # v1.14.0 renovate: depName=Netcracker/qubership-test-pipelines
