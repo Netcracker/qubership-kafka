@@ -75,14 +75,14 @@ def _get_status_code(alive_nodes: int, total_nodes: int):
 
 
 def _get_list_of_servers(servers: str):
-    return [element.replace("'", "") for element in servers[1:-1].split(",")]
+    return [element.strip().replace("'", "").replace('"', '') for element in servers[1:-1].split(",") if element]
 
 
 def run():
     servers = os.getenv('PROMETHEUS_URLS')
     servers_list = _get_list_of_servers(servers)
     logger.debug(f'Servers are {servers_list}')
-    health_timeout = os.getenv('KMM_HEALTH_TIMEOUT', 6)
+    health_timeout = os.getenv('KMM_HEALTH_TIMEOUT', 10)
     alive_nodes = _get_number_of_alive_nodes(servers_list, health_timeout)
     total_nodes = len(servers_list)
     status_code = _get_status_code(alive_nodes, total_nodes)
