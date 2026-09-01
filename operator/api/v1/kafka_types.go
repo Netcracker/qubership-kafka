@@ -71,6 +71,17 @@ type KafkaSpec struct {
 	MigrationController     MigrationController     `json:"migrationController,omitempty"`
 	LivenessProbe           *ProbeTimingConfig      `json:"livenessProbe,omitempty"`
 	ReadinessProbe          *ProbeTimingConfig      `json:"readinessProbe,omitempty"`
+	PVC                     PVC                     `json:"pvc,omitempty"`
+}
+
+// PVC defines common configuration applied to all persistent volume claims created by the operator.
+type PVC struct {
+	PVCMetadata `json:"metadata,omitempty"`
+}
+
+// PVCMetadata defines metadata applied to all persistent volume claims created by the operator.
+type PVCMetadata struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // ProbeTimingConfig defines reusable timing/threshold fields for health probes.
@@ -158,6 +169,12 @@ type KafkaStatus struct {
 	PartitionsReassignmentStatus PartitionsReassignmentStatus `json:"partitionsReassignmentStatus,omitempty"`
 	Conditions                   []StatusCondition            `json:"conditions,omitempty"`
 	KraftMigrationStatus         KraftMigrationStatus         `json:"kraftMigrationStatus,omitempty"`
+	PVCStatus                    PVCStatus                    `json:"pvcStatus,omitempty"`
+}
+
+// PVCStatus stores the last annotations applied by the operator to Kafka PVCs.
+type PVCStatus struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 //+kubebuilder:object:root=true

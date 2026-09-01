@@ -403,7 +403,7 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 
 	persistentVolumeClaim := r.kafkaProvider.NewKafkaPersistentVolumeClaimForCR(brokerId)
 	if persistentVolumeClaim != nil {
-		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.logger); err != nil {
+		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.cr.Status.PVCStatus.Annotations, r.logger); err != nil {
 			return err
 		}
 	}
@@ -482,7 +482,7 @@ func (r *ReconcileKafka) createMigrationControllerEntities(zkClusterID string) e
 
 	persistentVolumeClaim := r.kafkaProvider.NewKafkaControllerPersistentVolumeClaimForCR()
 	if persistentVolumeClaim != nil {
-		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.logger); err != nil {
+		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.cr.Status.PVCStatus.Annotations, r.logger); err != nil {
 			return err
 		}
 	}

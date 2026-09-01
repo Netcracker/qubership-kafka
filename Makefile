@@ -5,7 +5,7 @@
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
 VERSION ?= 0.0.1
 
-CRD_VERSION=1.9.0
+CRD_VERSION=1.11.0
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -83,7 +83,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_akhqconfigs.yaml
 	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kafkaservices.yaml
 	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kmmconfigs.yaml
-	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kafka.yaml
+	sed -i "/^  annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kafka.yaml
 	sed -i "/annotations:/a\    crd.netcracker.com\/version: $(CRD_VERSION)" config/crd/bases/netcracker.com_kafkausers.yaml
 
 .PHONY: generate
