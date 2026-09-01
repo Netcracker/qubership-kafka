@@ -44,7 +44,7 @@ const (
 	defaultTopicReassignmentTimeoutSeconds = 300
 	defaultBrokerDeploymentScaleInEnabled  = false
 	zooKeeperClusterID                     = "U5tHX5uHQnmsniDS54EF_w"
-	veleroExcludeFromBackupAnnotation      = "velero.io/exclude-from-backup"
+	veleroExcludeFromBackupLabel           = "velero.io/exclude-from-backup"
 )
 
 type KafkaResourceProvider struct {
@@ -367,6 +367,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 	kafkaLabels := krp.GetKafkaLabels()
 	kafkaLabels["name"] = deploymentName
 	kafkaLabels["app.kubernetes.io/instance"] = fmt.Sprintf("%s-%s", deploymentName, krp.cr.Namespace)
+	kafkaLabels[veleroExcludeFromBackupLabel] = "true"
 	selectorLabels := krp.GetSelectorLabels()
 	selectorLabels["name"] = deploymentName
 	kafkaCustomLabels := krp.GetKafkaCustomLabels(kafkaLabels)
@@ -442,7 +443,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 			Name:  "HEAP_OPTS",
 			Value: fmt.Sprintf("-Xms%dm -Xmx%dm", krp.cr.Spec.HeapSize, krp.cr.Spec.HeapSize),
 		},
-		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.isSecurityDisabled())},
+		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.IsSecurityDisabled())},
 		{Name: "CLOCK_SKEW", Value: strconv.Itoa(getClockSkew(oauth))},
 		{Name: "JWK_SOURCE_TYPE", Value: getJwkSourceType(oauth)},
 		{
@@ -462,7 +463,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 	if kraftEnabled {
 		var voters []string
 		for i := 1; i <= krp.spec.Replicas; i++ {
-			voters = append(voters, fmt.Sprintf("%d@%s-%d.kafka-broker.%s:9096", i, krp.cr.Name, i, krp.cr.Namespace))
+			voters = append(voters, fmt.Sprintf("%d@%s-%d.%s.%s:9096", i, krp.cr.Name, i, domainName, krp.cr.Namespace))
 		}
 		envVars = append(envVars, []corev1.EnvVar{
 			{Name: "KRAFT_ENABLED", Value: "true"},
@@ -523,9 +524,6 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 			Name:      deploymentName,
 			Namespace: krp.cr.Namespace,
 			Labels:    kafkaLabels,
-			Annotations: map[string]string{
-				veleroExcludeFromBackupAnnotation: "true",
-			},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Strategy:                appsv1.DeploymentStrategy{Type: appsv1.RecreateDeploymentStrategyType},
@@ -609,7 +607,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 	voters = append(voters, "3000@localhost:9092")
 	if migrated {
 		for i := 1; i <= krp.spec.Replicas; i++ {
-			voters = append(voters, fmt.Sprintf("%d@%s-%d.kafka-broker.%s:9096", i, krp.cr.Name, i, krp.cr.Namespace))
+			voters = append(voters, fmt.Sprintf("%d@%s-%d.%s.%s:9096", i, krp.cr.Name, i, domainName, krp.cr.Namespace))
 		}
 	}
 
@@ -639,7 +637,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 			Name:  "HEAP_OPTS",
 			Value: fmt.Sprintf("-Xms%dm -Xmx%dm", krp.cr.Spec.HeapSize, krp.cr.Spec.HeapSize),
 		},
-		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.isSecurityDisabled())},
+		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.IsSecurityDisabled())},
 		{Name: "CLOCK_SKEW", Value: strconv.Itoa(getClockSkew(oauth))},
 		{Name: "JWK_SOURCE_TYPE", Value: getJwkSourceType(oauth)},
 		{
@@ -755,7 +753,7 @@ func (krp KafkaResourceProvider) GetZooKeeperFullName() string {
 	return zooKeeperAddress
 }
 
-func (krp KafkaResourceProvider) isSecurityDisabled() bool {
+func (krp KafkaResourceProvider) IsSecurityDisabled() bool {
 	if krp.cr.Spec.DisableSecurity != nil {
 		return *krp.cr.Spec.DisableSecurity
 	}
