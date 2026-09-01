@@ -171,6 +171,7 @@ func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, sec
 	if err := r.reconciler.SetControllerReference(r.cr, mirrorMakerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
+	applyAutoRestartSecretAnnotations(mirrorMakerDeployment, r.logger, secret)
 	mirrorMakerService := mirrorMakerProvider.GetService(deploymentName)
 	if err := r.reconciler.SetControllerReference(r.cr, mirrorMakerService, r.reconciler.Scheme); err != nil {
 		return err
@@ -178,11 +179,7 @@ func (r ReconcileMirrorMaker) createDeployment(cluster kafkaservice.Cluster, sec
 	if err := r.reconciler.CreateOrUpdateService(mirrorMakerService, r.logger); err != nil {
 		return err
 	}
-	if err := r.reconciler.CreateOrUpdateDeployment(mirrorMakerDeployment, r.logger); err != nil {
-		return err
-	}
-	return updateDeploymentSecretRestartAnnotations(
-		r.reconciler.Client, r.cr.Namespace, deploymentName, r.logger, secret)
+	return r.reconciler.CreateOrUpdateDeployment(mirrorMakerDeployment, r.logger)
 }
 
 // updateMirrorMakerStatus updates the status of Kafka Mirror Maker

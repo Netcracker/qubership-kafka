@@ -231,19 +231,6 @@ func (mrp MonitoringResourceProvider) getMonitoringEnvs() []corev1.EnvVar {
 			},
 		}...)
 	}
-	if mrp.spec.MonitoringType == "prometheus" && mrp.spec.SecretName != "" {
-		envVars = append(envVars, corev1.EnvVar{
-			Name: "PROMETHEUS_USERNAME",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: mrp.spec.SecretName,
-					},
-					Key: "prometheus-username",
-				},
-			},
-		})
-	}
 	return envVars
 }
 
@@ -281,24 +268,16 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumes() []corev1.Volume {
 			},
 		},
 	}
-	if mrp.spec.SecretName != "" {
-		var monitoringSecretItems []corev1.KeyToPath
-		if mrp.spec.MonitoringType == "influxdb" {
-			monitoringSecretItems = []corev1.KeyToPath{
-				{Key: "sm-db-username", Path: "sm_db_username"},
-				{Key: "sm-db-password", Path: "sm_db_password"},
-			}
-		} else {
-			monitoringSecretItems = []corev1.KeyToPath{
-				{Key: "prometheus-password", Path: "prometheus_password"},
-			}
-		}
+	if mrp.spec.SecretName != "" && mrp.spec.MonitoringType == "influxdb" {
 		projections = append(projections, corev1.VolumeProjection{
 			Secret: &corev1.SecretProjection{
 				LocalObjectReference: corev1.LocalObjectReference{
 					Name: mrp.spec.SecretName,
 				},
-				Items: monitoringSecretItems,
+				Items: []corev1.KeyToPath{
+					{Key: "sm-db-username", Path: "sm_db_username"},
+					{Key: "sm-db-password", Path: "sm_db_password"},
+				},
 			},
 		})
 	}
