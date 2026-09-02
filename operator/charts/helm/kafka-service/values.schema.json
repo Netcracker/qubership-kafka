@@ -1,0 +1,1762 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "kafka-service values",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "global": { "$ref": "#/$defs/global" },
+    "pvc": { "$ref": "#/$defs/pvc" },
+    "operator": { "$ref": "#/$defs/operator" },
+    "crdInit": { "$ref": "#/$defs/crdInit" },
+    "kafka": { "$ref": "#/$defs/kafka" },
+    "monitoring": { "$ref": "#/$defs/monitoring" },
+    "akhq": { "$ref": "#/$defs/akhq" },
+    "mirrorMaker": { "$ref": "#/$defs/mirrorMaker" },
+    "mirrorMakerMonitoring": { "$ref": "#/$defs/mirrorMakerMonitoring" },
+    "integrationTests": { "$ref": "#/$defs/integrationTests" },
+    "backupDaemon": { "$ref": "#/$defs/backupDaemon" },
+    "cruiseControl": { "$ref": "#/$defs/cruiseControl" },
+    "groupMigration": { "$ref": "#/$defs/groupMigration" },
+    "SERVICE_NAME": {
+      "type": "string",
+      "default": "kafka-services",
+      "description": "The name of the Service exposed for the database."
+    },
+    "PART_OF": {
+      "type": "string",
+      "default": "kafka-services",
+      "description": "Microservice belonging to a group."
+    },
+    "DELIMITER": {
+      "type": "string",
+      "default": "-",
+      "description": "Delimiter for labels."
+    },
+    "ARTIFACT_DESCRIPTOR_VERSION": {
+      "type": "string",
+      "default": "",
+      "description": "Artifact descriptor version which is installed."
+    },
+    "nameOverride": {
+      "type": ["string", "null"],
+      "description": "Override the chart name used in resource names."
+    },
+    "fullnameOverride": {
+      "type": ["string", "null"],
+      "description": "Override the fully qualified app name."
+    },
+    "serviceAccount": {
+      "description": "Service account name or configuration used by generic helpers.",
+      "oneOf": [
+        { "type": ["string", "null"] },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "create": { "type": "boolean" },
+            "name": { "type": "string" }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "resourceRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requests": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "request": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "affinity": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "nodeAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "podAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "podAntiAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        }
+      }
+    },
+    "tolerations": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string" },
+          "operator": { "type": "string", "enum": ["Equal", "Exists"] },
+          "value": { "type": "string" },
+          "effect": {
+            "type": "string",
+            "enum": ["NoSchedule", "PreferNoSchedule", "NoExecute"]
+          },
+          "tolerationSeconds": { "type": "integer" }
+        }
+      }
+    },
+    "podSecurityContext": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "runAsUser": { "type": "integer" },
+        "runAsGroup": { "type": "integer" },
+        "fsGroup": { "type": "integer" },
+        "runAsNonRoot": { "type": "boolean" },
+        "fsGroupChangePolicy": { "type": "string" },
+        "seLinuxOptions": { "type": "object", "additionalProperties": true },
+        "seccompProfile": { "type": "object", "additionalProperties": true },
+        "supplementalGroups": {
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "sysctls": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": true }
+        },
+        "windowsOptions": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "stringMap": {
+      "type": ["object", "null"],
+      "additionalProperties": { "type": "string" }
+    },
+    "tlsCertificates": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "crt": { "type": ["string", "null"], "description": "Certificate in base64 format." },
+        "key": { "type": ["string", "null"], "description": "Private key in base64 format." },
+        "ca": { "type": ["string", "null"], "description": "Root CA certificate in base64 format." }
+      }
+    },
+    "subjectAlternativeName": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "additionalDnsNames": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Additional DNS names added to the certificate SAN field."
+        },
+        "additionalIpAddresses": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Additional IP addresses added to the certificate SAN field."
+        }
+      }
+    },
+    "parentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "group": { "type": "string" },
+        "kind": { "type": "string" },
+        "name": { "type": "string" },
+        "namespace": { "type": "string" },
+        "sectionName": { "type": "string" },
+        "port": { "type": "integer" }
+      }
+    },
+    "envoyGateway": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enables Gateway API HTTPRoute resources."
+        },
+        "host": {
+          "type": "string",
+          "description": "Hostname used by the HTTPRoute."
+        },
+        "parentRefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/parentRef" },
+          "description": "Gateway resources that the HTTPRoute attaches to."
+        }
+      }
+    },
+    "kraft": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "description": "Whether KRaft mode is enabled." },
+        "migration": { "type": "boolean", "description": "Whether KRaft migration is enabled." },
+        "migrationTimeout": { "type": "integer", "description": "KRaft migration timeout." }
+      }
+    },
+    "ssl": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "secretName": { "type": "string" },
+        "cipherSuites": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "enableTwoWaySsl": { "type": "boolean" },
+        "allowNonencryptedAccess": { "type": "boolean" }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "className": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "size": { "type": "string", "description": "Persistent volume size." },
+        "volumes": { "type": "array", "items": { "type": "string" } },
+        "nodes": { "type": "array", "items": { "type": "string" } },
+        "labels": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "scaling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reassignPartitions": { "type": ["boolean", "null"] },
+        "brokerDeploymentScaleInEnabled": { "type": ["boolean", "null"] },
+        "allBrokersStartTimeoutSeconds": { "type": ["integer", "null"] },
+        "topicReassignmentTimeoutSeconds": { "type": ["integer", "null"] }
+      }
+    },
+    "oauth": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "clockSkew": { "type": ["integer", "null"] },
+        "jwkSourceType": { "type": ["string", "null"] },
+        "jwksConnectionTimeout": { "type": ["integer", "null"] },
+        "jwksReadTimeout": { "type": ["integer", "null"] },
+        "jwksSizeLimit": { "type": ["integer", "null"] }
+      }
+    },
+    "transformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "transforms": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/transform" }
+        },
+        "predicates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/predicate" }
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "predicate": { "type": "string" },
+        "negate": { "type": ["boolean", "null"] },
+        "params": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "predicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "params": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Cluster alias." },
+        "bootstrapServers": { "type": "string", "description": "Kafka bootstrap servers." },
+        "nodeLabel": { "type": "string", "description": "Node label used to pin MM2 pods." },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "enableSsl": { "type": "boolean" },
+        "sslSecretName": { "type": "string" },
+        "saslMechanism": { "type": "string" }
+      }
+    },
+    "lagAlertConfigurationItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "alertName": { "type": "string", "description": "Prometheus alert name. Must be unique within the release." },
+        "topics": { "type": "string", "description": "Regex matched against the Kafka topic name." },
+        "groups": { "type": "string", "description": "Regex matched against the consumer group name." },
+        "lagAlert": { "type": "integer", "description": "Offset lag threshold. Set to -1 to skip." },
+        "lagAlertSeconds": { "type": "integer", "description": "Estimated lag seconds threshold. Set to -1 to skip." }
+      }
+    },
+    "ldapGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "groups": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "ldapUser": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "username": { "type": "string" },
+        "groups": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "s3Alias": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "spec": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "default": { "type": "boolean" },
+            "storageBucket": { "type": "string" },
+            "storageProvider": { "type": "string" },
+            "storageRegion": { "type": "string" },
+            "storageServerUrl": { "type": "string" },
+            "storageUsername": { "type": "string" },
+            "storageSecret": { "type": "string" }
+          }
+        },
+        "secretContent": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "properties": {
+            "storagePassword": { "type": "string" }
+          }
+        }
+      }
+    },
+    "pvc": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Common PVC configuration applied by the operator.",
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "$ref": "#/$defs/stringMap",
+              "description": "Custom annotations added to all Persistent Volume Claims created by the operator."
+            }
+          }
+        }
+      }
+    },
+    "global": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "kafka",
+          "description": "Custom resource name used to form service names."
+        },
+        "waitForPodsReady": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the operator should wait for pods to be ready before publishing CR status."
+        },
+        "podReadinessTimeout": {
+          "type": "integer",
+          "default": 600,
+          "description": "Timeout in seconds for waiting until pods are ready."
+        },
+        "monitoringType": {
+          "type": "string",
+          "enum": ["prometheus", "influxdb"],
+          "default": "prometheus",
+          "description": "Monitoring output plugin type."
+        },
+        "installDashboard": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether Grafana dashboards are applied."
+        },
+        "restrictedEnvironment": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the deployment is performed in a restricted access environment."
+        },
+        "ipv6": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether IPv6 is used."
+        },
+        "smDbHost": {
+          "type": ["string", "null"],
+          "description": "Host of the System Monitoring database. Required when monitoringType is influxdb."
+        },
+        "smDbName": {
+          "type": ["string", "null"],
+          "description": "Name of the System Monitoring database. Required when monitoringType is influxdb."
+        },
+        "cloudIntegrationEnabled": {
+          "type": "boolean",
+          "description": "Whether to apply global cloud parameters instead of service-specific ones."
+        },
+        "customLabels": {
+          "$ref": "#/$defs/stringMap",
+          "description": "Custom labels for all Kafka Service pods."
+        },
+        "defaultLabels": {
+          "$ref": "#/$defs/stringMap",
+          "description": "Default labels applied by the operator."
+        },
+        "securityContext": {
+          "$ref": "#/$defs/podSecurityContext",
+          "description": "Pod security context for all Kafka Service pods."
+        },
+        "kafkaSaslMechanism": {
+          "type": "string",
+          "description": "SASL mechanism used to connect to Kafka."
+        },
+        "kafkaSsl": { "$ref": "#/$defs/ssl" },
+        "kraft": { "$ref": "#/$defs/kraft" },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to use TLS to connect to Kafka services."
+            },
+            "cipherSuites": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": [],
+              "description": "TLS cipher suites."
+            },
+            "allowNonencryptedAccess": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to allow non-encrypted access to Kafka."
+            },
+            "insecureSkipTlsVerify": {
+              "type": "boolean",
+              "description": "Skip TLS certificate verification."
+            },
+            "serverName": {
+              "type": "string",
+              "description": "TLS server name used by clients."
+            },
+            "generateCerts": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether to generate TLS certificates."
+                },
+                "certProvider": {
+                  "type": "string",
+                  "enum": ["helm", "cert-manager"],
+                  "default": "cert-manager",
+                  "description": "Provider used to generate TLS certificates."
+                },
+                "durationDays": {
+                  "type": "integer",
+                  "default": 365,
+                  "description": "TLS certificate validity duration in days."
+                },
+                "clusterIssuerName": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Name of the cert-manager ClusterIssuer resource."
+                }
+              }
+            }
+          }
+        },
+        "externalKafka": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to use an external Kafka cluster."
+            },
+            "bootstrapServers": {
+              "type": "string",
+              "default": "",
+              "description": "Comma-separated list of host:port pairs of external Kafka."
+            },
+            "replicas": {
+              "type": "string",
+              "default": "",
+              "description": "Number of external Kafka servers."
+            },
+            "saslMechanism": {
+              "type": "string",
+              "default": "",
+              "description": "SASL mechanism used in external Kafka."
+            },
+            "enableSsl": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to use SSL to connect to external Kafka."
+            },
+            "sslSecretName": {
+              "type": "string",
+              "default": "",
+              "description": "Secret that contains SSL certificates."
+            },
+            "username": {
+              "type": "string",
+              "default": "",
+              "description": "Username of the external Kafka admin user."
+            },
+            "password": {
+              "type": "string",
+              "default": "",
+              "description": "Password of the external Kafka admin user."
+            }
+          }
+        },
+        "velero": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preHookBackupEnabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether Velero backup pre-hook with Backup Daemon is enabled."
+            },
+            "postHookRestoreEnabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether Velero restore post-hook with Backup Daemon is enabled."
+            }
+          }
+        },
+        "disasterRecovery": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "siteManagerApiGroup": {
+              "type": "string",
+              "default": "netcracker.com",
+              "description": "API group used by Site Manager resources."
+            },
+            "image": {
+              "type": "string",
+              "description": "Disaster Recovery daemon container image."
+            },
+            "customLabels": {
+              "$ref": "#/$defs/stringMap",
+              "description": "Custom labels for Disaster Recovery resources."
+            },
+            "tls": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether to use TLS to connect to Disaster Recovery."
+                },
+                "allowNonencryptedAccess": {
+                  "type": "boolean",
+                  "description": "Whether non-encrypted access to DRD is allowed."
+                },
+                "certificates": { "$ref": "#/$defs/tlsCertificates" },
+                "secretName": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Secret that contains Disaster Recovery TLS certificates."
+                },
+                "cipherSuites": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "default": [],
+                  "description": "TLS cipher suites that override global.tls.cipherSuites."
+                },
+                "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+              }
+            },
+            "httpAuth": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether Disaster Recovery HTTP authentication is enabled."
+                },
+                "smSecureAuth": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether smSecureAuth mode is enabled for Site Manager."
+                },
+                "smNamespace": {
+                  "type": "string",
+                  "default": "site-manager",
+                  "description": "Namespace from which Site Manager API calls are made."
+                },
+                "smServiceAccountName": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Service account used for Site Manager API calls."
+                },
+                "restrictedEnvironment": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether to bind system:auth-delegator for DR authentication."
+                },
+                "customAudience": {
+                  "type": "string",
+                  "default": "sm-services",
+                  "description": "Custom audience for the REST API token."
+                }
+              }
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["", "active", "standby", "disabled"],
+              "default": "",
+              "description": "Disaster Recovery mode of the current site."
+            },
+            "region": {
+              "type": "string",
+              "default": "",
+              "description": "Cloud region of the current Kafka Service instance."
+            },
+            "siteManagerEnabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to use Site Manager."
+            },
+            "afterServices": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": [],
+              "description": "SiteManager names after which Kafka switchover is run."
+            },
+            "serviceExport": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether to create a GKE ServiceExport resource."
+                }
+              }
+            },
+            "mirrorMakerReplication": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether Kafka replication via Mirror Maker is enabled in DR mode."
+                }
+              }
+            },
+            "topicsBackup": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether topic configuration replication via Backup Daemon is enabled."
+                }
+              }
+            },
+            "resources": { "$ref": "#/$defs/resourceRequirements" }
+          }
+        },
+        "secrets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kafka": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "disableSecurity": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Disables Kafka authentication when true."
+                },
+                "adminUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username of the internal administrator Kafka user."
+                },
+                "adminPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password of the internal administrator Kafka user."
+                },
+                "clientUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username of the external Kafka client user."
+                },
+                "clientPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password of the external Kafka client user."
+                },
+                "zookeeperClientUsername": {
+                  "type": "string",
+                  "description": "Username of the ZooKeeper client user."
+                },
+                "zookeeperClientPassword": {
+                  "type": "string",
+                  "description": "Password of the ZooKeeper client user."
+                }
+              }
+            },
+            "monitoring": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "prometheusUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username for Prometheus authentication."
+                },
+                "prometheusPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password for Prometheus authentication."
+                },
+                "smDbUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "System Monitoring database username."
+                },
+                "smDbPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "System Monitoring database password."
+                }
+              }
+            },
+            "akhq": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "defaultUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username of the default AKHQ user."
+                },
+                "defaultPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password of the default AKHQ user."
+                },
+                "schemaRegistryUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username of the Schema Registry user."
+                },
+                "schemaRegistryPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password of the Schema Registry user."
+                }
+              }
+            },
+            "backupDaemon": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username of the Backup Daemon API user."
+                },
+                "password": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password of the Backup Daemon API user."
+                },
+                "s3": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "keyId": {
+                      "type": "string",
+                      "default": "",
+                      "description": "Access key ID for S3 storage."
+                    },
+                    "keySecret": {
+                      "type": "string",
+                      "default": "",
+                      "description": "Secret access key for S3 storage."
+                    }
+                  }
+                }
+              }
+            },
+            "cruiseControl": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "adminUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username for the Cruise Control UI admin user."
+                },
+                "adminPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password for the Cruise Control UI admin user."
+                },
+                "viewerUsername": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Username for the Cruise Control UI viewer user."
+                },
+                "viewerPassword": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Password for the Cruise Control UI viewer user."
+                }
+              }
+            },
+            "integrationTests": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "zabbix": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "username": { "type": "string", "default": "" },
+                    "password": { "type": "string", "default": "" }
+                  }
+                },
+                "idp": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "username": { "type": "string", "default": "" },
+                    "password": { "type": "string", "default": "" },
+                    "registrationToken": { "type": "string", "default": "" }
+                  }
+                },
+                "prometheus": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "user": { "type": "string", "default": "" },
+                    "password": { "type": "string", "default": "" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dockerImage": {
+          "type": "string",
+          "description": "Image of Kafka Service Operator."
+        },
+        "replicas": {
+          "type": "integer",
+          "default": 1,
+          "description": "Number of Kafka Service Operator pods."
+        },
+        "apiGroup": {
+          "type": "string",
+          "default": "netcracker.com",
+          "description": "Primary API group used by the operator."
+        },
+        "secondaryApiGroup": {
+          "type": "string",
+          "default": "",
+          "description": "Secondary API group used by the operator."
+        },
+        "kmmConfiguratorEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the operator manages KmmConfig custom resources."
+        },
+        "watchNamespace": {
+          "type": "string",
+          "description": "Namespaces watched by the operator."
+        },
+        "serviceAccount": {
+          "type": "string",
+          "description": "Service account used to deploy Kafka Service. Empty value creates the default account."
+        },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": {
+          "type": "string",
+          "default": "",
+          "description": "Priority class used by the Kafka Service Operator pod."
+        },
+        "akhqConfigurator": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the AKHQ protobuf deserialization controller is started."
+            },
+            "watchNamespace": {
+              "type": "string",
+              "default": "",
+              "description": "Comma-separated namespaces watched for AkhqConfig resources."
+            }
+          }
+        },
+        "kafkaUserConfigurator": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the KafkaUser controller is started."
+            },
+            "secretCreatingEnabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether the KafkaUser service account can create secrets in other namespaces."
+            },
+            "watchNamespace": {
+              "type": "string",
+              "default": "",
+              "description": "Comma-separated namespaces watched for KafkaUser resources."
+            }
+          }
+        },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" }
+      }
+    },
+    "crdInit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dockerImage": {
+          "type": "string",
+          "description": "Image of the CRD-Init job."
+        },
+        "lifetimeAfterCompletion": {
+          "type": "integer",
+          "default": 120,
+          "description": "Seconds the CRD-Init job remains alive after completion."
+        },
+        "sleepAfterCompletion": {
+          "type": "integer",
+          "default": 10,
+          "description": "Seconds the CRD-Init process sleeps after completion."
+        }
+      }
+    },
+    "kafka": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "description": "Whether the Kafka component is deployed. Must be false when using external Kafka."
+        },
+        "replicas": {
+          "type": "integer",
+          "default": 3,
+          "description": "Number of Kafka servers."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka."
+        },
+        "autoRestartOnSecretChange": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether Kafka restarts automatically when TLS secrets change."
+        },
+        "getRacksFromNodeLabels": {
+          "type": ["boolean", "null"],
+          "description": "Whether Kafka racks are taken from node labels."
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether TLS is enabled for Kafka."
+            },
+            "secretName": {
+              "type": "string",
+              "default": "",
+              "description": "Secret that contains Kafka TLS certificates."
+            },
+            "certificates": { "$ref": "#/$defs/tlsCertificates" },
+            "cipherSuites": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "enableTwoWaySsl": { "type": "boolean" },
+            "allowNonencryptedAccess": { "type": "boolean" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "ssl": { "$ref": "#/$defs/ssl" },
+        "storage": { "$ref": "#/$defs/storage" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": "string" },
+        "disableSecurity": { "type": ["boolean", "null"] },
+        "heapSize": { "type": "integer" },
+        "oauth": { "$ref": "#/$defs/oauth" },
+        "scaling": { "$ref": "#/$defs/scaling" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "secretName": { "type": "string" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "nodeLabelNameForRack": { "type": "string" },
+        "racks": { "type": "array", "items": { "type": "string" } },
+        "terminationGracePeriod": { "type": ["integer", "null"] },
+        "zookeeperConnect": { "type": "string" },
+        "zookeeperEnableSsl": { "type": "boolean" },
+        "zookeeperSslSecretName": { "type": "string" },
+        "zookeeperSetACL": { "type": ["boolean", "null"] },
+        "externalHostNames": { "type": "array", "items": { "type": "string" } },
+        "externalPorts": { "type": "array", "items": { "type": "integer" } },
+        "environmentVariables": { "type": "array", "items": { "type": "string" } },
+        "rollbackTimeout": { "type": ["integer", "null"] },
+        "healthCheckTimeout": { "type": ["integer", "null"] },
+        "enableAuditLogs": { "type": ["boolean", "null"] },
+        "tokenRolesPath": { "type": "string" },
+        "enableAuthorization": { "type": ["boolean", "null"] },
+        "consulDiscovery": { "type": "boolean" },
+        "registeredServiceName": { "type": "string" },
+        "kafkaDiscoveryMeta": { "$ref": "#/$defs/stringMap" },
+        "kafkaDiscoveryTags": { "type": "array", "items": { "type": "string" } },
+        "consulAclEnabled": { "type": "boolean" },
+        "consulAuthMethod": { "type": "string" },
+        "rollingUpdate": { "type": "boolean" },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "debugContainer": { "type": "boolean" },
+        "ccMetricReporterEnabled": { "type": "boolean" },
+        "kraft": { "$ref": "#/$defs/kraft" },
+        "metadata": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present on the Kafka CR type; accepted for schema completeness."
+        },
+        "spec": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present on the Kafka CR type; accepted for schema completeness."
+        },
+        "status": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present on the Kafka CR type; accepted for schema completeness."
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether Kafka Monitoring is deployed."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka Monitoring."
+        },
+        "serviceMonitorEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether ServiceMonitor resources are applied."
+        },
+        "monitoringType": {
+          "type": "string",
+          "enum": ["prometheus", "influxdb"],
+          "description": "Monitoring type that overrides global.monitoringType."
+        },
+        "installGrafanaDashboard": {
+          "type": "boolean",
+          "description": "Whether the Grafana dashboard for monitoring is installed."
+        },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": {
+          "type": "string",
+          "default": "",
+          "description": "Priority class used by the Kafka monitoring pod."
+        },
+        "serviceMonitor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "clusterStateScrapeInterval": { "type": "string", "default": "60s" },
+            "clusterStateScrapeTimeout": { "type": "string", "default": "30s" },
+            "jmxScrapeInterval": { "type": "string", "default": "60s" },
+            "jmxScrapeTimeout": { "type": "string", "default": "50s" },
+            "jxmScrapeTimeout": {
+              "type": "string",
+              "description": "Legacy alias for jmxScrapeTimeout."
+            },
+            "kmmScrapeInterval": { "type": "string", "default": "60s" },
+            "kmmScrapeTimeout": { "type": "string", "default": "50s" },
+            "lagExporterScrapeInterval": { "type": "string", "default": "60s" },
+            "lagExporterScrapeTimeout": { "type": "string", "default": "50s" }
+          }
+        },
+        "kafkaTotalBrokerCount": {
+          "type": "integer",
+          "default": 3,
+          "description": "Number of brokers in the Kafka cluster."
+        },
+        "dataCollectionInterval": {
+          "type": "string",
+          "default": "10s",
+          "description": "Interval to collect metrics for Telegraf."
+        },
+        "kafkaExecPluginTimeout": {
+          "type": "string",
+          "default": "10s",
+          "description": "Timeout for the Kafka exec Telegraf plugin."
+        },
+        "enableAdditionalMetrics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether additional metrics are collected."
+        },
+        "smDbHost": { "type": "string" },
+        "smDbName": { "type": "string" },
+        "smDbUsername": { "type": "string" },
+        "smDbPassword": { "type": "string" },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "gcCountAlert": { "type": "integer", "default": 10 },
+            "lagAlert": { "type": "integer", "default": 100000 },
+            "lagAlertSeconds": { "type": "integer", "default": 3600 },
+            "lagAlertConfiguration": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/lagAlertConfigurationItem" },
+              "default": [],
+              "description": "Additional lag alerts with per-entry topic and consumer group filters."
+            },
+            "partitionCountAlert": { "type": "integer", "default": 4000 },
+            "brokerSkewAlert": { "type": "integer", "default": 50 },
+            "brokerSkewAlertPartitionCount": { "type": "integer" },
+            "brokerLeaderSkewAlert": { "type": "integer", "default": 50 },
+            "brokerLeaderSkewAlertPartitionCount": { "type": "integer" }
+          }
+        },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "monitoringCoreosGroup": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether monitoring.coreos.com verbs are added to the operator role."
+        },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "lagExporter": { "$ref": "#/$defs/lagExporter" }
+      }
+    },
+    "lagExporter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Kafka Exporter is deployed."
+        },
+        "refreshMetadata": { "type": "string", "default": "30s" },
+        "logEnableSarama": { "type": "boolean", "default": true },
+        "verbosity": { "type": "integer", "default": 1 },
+        "path": { "type": "string", "description": "Prometheus telemetry path." },
+        "concurrentEnable": { "type": "boolean" },
+        "kafkaVersion": { "type": "string" },
+        "offsetShowAll": { "type": "boolean" },
+        "customLabels": {
+          "description": "Additional labels passed to Kafka Exporter.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "object", "additionalProperties": { "type": "string" } },
+            { "type": "null" }
+          ]
+        },
+        "service": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "image": {
+              "type": "string",
+              "description": "Docker image of Kafka Exporter."
+            },
+            "port": {
+              "type": "integer",
+              "default": 8000,
+              "description": "Port of the Prometheus endpoint."
+            }
+          }
+        },
+        "pollIntervalSeconds": { "type": "integer", "default": 30 },
+        "lookupTableSize": { "type": "integer", "default": 60 },
+        "clientGroupId": { "type": "string", "default": "kafkalagexporter" },
+        "kafkaClientTimeoutSeconds": { "type": "integer", "default": 60 },
+        "kafkaRetries": { "type": "integer", "default": 5 },
+        "cluster": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string", "default": "kafka" },
+            "bootstrapBrokers": {
+              "description": "Kafka broker hostnames. Comma-separated string or list.",
+              "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" } }
+              ]
+            },
+            "topicWhitelist": { "type": "array", "items": { "type": "string" } },
+            "topicBlacklist": { "type": "array", "items": { "type": "string" } },
+            "groupWhitelist": { "type": "array", "items": { "type": "string" } },
+            "groupBlacklist": { "type": "array", "items": { "type": "string" } },
+            "consumerProperties": {
+              "oneOf": [
+                { "type": "array" },
+                { "type": "object", "additionalProperties": true },
+                { "type": "null" }
+              ]
+            },
+            "adminClientProperties": {
+              "oneOf": [
+                { "type": "array" },
+                { "type": "object", "additionalProperties": true },
+                { "type": "null" }
+              ]
+            },
+            "labels": {
+              "oneOf": [
+                { "type": "array" },
+                { "type": "object", "additionalProperties": { "type": "string" } },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "metricWhitelist": { "type": "array", "items": { "type": "string" } },
+        "akkaLogLevel": { "type": "string", "default": "DEBUG" },
+        "rootLogLevel": { "type": "string", "default": "INFO" },
+        "kafkaLagExporterLogLevel": { "type": "string", "default": "INFO" },
+        "kafkaLogLevel": { "type": "string", "default": "INFO" },
+        "dockerImage": { "type": "string" },
+        "metricsPort": { "type": "integer" }
+      }
+    },
+    "akhq": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether AKHQ is deployed."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of AKHQ."
+        },
+        "akhqDefaultUser": {
+          "type": "string",
+          "description": "Legacy default AKHQ username. Prefer global.secrets.akhq.defaultUsername."
+        },
+        "akhqDefaultPassword": {
+          "type": "string",
+          "description": "Legacy default AKHQ password. Prefer global.secrets.akhq.defaultPassword."
+        },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": "string", "default": "" },
+        "kafkaPollTimeout": {
+          "type": "integer",
+          "default": 10000,
+          "description": "Kafka poll timeout in milliseconds."
+        },
+        "enableAccessLog": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether AKHQ access logs are enabled."
+        },
+        "ingress": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "host": { "type": "string", "default": "" },
+            "className": { "type": "string", "default": "" }
+          }
+        },
+        "envoyGateway": { "$ref": "#/$defs/envoyGateway" },
+        "ldap": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "enableSsl": { "type": "boolean", "default": false },
+            "trustedCerts": { "$ref": "#/$defs/stringMap" },
+            "server": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "context": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "server": { "type": "string", "default": "" },
+                    "managerDn": { "type": "string", "default": "" },
+                    "managerPassword": { "type": "string", "default": "" }
+                  }
+                },
+                "search": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "base": { "type": "string", "default": "" },
+                    "filter": { "type": "string", "default": "" }
+                  }
+                },
+                "groups": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": { "type": "boolean", "default": false }
+                  }
+                }
+              }
+            },
+            "usersconfig": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "groups": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/ldapGroup" }
+                },
+                "users": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/ldapUser" }
+                }
+              }
+            }
+          }
+        },
+        "environmentVariables": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Additional environment variables in key=value format."
+        },
+        "heapSize": {
+          "type": "integer",
+          "default": 0,
+          "description": "Heap memory size of the AKHQ container in Mi."
+        },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "schemaRegistryUrl": { "type": "string", "default": "" },
+        "schemaRegistryType": {
+          "type": "string",
+          "enum": ["confluent", "tibco"],
+          "default": "confluent",
+          "description": "Schema Registry type."
+        },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" }
+      }
+    },
+    "mirrorMaker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Kafka Mirror Maker is deployed."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka Mirror Maker."
+        },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": "string", "default": "" },
+        "heapSize": { "type": "integer", "default": 256 },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "replicas": { "type": "integer", "default": 1 },
+        "tasksMax": { "type": ["integer", "null"] },
+        "regionName": { "type": "string" },
+        "clusters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/cluster" },
+          "description": "List of Kafka clusters for Mirror Maker."
+        },
+        "replicationFlowEnabled": { "type": "boolean", "default": false },
+        "replicationPrefixEnabled": { "type": "boolean", "default": true },
+        "topicsToReplicate": { "type": "string", "default": "" },
+        "replicationFactor": { "type": "integer", "default": 3 },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "transformation": { "$ref": "#/$defs/transformation" },
+        "internalRestEnabled": {
+          "type": ["boolean", "null"],
+          "description": "Internal ability to disable dedicated.mode.enable.internal.rest for KMM."
+        },
+        "repeatedReplication": { "type": ["boolean", "null"] },
+        "refreshTopicsIntervalSeconds": { "type": "integer" },
+        "refreshGroupsIntervalSeconds": { "type": "integer" },
+        "environmentVariables": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "enableSsl": { "type": "boolean" },
+        "sslSecretName": { "type": "string" },
+        "saslMechanism": { "type": "string" }
+      }
+    },
+    "mirrorMakerMonitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Kafka Mirror Maker Monitoring is deployed."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka Mirror Maker Monitoring."
+        },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": "string", "default": "" },
+        "kmmExecPluginTimeout": { "type": "string", "default": "20s" },
+        "kmmCollectionInterval": { "type": "string", "default": "5s" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "monitoringType": {
+          "type": "string",
+          "enum": ["prometheus", "influxdb"]
+        },
+        "installDashboard": { "type": "boolean" },
+        "smDbHost": { "type": "string" },
+        "smDbName": { "type": "string" },
+        "smDbUsername": { "type": "string" },
+        "smDbPassword": { "type": "string" }
+      }
+    },
+    "integrationTests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Kafka Service Integration Tests are deployed."
+        },
+        "image": {
+          "type": "string",
+          "description": "Docker image of Kafka Integration tests."
+        },
+        "service": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "default": "kafka-integration-tests-runner",
+              "description": "Name of the Kafka integration tests service."
+            }
+          }
+        },
+        "waitForResult": { "type": "boolean", "default": true },
+        "timeout": { "type": "integer", "default": 1200 },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tags": { "type": "string", "default": "kafka_crud" },
+        "url": { "type": "string", "default": "" },
+        "kafkaIsManagedByOperator": { "type": "boolean", "default": true },
+        "kafkaHost": { "type": "string", "default": "" },
+        "kafkaPort": { "type": "integer", "default": 9092 },
+        "kafkaPvNames": { "type": "string", "default": "pv-1,pv-2,pv-3" },
+        "kafkaVolumeSize": { "type": "string", "default": "2" },
+        "identityProviderUrl": { "type": "string", "default": "" },
+        "zabbixUrl": { "type": "string", "default": "" },
+        "backupDaemonHost": { "type": "string", "default": "kafka-backup-daemon" },
+        "prometheusUrl": { "type": "string", "default": "" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "atpReport": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "atpStorage": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "provider": { "type": "string", "default": "aws" },
+                "serverUrl": { "type": "string", "default": "" },
+                "serverUiUrl": { "type": "string", "default": "" },
+                "bucket": { "type": "string", "default": "" },
+                "region": { "type": "string", "default": "us-east-1" },
+                "username": { "type": "string", "default": "" },
+                "password": { "type": "string", "default": "" }
+              }
+            }
+          }
+        },
+        "atpReportViewUiUrl": { "type": "string", "default": "" },
+        "environmentName": { "type": "string", "default": "kafka" },
+        "monitoredImages": { "type": "string", "default": "" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "drActiveSide": { "type": "string" },
+        "zookeeperOsProject": { "type": "string" },
+        "zookeeperHost": { "type": "string" },
+        "zookeeperPort": { "type": "integer" }
+      }
+    },
+    "backupDaemon": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Kafka Backup Daemon is deployed."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka Backup Daemon."
+        },
+        "username": { "type": "string", "description": "Legacy Backup Daemon API username." },
+        "password": { "type": "string", "description": "Legacy Backup Daemon API password." },
+        "cloudBackuper": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "useBackupDaemon": { "type": "boolean", "default": true },
+            "backupDaemonCredentials": { "type": "boolean", "default": true }
+          }
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "certificates": { "$ref": "#/$defs/tlsCertificates" },
+            "secretName": { "type": "string", "default": "" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "storage": {
+          "type": "string",
+          "default": "1Gi",
+          "description": "Disk size of the attached Backup Daemon volume."
+        },
+        "storageClass": {
+          "type": ["string", "null"],
+          "default": "null",
+          "description": "Storage class for the Backup Daemon volume. The string \"null\" means unset."
+        },
+        "persistentVolume": {
+          "type": ["string", "null"],
+          "default": "null",
+          "description": "Predefined Persistent Volume for Backup Daemon. The string \"null\" means unset."
+        },
+        "s3": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "sslVerify": { "type": "boolean", "default": true },
+            "sslSecretName": { "type": "string", "default": "" },
+            "sslCert": { "type": "string", "default": "" },
+            "url": { "type": "string", "default": "" },
+            "bucket": { "type": "string", "default": "" },
+            "keyId": { "type": "string" },
+            "keySecret": { "type": "string" }
+          }
+        },
+        "s3Aliases": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/s3Alias" },
+          "default": []
+        },
+        "backupSchedule": { "type": "string", "default": "0 0 * * *" },
+        "evictionPolicy": { "type": "string", "default": "0/1d,7d/delete" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "nodeSelector": { "$ref": "#/$defs/stringMap" },
+        "priorityClassName": { "type": "string", "default": "" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "customLabels": { "$ref": "#/$defs/stringMap" }
+      }
+    },
+    "cruiseControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Cruise Control is deployed."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of Cruise Control."
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "boolean", "integer", "number", "null"]
+          },
+          "description": "Cruise Control configuration properties."
+        },
+        "capacity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "diskSpace": { "type": "string", "default": "" },
+            "cpu": { "type": "string", "default": "100" },
+            "nwIn": { "type": "string", "default": "10000" },
+            "nwOut": { "type": "string", "default": "10000" }
+          }
+        },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "heapOpts": { "type": "string", "default": "-Xmx1G" },
+        "ui": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": true }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "host": { "type": "string", "default": "" }
+          }
+        },
+        "envoyGateway": { "$ref": "#/$defs/envoyGateway" },
+        "prometheusServerEndpoint": { "type": "string", "default": "" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "nodeSelector": { "$ref": "#/$defs/stringMap" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" }
+      }
+    },
+    "groupMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "oldGroupPrefix": { "type": "string", "default": "qubership.org/" },
+        "labelSelector": { "type": "string", "default": "" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "image": { "type": "string" },
+        "imagePullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "default": "Always"
+        },
+        "runAsNonRoot": { "type": "boolean", "default": true }
+      }
+    }
+  }
+}

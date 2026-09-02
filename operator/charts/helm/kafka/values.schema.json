@@ -1,0 +1,642 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "kafka values",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "global": { "$ref": "#/$defs/global" },
+    "pvc": { "$ref": "#/$defs/pvc" },
+    "operator": { "$ref": "#/$defs/operator" },
+    "kafka": { "$ref": "#/$defs/kafka" },
+    "groupMigration": { "$ref": "#/$defs/groupMigration" },
+    "monitoring": { "$ref": "#/$defs/monitoring" },
+    "SERVICE_NAME": {
+      "type": "string",
+      "default": "kafka",
+      "description": "The name of the Service exposed for the database."
+    },
+    "PART_OF": {
+      "type": "string",
+      "default": "kafka",
+      "description": "Microservice belonging to a group."
+    },
+    "DELIMITER": {
+      "type": "string",
+      "default": "-",
+      "description": "Delimiter for labels."
+    },
+    "ARTIFACT_DESCRIPTOR_VERSION": {
+      "type": "string",
+      "default": "",
+      "description": "Artifact descriptor version which is installed."
+    },
+    "nameOverride": {
+      "type": ["string", "null"],
+      "description": "Override the chart name used in resource names."
+    },
+    "fullnameOverride": {
+      "type": ["string", "null"],
+      "description": "Override the fully qualified app name."
+    },
+    "serviceAccount": {
+      "description": "Service account name or configuration used by generic helpers.",
+      "oneOf": [
+        { "type": ["string", "null"] },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "create": { "type": "boolean" },
+            "name": { "type": "string" }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "resourceRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requests": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "request": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "affinity": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "nodeAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "podAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "podAntiAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        }
+      }
+    },
+    "tolerations": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string" },
+          "operator": { "type": "string", "enum": ["Equal", "Exists"] },
+          "value": { "type": "string" },
+          "effect": {
+            "type": "string",
+            "enum": ["NoSchedule", "PreferNoSchedule", "NoExecute"]
+          },
+          "tolerationSeconds": { "type": "integer" }
+        }
+      }
+    },
+    "podSecurityContext": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "runAsUser": { "type": "integer" },
+        "runAsGroup": { "type": "integer" },
+        "fsGroup": { "type": "integer" },
+        "runAsNonRoot": { "type": "boolean" },
+        "fsGroupChangePolicy": { "type": "string" },
+        "seLinuxOptions": { "type": "object", "additionalProperties": true },
+        "seccompProfile": { "type": "object", "additionalProperties": true },
+        "supplementalGroups": {
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "sysctls": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": true }
+        },
+        "windowsOptions": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "stringMap": {
+      "type": ["object", "null"],
+      "additionalProperties": { "type": "string" }
+    },
+    "tlsCertificates": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "crt": { "type": ["string", "null"], "description": "Certificate in base64 format." },
+        "key": { "type": ["string", "null"], "description": "Private key in base64 format." },
+        "ca": { "type": ["string", "null"], "description": "Root CA certificate in base64 format." }
+      }
+    },
+    "subjectAlternativeName": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "additionalDnsNames": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "additionalIpAddresses": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "kraft": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether installation of Kafka in KRaft mode is enabled."
+        },
+        "migration": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether migration from ZooKeeper mode to KRaft mode is enabled."
+        },
+        "migrationTimeout": {
+          "type": "integer",
+          "default": 600,
+          "description": "Timeout for Kafka pods during KRaft migration."
+        },
+        "skipUpgradeCheck": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to skip Kafka 4.x upgrade validation from ZooKeeper-based versions."
+        }
+      }
+    },
+    "ssl": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "secretName": { "type": "string" },
+        "cipherSuites": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "enableTwoWaySsl": { "type": "boolean" },
+        "allowNonencryptedAccess": { "type": "boolean" }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "className": {
+          "description": "Storage class name or list of class names.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "size": { "type": "string", "description": "Persistent volume size." },
+        "volumes": { "type": "array", "items": { "type": "string" } },
+        "nodes": { "type": "array", "items": { "type": "string" } },
+        "labels": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "scaling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reassignPartitions": { "type": ["boolean", "null"], "default": false },
+        "brokerDeploymentScaleInEnabled": { "type": ["boolean", "null"], "default": true },
+        "allBrokersStartTimeoutSeconds": { "type": ["integer", "null"], "default": 600 },
+        "topicReassignmentTimeoutSeconds": { "type": ["integer", "null"], "default": 300 }
+      }
+    },
+    "oauth": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "clockSkew": { "type": ["integer", "null"] },
+        "jwkSourceType": {
+          "type": ["string", "null"],
+          "enum": ["", "jwks", "keystore", null]
+        },
+        "jwksConnectionTimeout": { "type": ["integer", "null"] },
+        "jwksReadTimeout": { "type": ["integer", "null"] },
+        "jwksSizeLimit": { "type": ["integer", "null"] }
+      }
+    },
+    "probeTimingConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "initialDelaySeconds": { "type": ["integer", "null"] },
+        "timeoutSeconds": { "type": ["integer", "null"] },
+        "periodSeconds": { "type": ["integer", "null"] },
+        "successThreshold": { "type": ["integer", "null"] },
+        "failureThreshold": { "type": ["integer", "null"] }
+      }
+    },
+    "pvc": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Common PVC configuration applied by the operator.",
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "$ref": "#/$defs/stringMap",
+              "description": "Custom annotations added to all Persistent Volume Claims created by the operator."
+            }
+          }
+        }
+      }
+    },
+    "global": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "kafka",
+          "description": "Custom resource name used to form service names."
+        },
+        "waitForPodsReady": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the operator should wait for pods to be ready before publishing CR status."
+        },
+        "podReadinessTimeout": {
+          "type": "integer",
+          "default": 600,
+          "description": "Timeout in seconds for waiting until pods are ready."
+        },
+        "monitoringType": {
+          "type": "string",
+          "enum": ["prometheus", "influxdb"],
+          "default": "prometheus",
+          "description": "Monitoring output plugin type."
+        },
+        "cloudIntegrationEnabled": {
+          "type": "boolean",
+          "description": "Whether to apply global cloud parameters instead of service-specific ones."
+        },
+        "customLabels": {
+          "$ref": "#/$defs/stringMap",
+          "description": "Custom labels for Kafka pods."
+        },
+        "securityContext": {
+          "$ref": "#/$defs/podSecurityContext",
+          "description": "Pod security context for Kafka pods."
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to use TLS to connect to Kafka."
+            },
+            "cipherSuites": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": []
+            },
+            "allowNonencryptedAccess": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to allow non-encrypted access to Kafka."
+            },
+            "generateCerts": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": { "type": "boolean", "default": true },
+                "certProvider": {
+                  "type": "string",
+                  "enum": ["helm", "cert-manager"],
+                  "default": "cert-manager"
+                },
+                "durationDays": { "type": "integer", "default": 365 },
+                "clusterIssuerName": { "type": "string", "default": "" }
+              }
+            }
+          }
+        },
+        "kafka": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Legacy nested TLS overrides under global.kafka.",
+          "properties": {
+            "tls": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cipherSuites": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "externalKafka": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether an external Kafka cluster is used. Kept for backward compatibility."
+            }
+          }
+        },
+        "secrets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kafka": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "disableSecurity": { "type": "boolean", "default": false },
+                "adminUsername": { "type": "string", "default": "" },
+                "adminPassword": { "type": "string", "default": "" },
+                "clientUsername": { "type": "string", "default": "" },
+                "clientPassword": { "type": "string", "default": "" },
+                "zookeeperClientUsername": { "type": "string", "default": "" },
+                "zookeeperClientPassword": { "type": "string", "default": "" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dockerImage": {
+          "type": "string",
+          "description": "Image of Kafka Operator."
+        },
+        "replicas": {
+          "type": "integer",
+          "default": 1,
+          "description": "Number of Kafka Operator pods."
+        },
+        "apiGroup": {
+          "type": "string",
+          "default": "netcracker.com",
+          "description": "API group used by the operator."
+        },
+        "serviceAccount": {
+          "type": "string",
+          "description": "Service account used to deploy Kafka. Empty value creates the default account."
+        },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": "string", "default": "" },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kafkaTotalBrokerCount": {
+          "type": "integer",
+          "description": "Number of brokers in the Kafka cluster. Used by helper templates."
+        }
+      }
+    },
+    "kafka": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the Kafka component is deployed."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka 4.x."
+        },
+        "kafka3dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka 3.x used during KRaft migration."
+        },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": "string", "default": "" },
+        "disruptionBudget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to create a PodDisruptionBudget."
+            },
+            "maxUnavailable": {
+              "type": "integer",
+              "default": 0,
+              "description": "Maximum number of Kafka pods that can be evicted."
+            }
+          }
+        },
+        "heapSize": { "type": "integer", "default": 256 },
+        "replicas": { "type": "integer", "default": 3 },
+        "scaling": { "$ref": "#/$defs/scaling" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "livenessProbe": { "$ref": "#/$defs/probeTimingConfig" },
+        "readinessProbe": { "$ref": "#/$defs/probeTimingConfig" },
+        "livenessProbeInitialDelay": {
+          "type": "integer",
+          "description": "Legacy alias for kafka.livenessProbe.initialDelaySeconds."
+        },
+        "livenessProbeTimeout": {
+          "type": "integer",
+          "description": "Legacy alias for kafka.livenessProbe.timeoutSeconds."
+        },
+        "readinessProbeInitialDelay": {
+          "type": "integer",
+          "description": "Legacy alias for kafka.readinessProbe.initialDelaySeconds."
+        },
+        "readinessProbeTimeout": {
+          "type": "integer",
+          "description": "Legacy alias for kafka.readinessProbe.timeoutSeconds."
+        },
+        "storage": { "$ref": "#/$defs/storage" },
+        "getRacksFromNodeLabels": { "type": ["boolean", "null"] },
+        "nodeLabelNameForRack": { "type": "string" },
+        "racks": { "type": "array", "items": { "type": "string" } },
+        "terminationGracePeriod": { "type": ["integer", "null"], "default": 1800 },
+        "rollbackTimeout": { "type": ["integer", "null"], "default": 3600 },
+        "healthCheckTimeout": { "type": ["integer", "null"], "default": 30 },
+        "zookeeperConnect": { "type": "string", "default": "zookeeper:2181" },
+        "zookeeperEnableSsl": { "type": "boolean", "default": false },
+        "zookeeperSslSecretName": { "type": "string", "default": "" },
+        "zookeeperSetACL": { "type": ["boolean", "null"], "default": false },
+        "createExternalServices": { "type": "boolean", "default": false },
+        "externalTrafficPolicy": {
+          "type": "string",
+          "enum": ["Cluster", "Local"],
+          "default": "Cluster"
+        },
+        "externalHostNames": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "externalPorts": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "integer" },
+              { "type": "string" }
+            ]
+          },
+          "default": []
+        },
+        "idpWhitelist": { "type": "string", "default": "" },
+        "tokenRolesPath": { "type": "string", "default": "resource_access.account.roles" },
+        "enableAuditLogs": { "type": ["boolean", "null"], "default": false },
+        "enableAuthorization": { "type": ["boolean", "null"], "default": true },
+        "oauth": { "$ref": "#/$defs/oauth" },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "certificates": { "$ref": "#/$defs/tlsCertificates" },
+            "secretName": { "type": "string", "default": "" },
+            "cipherSuites": { "type": "array", "items": { "type": "string" }, "default": [] },
+            "enableTwoWaySsl": { "type": "boolean", "default": false },
+            "allowNonencryptedAccess": { "type": "boolean" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "ssl": { "$ref": "#/$defs/ssl" },
+        "environmentVariables": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "rollingUpdate": { "type": "boolean", "default": true },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "defaultLabels": { "$ref": "#/$defs/stringMap" },
+        "debugContainer": { "type": "boolean", "default": false },
+        "ccMetricReporterEnabled": { "type": "boolean", "default": false },
+        "kraft": { "$ref": "#/$defs/kraft" },
+        "migrationController": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "affinity": { "$ref": "#/$defs/affinity" },
+            "tolerations": { "$ref": "#/$defs/tolerations" },
+            "priorityClassName": { "type": "string" },
+            "heapSize": { "type": "integer", "default": 256 },
+            "resources": { "$ref": "#/$defs/resourceRequirements" },
+            "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+            "storage": { "$ref": "#/$defs/storage" }
+          }
+        },
+        "autoRestartOnSecretChange": { "type": "boolean", "default": true },
+        "disableSecurity": { "type": ["boolean", "null"] },
+        "secretName": { "type": "string" },
+        "consulDiscovery": { "type": "boolean" },
+        "registeredServiceName": { "type": "string" },
+        "kafkaDiscoveryMeta": { "$ref": "#/$defs/stringMap" },
+        "kafkaDiscoveryTags": { "type": "array", "items": { "type": "string" } },
+        "consulAclEnabled": { "type": "boolean" },
+        "consulAuthMethod": { "type": "string" },
+        "metadata": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present on the Kafka CR type; accepted for schema completeness."
+        },
+        "spec": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present on the Kafka CR type; accepted for schema completeness."
+        },
+        "status": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present on the Kafka CR type; accepted for schema completeness."
+        }
+      }
+    },
+    "groupMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "oldGroupPrefix": { "type": "string", "default": "qubership.org/" },
+        "labelSelector": { "type": "string", "default": "" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "image": { "type": "string" },
+        "imagePullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "default": "Always"
+        },
+        "runAsNonRoot": { "type": "boolean", "default": true }
+      }
+    }
+  }
+}
