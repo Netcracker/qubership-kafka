@@ -242,7 +242,10 @@
       "properties": {
         "enabled": { "type": "boolean", "description": "Whether KRaft mode is enabled." },
         "migration": { "type": "boolean", "description": "Whether KRaft migration is enabled." },
-        "migrationTimeout": { "type": "integer", "description": "KRaft migration timeout." }
+        "skipUpgradeCheck": {
+          "type": "boolean",
+          "description": "Whether to skip Kafka 4.x upgrade validation from ZooKeeper-based versions."
+        }
       }
     },
     "ssl": {
@@ -294,6 +297,17 @@
         "jwksConnectionTimeout": { "type": ["integer", "null"] },
         "jwksReadTimeout": { "type": ["integer", "null"] },
         "jwksSizeLimit": { "type": ["integer", "null"] }
+      }
+    },
+    "probeTimingConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "initialDelaySeconds": { "type": ["integer", "null"] },
+        "timeoutSeconds": { "type": ["integer", "null"] },
+        "periodSeconds": { "type": ["integer", "null"] },
+        "successThreshold": { "type": ["integer", "null"] },
+        "failureThreshold": { "type": ["integer", "null"] }
       }
     },
     "transformation": {
@@ -485,6 +499,23 @@
         },
         "kafkaSsl": { "$ref": "#/$defs/ssl" },
         "kraft": { "$ref": "#/$defs/kraft" },
+        "kafka": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Legacy nested TLS overrides used by the kafka chart.",
+          "properties": {
+            "tls": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cipherSuites": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
         "tls": {
           "type": "object",
           "additionalProperties": false,
@@ -1106,7 +1137,15 @@
         "zookeeperSslSecretName": { "type": "string" },
         "zookeeperSetACL": { "type": ["boolean", "null"] },
         "externalHostNames": { "type": "array", "items": { "type": "string" } },
-        "externalPorts": { "type": "array", "items": { "type": "integer" } },
+        "externalPorts": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "integer" },
+              { "type": "string" }
+            ]
+          }
+        },
         "environmentVariables": { "type": "array", "items": { "type": "string" } },
         "rollbackTimeout": { "type": ["integer", "null"] },
         "healthCheckTimeout": { "type": ["integer", "null"] },
@@ -1121,9 +1160,44 @@
         "consulAuthMethod": { "type": "string" },
         "rollingUpdate": { "type": "boolean" },
         "customLabels": { "$ref": "#/$defs/stringMap" },
+        "defaultLabels": { "$ref": "#/$defs/stringMap" },
         "debugContainer": { "type": "boolean" },
         "ccMetricReporterEnabled": { "type": "boolean" },
         "kraft": { "$ref": "#/$defs/kraft" },
+        "kafka3dockerImage": {
+          "type": "string",
+          "description": "Docker image of Kafka 3.x used during KRaft migration."
+        },
+        "disruptionBudget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "maxUnavailable": { "type": "integer" }
+          }
+        },
+        "livenessProbe": { "$ref": "#/$defs/probeTimingConfig" },
+        "readinessProbe": { "$ref": "#/$defs/probeTimingConfig" },
+        "livenessProbeInitialDelay": { "type": "integer" },
+        "livenessProbeTimeout": { "type": "integer" },
+        "readinessProbeInitialDelay": { "type": "integer" },
+        "readinessProbeTimeout": { "type": "integer" },
+        "createExternalServices": { "type": "boolean" },
+        "externalTrafficPolicy": { "type": "string", "enum": ["Cluster", "Local"] },
+        "idpWhitelist": { "type": "string" },
+        "migrationController": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "affinity": { "$ref": "#/$defs/affinity" },
+            "tolerations": { "$ref": "#/$defs/tolerations" },
+            "priorityClassName": { "type": "string" },
+            "heapSize": { "type": "integer" },
+            "resources": { "$ref": "#/$defs/resourceRequirements" },
+            "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+            "storage": { "$ref": "#/$defs/storage" }
+          }
+        },
         "metadata": {
           "type": ["object", "null"],
           "additionalProperties": true,

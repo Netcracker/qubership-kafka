@@ -222,6 +222,68 @@
         }
       }
     },
+    "disasterRecovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "siteManagerApiGroup": { "type": "string" },
+        "image": { "type": "string" },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "allowNonencryptedAccess": { "type": "boolean" },
+            "certificates": { "$ref": "#/$defs/tlsCertificates" },
+            "secretName": { "type": "string" },
+            "cipherSuites": { "type": "array", "items": { "type": "string" } },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "httpAuth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "smSecureAuth": { "type": "boolean" },
+            "smNamespace": { "type": "string" },
+            "smServiceAccountName": { "type": "string" },
+            "restrictedEnvironment": { "type": "boolean" },
+            "customAudience": { "type": "string" }
+          }
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["", "active", "standby", "disabled"]
+        },
+        "region": { "type": "string" },
+        "siteManagerEnabled": { "type": "boolean" },
+        "afterServices": { "type": "array", "items": { "type": "string" } },
+        "serviceExport": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" }
+          }
+        },
+        "mirrorMakerReplication": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" }
+          }
+        },
+        "topicsBackup": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" }
+          }
+        },
+        "resources": { "$ref": "#/$defs/resourceRequirements" }
+      }
+    },
     "ssl": {
       "type": "object",
       "additionalProperties": false,
@@ -334,6 +396,24 @@
           "type": "boolean",
           "description": "Whether to apply global cloud parameters instead of service-specific ones."
         },
+        "installDashboard": {
+          "type": "boolean",
+          "description": "Whether Grafana dashboards are applied. Used by the kafka-service chart."
+        },
+        "restrictedEnvironment": {
+          "type": "boolean",
+          "description": "Whether the deployment is performed in a restricted access environment."
+        },
+        "ipv6": {
+          "type": "boolean",
+          "description": "Whether IPv6 is used."
+        },
+        "smDbHost": { "type": ["string", "null"] },
+        "smDbName": { "type": ["string", "null"] },
+        "defaultLabels": { "$ref": "#/$defs/stringMap" },
+        "kafkaSaslMechanism": { "type": "string" },
+        "kafkaSsl": { "$ref": "#/$defs/ssl" },
+        "kraft": { "$ref": "#/$defs/kraft" },
         "customLabels": {
           "$ref": "#/$defs/stringMap",
           "description": "Custom labels for Kafka pods."
@@ -361,6 +441,8 @@
               "default": true,
               "description": "Whether to allow non-encrypted access to Kafka."
             },
+            "insecureSkipTlsVerify": { "type": "boolean" },
+            "serverName": { "type": "string" },
             "generateCerts": {
               "type": "object",
               "additionalProperties": false,
@@ -402,9 +484,25 @@
               "type": "boolean",
               "default": false,
               "description": "Whether an external Kafka cluster is used. Kept for backward compatibility."
-            }
+            },
+            "bootstrapServers": { "type": "string" },
+            "replicas": { "type": "string" },
+            "saslMechanism": { "type": "string" },
+            "enableSsl": { "type": "boolean" },
+            "sslSecretName": { "type": "string" },
+            "username": { "type": "string" },
+            "password": { "type": "string" }
           }
         },
+        "velero": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preHookBackupEnabled": { "type": "boolean" },
+            "postHookRestoreEnabled": { "type": "boolean" }
+          }
+        },
+        "disasterRecovery": { "$ref": "#/$defs/disasterRecovery" },
         "secrets": {
           "type": "object",
           "additionalProperties": false,
@@ -420,6 +518,83 @@
                 "clientPassword": { "type": "string", "default": "" },
                 "zookeeperClientUsername": { "type": "string", "default": "" },
                 "zookeeperClientPassword": { "type": "string", "default": "" }
+              }
+            },
+            "monitoring": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "prometheusUsername": { "type": "string" },
+                "prometheusPassword": { "type": "string" },
+                "smDbUsername": { "type": "string" },
+                "smDbPassword": { "type": "string" }
+              }
+            },
+            "akhq": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "defaultUsername": { "type": "string" },
+                "defaultPassword": { "type": "string" },
+                "schemaRegistryUsername": { "type": "string" },
+                "schemaRegistryPassword": { "type": "string" }
+              }
+            },
+            "backupDaemon": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "username": { "type": "string" },
+                "password": { "type": "string" },
+                "s3": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "keyId": { "type": "string" },
+                    "keySecret": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "cruiseControl": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "adminUsername": { "type": "string" },
+                "adminPassword": { "type": "string" },
+                "viewerUsername": { "type": "string" },
+                "viewerPassword": { "type": "string" }
+              }
+            },
+            "integrationTests": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "zabbix": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "username": { "type": "string" },
+                    "password": { "type": "string" }
+                  }
+                },
+                "idp": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "username": { "type": "string" },
+                    "password": { "type": "string" },
+                    "registrationToken": { "type": "string" }
+                  }
+                },
+                "prometheus": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "user": { "type": "string" },
+                    "password": { "type": "string" }
+                  }
+                }
               }
             }
           }
@@ -452,6 +627,26 @@
         "affinity": { "$ref": "#/$defs/affinity" },
         "tolerations": { "$ref": "#/$defs/tolerations" },
         "priorityClassName": { "type": "string", "default": "" },
+        "secondaryApiGroup": { "type": "string" },
+        "kmmConfiguratorEnabled": { "type": "boolean" },
+        "watchNamespace": { "type": "string" },
+        "akhqConfigurator": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "watchNamespace": { "type": "string" }
+          }
+        },
+        "kafkaUserConfigurator": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "secretCreatingEnabled": { "type": "boolean" },
+            "watchNamespace": { "type": "string" }
+          }
+        },
         "customLabels": { "$ref": "#/$defs/stringMap" },
         "securityContext": { "$ref": "#/$defs/podSecurityContext" }
       }
@@ -460,10 +655,63 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "install": { "type": "boolean" },
+        "dockerImage": { "type": "string" },
+        "serviceMonitorEnabled": { "type": "boolean" },
+        "monitoringType": { "type": "string", "enum": ["prometheus", "influxdb"] },
+        "installGrafanaDashboard": { "type": "boolean" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "tolerations": { "$ref": "#/$defs/tolerations" },
+        "priorityClassName": { "type": "string" },
+        "serviceMonitor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "clusterStateScrapeInterval": { "type": "string" },
+            "clusterStateScrapeTimeout": { "type": "string" },
+            "jmxScrapeInterval": { "type": "string" },
+            "jmxScrapeTimeout": { "type": "string" },
+            "jxmScrapeTimeout": { "type": "string" },
+            "kmmScrapeInterval": { "type": "string" },
+            "kmmScrapeTimeout": { "type": "string" },
+            "lagExporterScrapeInterval": { "type": "string" },
+            "lagExporterScrapeTimeout": { "type": "string" }
+          }
+        },
         "kafkaTotalBrokerCount": {
           "type": "integer",
           "description": "Number of brokers in the Kafka cluster. Used by helper templates."
-        }
+        },
+        "dataCollectionInterval": { "type": "string" },
+        "kafkaExecPluginTimeout": { "type": "string" },
+        "enableAdditionalMetrics": { "type": "boolean" },
+        "smDbHost": { "type": "string" },
+        "smDbName": { "type": "string" },
+        "smDbUsername": { "type": "string" },
+        "smDbPassword": { "type": "string" },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "gcCountAlert": { "type": "integer" },
+            "lagAlert": { "type": "integer" },
+            "lagAlertSeconds": { "type": "integer" },
+            "lagAlertConfiguration": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            },
+            "partitionCountAlert": { "type": "integer" },
+            "brokerSkewAlert": { "type": "integer" },
+            "brokerSkewAlertPartitionCount": { "type": "integer" },
+            "brokerLeaderSkewAlert": { "type": "integer" },
+            "brokerLeaderSkewAlertPartitionCount": { "type": "integer" }
+          }
+        },
+        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "monitoringCoreosGroup": { "type": "boolean" },
+        "customLabels": { "$ref": "#/$defs/stringMap" },
+        "lagExporter": { "type": "object", "additionalProperties": true }
       }
     },
     "kafka": {
