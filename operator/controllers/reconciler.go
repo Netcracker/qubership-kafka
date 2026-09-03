@@ -226,6 +226,13 @@ func (r *Reconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *cor
 			"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
 	}
 
+	desired := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	current := foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	if desired.Cmp(current) < 0 {
+		return fmt.Errorf("PVC shrinking is forbidden, current PVC size is %s, desired is %s", current.String(), desired.String())
+	}
+	foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage] = desired
+
 	err := r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
 	if err != nil {
 		// There is no ability to update PVC for some environments.
