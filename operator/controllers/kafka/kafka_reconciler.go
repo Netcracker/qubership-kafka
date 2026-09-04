@@ -23,10 +23,10 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
@@ -48,6 +48,9 @@ const (
 	autoRestartAnnotation                      = "kafkaservice.netcracker.com/auto-restart"
 	resourceVersionAnnotationTemplate          = "%s/resource-version"
 	kraftMigrationControllerTroubleshootingURL = "/docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready"
+	maxResizeAttempts                          = 3
+	sleepBetweenResizes                        = 30 * time.Second
+	persistentVolumeClaimPattern               = "pvc-%s-%d"
 )
 
 type ReconcileKafka struct {
@@ -297,6 +300,10 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		return err
 	}
 
+	if err := r.restartBrokersAfterPVCResize(); err != nil {
+		return err
+	}
+
 	if currentReplicas > 0 && currentReplicas < kafkaSpec.Replicas {
 		if err := r.reassignPartitionsWithStatusUpdate(int32(kafkaSpec.Replicas), true); err != nil {
 			return err
@@ -345,6 +352,85 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+func (r ReconcileKafka) restartBrokersAfterPVCResize() error {
+	for attempt := 1; attempt <= maxResizeAttempts; attempt++ {
+		if attempt < maxResizeAttempts {
+			<-time.After(sleepBetweenResizes)
+		}
+		needToRestart, err := r.needToRestartAfterPVCResize()
+		if err != nil {
+			return err
+		}
+		if !needToRestart {
+			return nil
+		}
+		r.logger.Info("Rolling restart required to finish filesystem resize",
+			"attempt", attempt,
+			"maxAttempts", maxResizeAttempts,
+		)
+		if err := r.restartKafkaPods(); err != nil {
+			return err
+		}
+	}
+	return fmt.Errorf("filesystem resize still pending after %d restart attempts", maxResizeAttempts)
+}
+
+func (r ReconcileKafka) needToRestartAfterPVCResize() (bool, error) {
+	desired, err := resource.ParseQuantity(r.cr.Spec.Storage.Size)
+	if err != nil {
+		return false, err
+	}
+	for brokerID := 0; brokerID < r.cr.Spec.Replicas; brokerID++ {
+		pvcName := fmt.Sprintf(persistentVolumeClaimPattern, r.cr.Name, brokerID)
+		pvc, err := r.reconciler.GetPersistentVolumeClaim(pvcName, r.cr.Namespace)
+		if err != nil {
+			return false, err
+		}
+		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+		if capacity.Cmp(desired) >= 0 {
+			continue
+		}
+		if ok, msg := pvcHasResizePending(pvc); ok {
+			r.logger.Info("PVC has FileSystemResizePending state; rolling restart required",
+				"pvc", pvc.Name,
+				"capacity", capacity.String(),
+				"desired", desired.String(),
+				"message", msg,
+			)
+			return true, nil
+		}
+
+		//return false, fmt.Errorf(
+		//	"PVC %s capacity is below desired but FileSystemResizePending is not set (capacity=%s desired=%s)",
+		//	pvc.Name, capacity.String(), desired.String(),
+		//)
+	}
+	return false, nil
+}
+
+func pvcHasResizePending(pvc *corev1.PersistentVolumeClaim) (bool, string) {
+	for _, c := range pvc.Status.Conditions {
+		if c.Type == corev1.PersistentVolumeClaimFileSystemResizePending && c.Status == corev1.ConditionTrue {
+			return true, c.Message
+		}
+	}
+	return false, ""
+}
+
+func (r ReconcileKafka) restartKafkaPods() error {
+	for brokerID := 0; brokerID < r.cr.Spec.Replicas; brokerID++ {
+		deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, brokerID)
+		err := r.reconciler.DeleteKafkaDeploymentPods(deploymentName, r.cr.Name, r.cr.Namespace)
+		if err != nil {
+			return err
+		}
+		if err = r.waitUntilBrokerIsReady(brokerID, 300); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -798,7 +884,7 @@ func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) e
 	adminPassword := string(kafkaSecret.Data["admin-password"])
 	clientUsername := string(kafkaSecret.Data["client-username"])
 	clientPassword := string(kafkaSecret.Data["client-password"])
-	if adminUsername == "" || adminPassword == ""  {
+	if adminUsername == "" || adminPassword == "" {
 		r.logger.Info("Skipping KRaft SCRAM sync: admin credentials are not set in Kafka secret")
 		return nil
 	}

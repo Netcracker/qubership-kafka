@@ -188,12 +188,17 @@ func (r *Reconciler) GetServiceIp(namespace, serviceName string) (string, error)
 	return foundService.Spec.ClusterIP, err
 }
 
-func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, previouslyManagedAnnotations map[string]string, logger logr.Logger) error {
-	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
+func (r *Reconciler) GetPersistentVolumeClaim(name string, namespace string) (*corev1.PersistentVolumeClaim, error) {
 	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
 	err := r.Client.Get(context.TODO(),
-		types.NamespacedName{Name: persistentVolumeClaim.Name, Namespace: persistentVolumeClaim.Namespace},
+		types.NamespacedName{Name: name, Namespace: namespace},
 		foundPersistentVolumeClaim)
+	return foundPersistentVolumeClaim, err
+}
+
+func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, previouslyManagedAnnotations map[string]string, logger logr.Logger) error {
+	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
+	foundPersistentVolumeClaim, err := r.GetPersistentVolumeClaim(persistentVolumeClaim.Name, persistentVolumeClaim.Namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Creating a new persistent volume claim",
@@ -244,10 +249,7 @@ func (r *Reconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *cor
 
 func (r *Reconciler) DeletePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, logger logr.Logger) error {
 	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
-	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
-	err := r.Client.Get(context.TODO(),
-		types.NamespacedName{Name: persistentVolumeClaim.Name, Namespace: persistentVolumeClaim.Namespace},
-		foundPersistentVolumeClaim)
+	foundPersistentVolumeClaim, err := r.GetPersistentVolumeClaim(persistentVolumeClaim.Name, persistentVolumeClaim.Namespace)
 	if err == nil {
 		err = r.Client.Delete(context.TODO(), foundPersistentVolumeClaim)
 		if err != nil {
@@ -315,6 +317,13 @@ func (r *Reconciler) FindDeploymentList(namespace string, deploymentLabels map[s
 		LabelSelector: labels.SelectorFromSet(deploymentLabels),
 	})
 	return foundDeploymentList, err
+}
+
+func (r *Reconciler) DeleteKafkaDeploymentPods(deploymentName string, crName string, namespace string) error {
+	kafkaLabels := GetKafkaLabels(crName)
+	kafkaLabels["name"] = deploymentName
+	podList := &corev1.Pod{}
+	return r.Client.DeleteAllOf(context.TODO(), podList, client.InNamespace(namespace), client.MatchingLabels(kafkaLabels))
 }
 
 // GetKafkaLabels configures common labels for Kafka deployments
