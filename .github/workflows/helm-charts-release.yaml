@@ -23,7 +23,7 @@ jobs:
       contents: write
       packages: write
     secrets: inherit
-    uses: netcracker/qubership-workflow-hub/.github/workflows/re-infra-helm-release.yaml@910-feat-add-declarative-config-driven-common-cicd-pipelines
+    uses: netcracker/qubership-workflow-hub/.github/workflows/re-infra-helm-release.yaml@8b1f50086b028c0ad22dafd33352e2166189b742 # v2.7.0
     with:
       release: ${{ inputs.release }}
       docker-config-file: ".github/dev-build-config.cfg"
