@@ -948,6 +948,7 @@ spec:
                         annotations:
                           additionalProperties:
                             type: string
+                          nullable: true
                           type: object
                       type: object
                   type: object
@@ -1188,6 +1189,7 @@ spec:
                     annotations:
                       additionalProperties:
                         type: string
+                      nullable: true
                       type: object
                   type: object
               type: object
