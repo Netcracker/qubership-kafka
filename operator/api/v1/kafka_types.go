@@ -81,6 +81,8 @@ type PVC struct {
 
 // PVCMetadata defines metadata applied to all persistent volume claims created by the operator.
 type PVCMetadata struct {
+	// +optional
+	// +nullable
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
@@ -174,6 +176,8 @@ type KafkaStatus struct {
 
 // PVCStatus stores the last annotations applied by the operator to Kafka PVCs.
 type PVCStatus struct {
+	// +optional
+	// +nullable
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
