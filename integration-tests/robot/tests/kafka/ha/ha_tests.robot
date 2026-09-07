@@ -146,5 +146,5 @@ Test Producing And Consuming Data Without Kafka Master
 Test Container Hardening
     [Tags]  kafka_container_hardening  kafka
     ${part_of}=       Create List        kafka  kafka-services
-    ${exclusions}=    Create Dictionary    _all=CH12  ${KAFKA_SERVICE_NAME}-cruise-control=CH4
+    ${exclusions}=    Create Dictionary    ${KAFKA_SERVICE_NAME}-cruise-control=CH4
     Check Container Hardening    ${part_of}    ${KAFKA_OS_PROJECT}    ${exclusions}

@@ -13,15 +13,6 @@ spec:
       scrapeTimeout: {{ .Values.monitoring.serviceMonitor.clusterStateScrapeTimeout }}
       port: prometheus-cli
       scheme: http
-      {{- if and .Values.global.secrets.monitoring.prometheusUsername .Values.global.secrets.monitoring.prometheusPassword }}
-      basicAuth:
-        username:
-          name: {{ template "kafka.name" . }}-monitoring-secret
-          key: prometheus-username
-        password:
-          name: {{ template "kafka.name" . }}-monitoring-secret
-          key: prometheus-password
-      {{- end }}
   jobLabel: k8s-app
   namespaceSelector:
     matchNames:

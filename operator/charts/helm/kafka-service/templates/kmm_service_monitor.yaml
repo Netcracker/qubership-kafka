@@ -19,6 +19,6 @@ spec:
       - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      component: mirror-maker-monitoring
+      component: kafka-mirror-maker-monitoring
       name: {{ template "kafka.name" . }}-mirror-maker-monitoring
   {{- end }}

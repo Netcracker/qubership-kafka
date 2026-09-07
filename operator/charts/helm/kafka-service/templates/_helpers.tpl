@@ -135,6 +135,13 @@ Configure Kafka service account
 {{- coalesce .Values.operator.serviceAccount (printf "%s-service-operator" (include "kafka.name" .)) -}}
 {{- end -}}
 
+{{/*
+Integration tests Kafka hostname (defaults to global.name)
+*/}}
+{{- define "integrationTests.kafkaHost" -}}
+{{- coalesce .Values.integrationTests.kafkaHost (include "kafka.name" .) -}}
+{{- end -}}
+
 
 {{/*
 DNS names used to generate TLS certificate with "Subject Alternative Name" field

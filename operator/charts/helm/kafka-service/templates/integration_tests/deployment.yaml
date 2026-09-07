@@ -82,11 +82,13 @@ spec:
               value: {{ include "kafka-service.bootstrapServers" . }}
               {{- end }}
             - name: KAFKA_HOST
-              value: {{ .Values.integrationTests.kafkaHost }}
+              value: {{ include "integrationTests.kafkaHost" . }}
             - name: KAFKA_PORT
               value: {{ .Values.integrationTests.kafkaPort | quote }}
             - name: KAFKA_ENABLE_SSL
               value: {{ include "kafka-service.enableTls" . | quote }}
+            - name: KAFKA_DISABLE_SECURITY
+              value: {{ default false .Values.global.secrets.kafka.disableSecurity | quote }}
             - name: KAFKA_PV_NAMES
               value: {{ .Values.integrationTests.kafkaPvNames }}
             - name: KAFKA_VOLUME_SIZE

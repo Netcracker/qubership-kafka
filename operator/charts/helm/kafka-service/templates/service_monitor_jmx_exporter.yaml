@@ -14,15 +14,6 @@ spec:
       scrapeTimeout: {{ coalesce .Values.monitoring.serviceMonitor.jxmScrapeTimeout .Values.monitoring.serviceMonitor.jmxScrapeTimeout }}
       port: prometheus-http
       scheme: http
-      {{- if not .Values.global.secrets.kafka.disableSecurity }}
-      basicAuth:
-        username:
-          name: {{ template "kafka.name" . }}-secret
-          key: client-username
-        password:
-          name: {{ template "kafka.name" . }}-secret
-          key: client-password
-      {{- end }}
   jobLabel: k8s-app
   namespaceSelector:
     matchNames:

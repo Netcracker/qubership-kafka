@@ -123,6 +123,11 @@ global:
         user: ""
         password: ""
 
+pvc:
+  metadata:
+    annotations: {}
+    # argocd.argoproj.io/sync-options: Prune=false
+
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main
   replicas: 1
@@ -551,7 +556,7 @@ integrationTests:
   # Example: https://kube:6443
   url: ""
   kafkaIsManagedByOperator: true
-  kafkaHost: "kafka"
+  kafkaHost: ""
   kafkaPort: 9092
   kafkaPvNames: "pv-1,pv-2,pv-3"
   kafkaVolumeSize: "2"
