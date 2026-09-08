@@ -2,7 +2,33 @@ lowercaseOutputName: false
 lowercaseOutputLabelNames: false
 
 rules:
-  # Special cases and very specific rules
+  # MirrorSourceConnector (Kafka 4.0+): source is always present on the MBean.
+  # First-match wins, so these rules must stay above the Kafka 3.x fallback.
+  - pattern: kafka.connect.mirror<type=MirrorSourceConnector, source=(.+), target=(.+), topic=(.+), partition=(\d+)><>(byte-rate|byte-count)
+    name: bytes_$5
+    labels:
+      source: "$1"
+      target: "$2"
+      topic: "$3"
+      partition: "$4"
+
+  - pattern: kafka.connect.mirror<type=MirrorSourceConnector, source=(.+), target=(.+), topic=(.+), partition=(\d+)><>(record-age-ms|record-age-ms-avg|record-age-ms-max|record-age-ms-min|record-count|record-rate)
+    name: record_age_$5
+    labels:
+      source: "$1"
+      target: "$2"
+      topic: "$3"
+      partition: "$4"
+
+  - pattern: kafka.connect.mirror<type=MirrorSourceConnector, source=(.+), target=(.+), topic=(.+), partition=(\d+)><>(replication-latency-ms|replication-latency-ms-avg|replication-latency-ms-max|replication-latency-ms-min)
+    name: replication_latency_$5
+    labels:
+      source: "$1"
+      target: "$2"
+      topic: "$3"
+      partition: "$4"
+
+  # Kafka 3.x fallback: source tag was optional/disabled.
   - pattern: kafka.connect.mirror<type=MirrorSourceConnector, target=(.+), topic=(.+), partition=(\d+)><>(byte-rate|byte-count)
     name: bytes_$4
     labels:
