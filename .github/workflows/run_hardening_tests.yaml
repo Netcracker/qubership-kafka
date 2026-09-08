@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for dev_build.yml to complete
-        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@3e428f45132119ce49d90f3770a45d4fe1d1078d  # v2.0.4
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@8b1f50086b028c0ad22dafd33352e2166189b742  # v2.7.0
         id: wait
         with:
           workflow: dev_build.yml
