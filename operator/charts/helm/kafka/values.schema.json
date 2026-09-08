@@ -788,7 +788,7 @@
         },
         "secrets": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "kafka": {
               "type": "object",
