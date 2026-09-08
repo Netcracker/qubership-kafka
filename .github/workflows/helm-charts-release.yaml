@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Check if tag exists
         id: check_tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-action@396774180000abdb825cbf150b56cc59c6913db8  # v2.0.5
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@8b1f50086b028c0ad22dafd33352e2166189b742  # v2.7.0
         with:
           tag-name: '${{ inputs.release }}'
           ref: ${{ github.ref }}
