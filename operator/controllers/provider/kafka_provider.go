@@ -252,9 +252,10 @@ func (krp KafkaResourceProvider) NewKafkaPersistentVolumeClaimForCR(brokerId int
 	labels["cloud-backuper.netcracker.com/exclude-from-physical-backup"] = "true"
 	persistentVolumeClaim := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf(persistentVolumeClaimPattern, krp.cr.Name, brokerId),
-			Namespace: krp.cr.Namespace,
-			Labels:    labels,
+			Name:        fmt.Sprintf(persistentVolumeClaimPattern, krp.cr.Name, brokerId),
+			Namespace:   krp.cr.Namespace,
+			Labels:      labels,
+			Annotations: krp.cr.Spec.PVC.Annotations,
 		},
 		Spec: spec,
 	}
@@ -311,9 +312,10 @@ func (krp KafkaResourceProvider) NewKafkaControllerPersistentVolumeClaimForCR() 
 
 	persistentVolumeClaim := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("pvc-%s-%s", krp.cr.Name, "kraft-controller"),
-			Namespace: krp.cr.Namespace,
-			Labels:    labels,
+			Name:        fmt.Sprintf("pvc-%s-%s", krp.cr.Name, "kraft-controller"),
+			Namespace:   krp.cr.Namespace,
+			Labels:      labels,
+			Annotations: krp.cr.Spec.PVC.Annotations,
 		},
 		Spec: spec,
 	}
@@ -443,7 +445,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 			Name:  "HEAP_OPTS",
 			Value: fmt.Sprintf("-Xms%dm -Xmx%dm", krp.cr.Spec.HeapSize, krp.cr.Spec.HeapSize),
 		},
-		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.isSecurityDisabled())},
+		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.IsSecurityDisabled())},
 		{Name: "CLOCK_SKEW", Value: strconv.Itoa(getClockSkew(oauth))},
 		{Name: "JWK_SOURCE_TYPE", Value: getJwkSourceType(oauth)},
 		{
@@ -637,7 +639,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 			Name:  "HEAP_OPTS",
 			Value: fmt.Sprintf("-Xms%dm -Xmx%dm", krp.cr.Spec.HeapSize, krp.cr.Spec.HeapSize),
 		},
-		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.isSecurityDisabled())},
+		{Name: "DISABLE_SECURITY", Value: strconv.FormatBool(krp.IsSecurityDisabled())},
 		{Name: "CLOCK_SKEW", Value: strconv.Itoa(getClockSkew(oauth))},
 		{Name: "JWK_SOURCE_TYPE", Value: getJwkSourceType(oauth)},
 		{
@@ -753,7 +755,7 @@ func (krp KafkaResourceProvider) GetZooKeeperFullName() string {
 	return zooKeeperAddress
 }
 
-func (krp KafkaResourceProvider) isSecurityDisabled() bool {
+func (krp KafkaResourceProvider) IsSecurityDisabled() bool {
 	if krp.cr.Spec.DisableSecurity != nil {
 		return *krp.cr.Spec.DisableSecurity
 	}

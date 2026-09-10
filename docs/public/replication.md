@@ -208,7 +208,7 @@ where:
   [Included transformations](https://kafka.apache.org/documentation/#org.apache.kafka.connect.transforms.Filter).
 * `org.apache.kafka.connect.transforms.predicates.HasHeaderKey` - The predicate class which is true for records with at least one header 
   with the configured name. For more detailed information, refer to 
-  [Predicates](hhttps://kafka.apache.org/documentation/#org.apache.kafka.connect.transforms.predicates.HasHeaderKey).
+  [Predicates](https://kafka.apache.org/documentation/#org.apache.kafka.connect.transforms.predicates.HasHeaderKey).
 
 This particular transformation configuration can be used to exclude messages with `ping`, `heartbeat`, `type=heartbeat` headers from
 replication.

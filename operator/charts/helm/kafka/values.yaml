@@ -34,6 +34,12 @@ global:
   # For backward compatibility
   externalKafka:
     enabled: false
+
+pvc:
+  metadata:
+    annotations: {}
+    # argocd.argoproj.io/sync-options: Prune=false
+
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
   replicas: 1
