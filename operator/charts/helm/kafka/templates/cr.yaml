@@ -30,9 +30,11 @@ metadata:
 spec:
   waitForPodsReady: {{ .Values.global.waitForPodsReady }}
   podReadinessTimeout: {{ .Values.global.podReadinessTimeout | default 600 }}
-{{- with .Values.pvc }}
+{{- with ((.Values.pvc).metadata).annotations }}
   pvc:
-    {{- toYaml . | nindent 4 }}
+    metadata:
+      annotations:
+        {{- toYaml . | nindent 8 }}
 {{- end }}
 {{- if .Values.kafka.affinity }}
   affinity:
