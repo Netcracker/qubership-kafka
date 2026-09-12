@@ -1,7 +1,7 @@
 version: '2'
 services:
   left-zookeeper:
-    image: zookeeper:3.9.2
+    image: zookeeper:3.9.2@sha256:43d39109cbd4de394742efbfc162a8a0a93731e806374b71f3865f4ef4460a56
     ports:
       - 12181:2181
   left-kafka:
@@ -36,7 +36,7 @@ services:
                 sasl.mechanism: SCRAM-SHA-512
                 sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="user1" password="userone";
   right-zookeeper:
-    image: zookeeper:3.9.2
+    image: zookeeper:3.9.2@sha256:43d39109cbd4de394742efbfc162a8a0a93731e806374b71f3865f4ef4460a56
     ports:
       - 22181:2181
   right-kafka:

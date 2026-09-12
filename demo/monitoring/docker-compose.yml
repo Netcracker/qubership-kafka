@@ -1,7 +1,7 @@
 version: '2'
 services:
   zookeeper:
-    image: zookeeper:3.8.3
+    image: zookeeper:3.8.3@sha256:66225dc39919724f4f245e7a9883f015d0058009c1a34a4903d54fdfe73b4155
     ports:
       - 2181:2181
   kafka-1:
@@ -53,7 +53,7 @@ services:
     volumes:
       - ./kafka/jmx-exporter-config.yml:/opt/kafka/config/jmx-exporter-config.yml
   kafka-monitoring:
-    image: ghcr.io/netcracker/qubership-kafka-monitoring:main
+    image: ghcr.io/netcracker/qubership-kafka-monitoring:main@sha256:18d033fc48ff5537348e8d7b0f4e96c5babd3272627df1ac5310312024b2e243
     hostname: kafka-monitoring
     ports:
       - 8096:8096
@@ -77,7 +77,7 @@ services:
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf
   influxdb:
-    image: influxdb:1.8.9
+    image: influxdb:1.8.9@sha256:b00d3c730d4b5dad8ec18ea298d67fdc1840dca37f27f5c1f7036eb291bd6d42
     ports:
       - 8086:8086
     environment:
@@ -107,7 +107,7 @@ services:
 #    volumes:
 #      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
   grafana:
-    image: grafana/grafana:7.3.6
+    image: grafana/grafana:7.3.6@sha256:1ff2070acde25450fc52613ca75519a6e74e57bb7e614210c1324002048682e4
     ports:
       - 3000:3000
     user: "0"
