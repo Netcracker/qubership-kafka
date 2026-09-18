@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk-alpine-3.23
+FROM eclipse-temurin:25-jdk-alpine-3.23@sha256:4e1fe101898bbb83e4e6572e048b3f2442669ae0bb54f3693d840eed44672c0f
 
 USER 0:0
 
