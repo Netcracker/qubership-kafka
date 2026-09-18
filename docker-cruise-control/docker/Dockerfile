@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.23 AS builder
+FROM eclipse-temurin:21-jdk-alpine-3.23@sha256:52ca1500049e2e2e7cee85fc4cd8689108792dc2bde18161b7f9236f609f0dea AS builder
 
 ENV CC_VERSION=2.5.146
 
@@ -39,7 +39,7 @@ RUN set -x \
     && tar -zxvf /tmp/cruise-control-ui.tar.gz -C /cruise-control \
     && rm -f /tmp/cruise-control-ui.tar.gz
 # --------------- Final stage ---------------
-FROM eclipse-temurin:21-jdk-alpine-3.23
+FROM eclipse-temurin:21-jdk-alpine-3.23@sha256:52ca1500049e2e2e7cee85fc4cd8689108792dc2bde18161b7f9236f609f0dea
 
 RUN mkdir -p /cruise-control
 
