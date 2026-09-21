@@ -763,10 +763,15 @@ if [[ -f ${CONF_KAFKA_LOG_DIRS}/.lock ]]; then
     rm "${CONF_KAFKA_LOG_DIRS}/.lock"
 fi
 
-# WA for https://issues.apache.org/jira/browse/KAFKA-9444
-if [[ -f ${CONF_KAFKA_LOG_DIRS}/meta.properties ]]; then
+# WA for https://issues.apache.org/jira/browse/KAFKA-9444 (ZooKeeper mode only).
+# In KRaft, meta.properties holds cluster.id / node.id / directory.id and must survive restarts.
+# Deleting it makes kafka-storage.sh treat the dir as empty, rewrite bootstrap.checkpoint with a
+# new directory.id, and break the node after a password-triggered rolling restart.
+if [[ "$KRAFT_ENABLED" != "true" ]]; then
+  if [[ -f ${CONF_KAFKA_LOG_DIRS}/meta.properties ]]; then
     echo "WARNING: There is meta.properties file. Removing it."
     rm "${CONF_KAFKA_LOG_DIRS}/meta.properties"
+  fi
 fi
 
 if [[ ${SCAN_FILE_SYSTEM} == "true" ]]; then
@@ -827,7 +832,13 @@ case $1 in
       fi
     done
     if [[ "$KRAFT_ENABLED" == "true" ]]; then
-      ${KAFKA_HOME}/bin/kafka-storage.sh format -t="${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" ${KAFKA_CREDENTIALS}
+      if [[ -f "${CONF_KAFKA_LOG_DIRS}/meta.properties" || -f "${CONF_KAFKA_LOG_DIRS}/bootstrap.checkpoint" || -d "${CONF_KAFKA_LOG_DIRS}/__cluster_metadata-0" ]]; then
+        echo "KRaft storage is already formatted; using --ignore-formatted"
+        ${KAFKA_HOME}/bin/kafka-storage.sh format -t="${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" --ignore-formatted
+      else
+        echo "Formatting KRaft storage"
+        ${KAFKA_HOME}/bin/kafka-storage.sh format -t="${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" ${KAFKA_CREDENTIALS}
+      fi
     fi
     exec ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_CONFIG}/server.properties
     ;;
