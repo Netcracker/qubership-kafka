@@ -337,11 +337,17 @@ func (r *ReconcileKafka) isRollingUpdateApplicable(currentReplicas int) (bool, e
 
 func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *corev1.Secret) error {
 	r.logger.Info("Perform brokers rollout procedure")
+	secretChanged := kafkaSecret.Name != "" &&
+		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
+	waitForEachBroker := r.cr.Spec.RollingUpdate && !(kraft && secretChanged)
+	if kraft && secretChanged && r.cr.Spec.RollingUpdate {
+		r.logger.Info("KRaft secret changed: restarting all brokers without waiting for each one")
+	}
 	for brokerId := 1; brokerId <= replicas; brokerId++ {
 		if err := r.rolloutBroker(brokerId, kraft, kafkaSecret); err != nil {
 			return err
 		}
-		if r.cr.Spec.RollingUpdate {
+		if waitForEachBroker {
 			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
 				return err
 			}
