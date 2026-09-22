@@ -45,16 +45,20 @@ var ErrNoKafkaPods = stderrors.New("no Kafka pods found")
 const (
 	kafkaConditionReason                       = "KafkaReadinessStatus"
 	kafkaHashName                              = "spec"
+	kafkaAdminCredsHashName                    = "secret-admin-creds"
+	kafkaClientCredsHashName                   = "secret-client-creds"
 	autoRestartAnnotation                      = "kafkaservice.netcracker.com/auto-restart"
 	resourceVersionAnnotationTemplate          = "%s/resource-version"
 	kraftMigrationControllerTroubleshootingURL = "/docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready"
 )
 
 type ReconcileKafka struct {
-	cr            *kafka.Kafka
-	reconciler    *KafkaReconciler
-	logger        logr.Logger
-	kafkaProvider provider.KafkaResourceProvider
+	cr                 *kafka.Kafka
+	reconciler         *KafkaReconciler
+	logger             logr.Logger
+	kafkaProvider      provider.KafkaResourceProvider
+	adminCredsChanged  bool
+	clientCredsChanged bool
 }
 
 func NewReconcileKafka(r *KafkaReconciler, cr *kafka.Kafka, logger logr.Logger) ReconcileKafka {
@@ -79,18 +83,27 @@ func (r ReconcileKafka) Reconcile() error {
 
 	secretChanged := kafkaSecret.Name != "" &&
 		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
-	kafkaConfigurationChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash || secretChanged
+	adminHash := secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	clientHash := secretCredsHash(kafkaSecret, "client-username", "client-password")
+	r.adminCredsChanged = r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != adminHash
+	r.clientCredsChanged = r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaClientCredsHashName] != clientHash
+	specChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash
+	kafkaConfigurationChanged := specChanged || secretChanged
 
 	if !kafkaConfigurationChanged {
 		r.logger.Info("Kafka configuration didn't change, skipping reconcile loop")
 	} else {
-		if secretChanged && r.cr.Spec.Kraft.Enabled && !r.kafkaProvider.IsSecurityDisabled() {
-			if err = r.syncKraftScramCredentials(kafkaSecret); err != nil {
+		if !r.kafkaProvider.IsSecurityDisabled() && (r.clientCredsChanged || r.adminCredsChanged) {
+			if err = r.syncScramCredentials(kafkaSecret); err != nil {
 				return err
 			}
 		}
 
-		if r.cr.Spec.Replicas > 0 {
+		if r.clientCredsChanged && !r.adminCredsChanged && !specChanged {
+			r.logger.Info("Client credentials changed; SCRAM updated without broker restart")
+		} else if r.cr.Spec.Replicas > 0 {
 			if err = r.processKafkaReplicas(kafkaSecret); err != nil {
 				return err
 			}
@@ -123,6 +136,8 @@ func (r ReconcileKafka) Reconcile() error {
 
 	r.reconciler.ResourceVersions[kafkaSecret.Name] = kafkaSecret.ResourceVersion
 	r.reconciler.ResourceHashes[kafkaHashName] = kafkaSpecHash
+	r.reconciler.ResourceHashes[kafkaAdminCredsHashName] = adminHash
+	r.reconciler.ResourceHashes[kafkaClientCredsHashName] = clientHash
 	return nil
 }
 
@@ -337,13 +352,9 @@ func (r *ReconcileKafka) isRollingUpdateApplicable(currentReplicas int) (bool, e
 
 func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *corev1.Secret) error {
 	r.logger.Info("Perform brokers rollout procedure")
-	secretChanged := kafkaSecret.Name != "" &&
-		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
-	// Secret change rewrites SCRAM (ZK create_user / KRaft kafka-configs) and JAAS.
-	// Waiting for the first broker to become ready leaves the rest on old credentials.
-	waitForEachBroker := r.cr.Spec.RollingUpdate && !secretChanged
-	if secretChanged && r.cr.Spec.RollingUpdate {
-		r.logger.Info("Kafka secret changed: restarting all brokers without waiting for each one")
+	waitForEachBroker := r.cr.Spec.RollingUpdate && !r.adminCredsChanged
+	if r.adminCredsChanged {
+		r.logger.Info("Admin credentials changed: restarting all brokers without waiting for each one")
 	}
 	for brokerId := 1; brokerId <= replicas; brokerId++ {
 		if err := r.rolloutBroker(brokerId, kraft, kafkaSecret); err != nil {
@@ -355,7 +366,7 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 			}
 		}
 	}
-	if secretChanged {
+	if r.adminCredsChanged {
 		if err := r.waitUntilAllBrokersReady(r.cr.Spec.PodsReadyTimeout); err != nil {
 			return err
 		}
@@ -438,7 +449,7 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
-	if kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true" {
+	if r.adminCredsChanged || (kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true") {
 		r.addDeploymentAnnotation(brokerDeployment, fmt.Sprintf(resourceVersionAnnotationTemplate, kafkaSecret.Name), kafkaSecret.ResourceVersion)
 	}
 	if err := r.reconciler.CreateOrUpdateDeployment(brokerDeployment, r.logger); err != nil {
@@ -806,13 +817,13 @@ func (r *ReconcileKafka) getKafkaCertificates() (*controllers.SslCertificates, e
 	return &controllers.SslCertificates{}, nil
 }
 
-func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) error {
+func (r *ReconcileKafka) syncScramCredentials(kafkaSecret *corev1.Secret) error {
 	adminUsername := string(kafkaSecret.Data["admin-username"])
 	adminPassword := string(kafkaSecret.Data["admin-password"])
 	clientUsername := string(kafkaSecret.Data["client-username"])
 	clientPassword := string(kafkaSecret.Data["client-password"])
-	if adminUsername == "" || adminPassword == ""  {
-		r.logger.Info("Skipping KRaft SCRAM sync: admin credentials are not set in Kafka secret")
+	if adminUsername == "" || adminPassword == "" {
+		r.logger.Info("Skipping SCRAM sync: admin credentials are not set in Kafka secret")
 		return nil
 	}
 
@@ -822,23 +833,36 @@ func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) e
 	}
 	pod := controllers.GetFirstAvailablePod(pods)
 	if pod == nil {
-		r.logger.Info("Skipping KRaft SCRAM sync: no ready Kafka pod")
+		r.logger.Info("Skipping SCRAM sync: no ready Kafka pod")
 		return nil
 	}
 
-	users := []struct{ name, password string }{
-		{adminUsername, adminPassword},
+	users := make([]struct{ name, password string }, 0, 2)
+	if r.adminCredsChanged {
+		users = append(users, struct{ name, password string }{adminUsername, adminPassword})
 	}
-	if clientUsername != "" {
+	if r.clientCredsChanged && clientUsername != "" {
 		users = append(users, struct{ name, password string }{clientUsername, clientPassword})
+	}
+	if len(users) == 0 {
+		return nil
 	}
 	for _, user := range users {
 		if err := r.updateScramUserInPod(pod.Name, user.name, user.password); err != nil {
 			return fmt.Errorf("failed to update SCRAM user %q in pod %s: %w", user.name, pod.Name, err)
 		}
 	}
-	r.logger.Info("Synced KRaft SCRAM credentials via pod exec before broker restart", "pod", pod.Name)
+	r.logger.Info("Synced SCRAM credentials via pod exec", "pod", pod.Name)
 	return nil
+}
+
+func secretCredsHash(secret *corev1.Secret, usernameKey, passwordKey string) string {
+	username, password := "", ""
+	if secret != nil && secret.Data != nil {
+		username = string(secret.Data[usernameKey])
+		password = string(secret.Data[passwordKey])
+	}
+	return util.StringHash(usernameKey + "\x00" + username + "\x00" + passwordKey + "\x00" + password)
 }
 
 func (r *ReconcileKafka) updateScramUserInPod(podName, username, password string) error {
