@@ -339,9 +339,11 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 	r.logger.Info("Perform brokers rollout procedure")
 	secretChanged := kafkaSecret.Name != "" &&
 		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
-	waitForEachBroker := r.cr.Spec.RollingUpdate && !(kraft && secretChanged)
-	if kraft && secretChanged && r.cr.Spec.RollingUpdate {
-		r.logger.Info("KRaft secret changed: restarting all brokers without waiting for each one")
+	// Secret change rewrites SCRAM (ZK create_user / KRaft kafka-configs) and JAAS.
+	// Waiting for the first broker to become ready leaves the rest on old credentials.
+	waitForEachBroker := r.cr.Spec.RollingUpdate && !secretChanged
+	if secretChanged && r.cr.Spec.RollingUpdate {
+		r.logger.Info("Kafka secret changed: restarting all brokers without waiting for each one")
 	}
 	for brokerId := 1; brokerId <= replicas; brokerId++ {
 		if err := r.rolloutBroker(brokerId, kraft, kafkaSecret); err != nil {
@@ -351,6 +353,15 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
 				return err
 			}
+		}
+	}
+	if secretChanged {
+		timeout := r.cr.Spec.PodsReadyTimeout
+		if timeout <= 0 {
+			timeout = 300
+		}
+		if err := r.waitUntilAllBrokersReady(timeout); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -957,6 +968,19 @@ func (r *ReconcileKafka) waitUntilBrokerIsReady(brokerId int, maxWaitingInterval
 	})
 	if err != nil {
 		r.logger.Error(err, fmt.Sprintf("Deployment kafka-%d failed.", brokerId))
+		return err
+	}
+	return nil
+}
+
+func (r *ReconcileKafka) waitUntilAllBrokersReady(maxWaitingInterval int) error {
+	r.logger.Info("Waiting for all Kafka brokers after simultaneous restart")
+	time.Sleep(waitingInterval)
+	err := wait.PollImmediate(waitingInterval, time.Duration(maxWaitingInterval)*time.Second, func() (done bool, err error) {
+		return r.reconciler.AreDeploymentsReady(r.kafkaProvider.GetSelectorLabels(), r.cr.Namespace, r.logger), nil
+	})
+	if err != nil {
+		r.logger.Error(err, "Kafka brokers are not ready after secret change")
 		return err
 	}
 	return nil
