@@ -356,11 +356,7 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 		}
 	}
 	if secretChanged {
-		timeout := r.cr.Spec.PodsReadyTimeout
-		if timeout <= 0 {
-			timeout = 300
-		}
-		if err := r.waitUntilAllBrokersReady(timeout); err != nil {
+		if err := r.waitUntilAllBrokersReady(r.cr.Spec.PodsReadyTimeout); err != nil {
 			return err
 		}
 	}
