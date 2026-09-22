@@ -832,13 +832,8 @@ case $1 in
       fi
     done
     if [[ "$KRAFT_ENABLED" == "true" ]]; then
-      if [[ -f "${CONF_KAFKA_LOG_DIRS}/meta.properties" || -f "${CONF_KAFKA_LOG_DIRS}/bootstrap.checkpoint" || -d "${CONF_KAFKA_LOG_DIRS}/__cluster_metadata-0" ]]; then
-        echo "KRaft storage is already formatted; using --ignore-formatted"
-        ${KAFKA_HOME}/bin/kafka-storage.sh format -t="${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" --ignore-formatted
-      else
-        echo "Formatting KRaft storage"
-        ${KAFKA_HOME}/bin/kafka-storage.sh format -t="${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" ${KAFKA_CREDENTIALS}
-      fi
+      echo "Formatting KRaft storage if needed"
+      ${KAFKA_HOME}/bin/kafka-storage.sh format -t "${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" --ignore-formatted ${KAFKA_CREDENTIALS}
     fi
     exec ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_CONFIG}/server.properties
     ;;
