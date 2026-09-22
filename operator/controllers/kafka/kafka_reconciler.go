@@ -679,7 +679,6 @@ func (r *ReconcileKafka) runCommandInPod(podName string, container string, names
 			return "", fmt.Errorf("there is a problem during command execution: %s", execErr.String())
 		}
 	}
-	log.Info(fmt.Sprintf("Executed command output: %s", execOut.String()))
 	return execOut.String(), nil
 }
 
@@ -849,7 +848,7 @@ func (r *ReconcileKafka) syncScramCredentials(kafkaSecret *corev1.Secret) error 
 	}
 	for _, user := range users {
 		if err := r.updateScramUserInPod(pod.Name, user.name, user.password); err != nil {
-			return fmt.Errorf("failed to update SCRAM user %q in pod %s: %w", user.name, pod.Name, err)
+			return fmt.Errorf("failed to update SCRAM credentials in pod %s: %w", pod.Name, err)
 		}
 	}
 	r.logger.Info("Synced SCRAM credentials via pod exec", "pod", pod.Name)
