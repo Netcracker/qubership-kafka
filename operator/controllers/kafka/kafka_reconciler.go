@@ -53,12 +53,10 @@ const (
 )
 
 type ReconcileKafka struct {
-	cr                 *kafka.Kafka
-	reconciler         *KafkaReconciler
-	logger             logr.Logger
-	kafkaProvider      provider.KafkaResourceProvider
-	adminCredsChanged  bool
-	clientCredsChanged bool
+	cr            *kafka.Kafka
+	reconciler    *KafkaReconciler
+	logger        logr.Logger
+	kafkaProvider provider.KafkaResourceProvider
 }
 
 func NewReconcileKafka(r *KafkaReconciler, cr *kafka.Kafka, logger logr.Logger) ReconcileKafka {
@@ -85,9 +83,9 @@ func (r ReconcileKafka) Reconcile() error {
 		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
 	adminHash := secretCredsHash(kafkaSecret, "admin-username", "admin-password")
 	clientHash := secretCredsHash(kafkaSecret, "client-username", "client-password")
-	r.adminCredsChanged = r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
 		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != adminHash
-	r.clientCredsChanged = r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
+	clientChanged := r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
 		r.reconciler.ResourceHashes[kafkaClientCredsHashName] != clientHash
 	specChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash
 	kafkaConfigurationChanged := specChanged || secretChanged
@@ -95,13 +93,13 @@ func (r ReconcileKafka) Reconcile() error {
 	if !kafkaConfigurationChanged {
 		r.logger.Info("Kafka configuration didn't change, skipping reconcile loop")
 	} else {
-		if !r.kafkaProvider.IsSecurityDisabled() && (r.clientCredsChanged || r.adminCredsChanged) {
+		if !r.kafkaProvider.IsSecurityDisabled() && (clientChanged || adminChanged) {
 			if err = r.syncScramCredentials(kafkaSecret); err != nil {
 				return err
 			}
 		}
 
-		if r.clientCredsChanged && !r.adminCredsChanged && !specChanged {
+		if clientChanged && !adminChanged && !specChanged {
 			r.logger.Info("Client credentials changed; SCRAM updated without broker restart")
 		} else if r.cr.Spec.Replicas > 0 {
 			if err = r.processKafkaReplicas(kafkaSecret); err != nil {
@@ -352,8 +350,10 @@ func (r *ReconcileKafka) isRollingUpdateApplicable(currentReplicas int) (bool, e
 
 func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *corev1.Secret) error {
 	r.logger.Info("Perform brokers rollout procedure")
-	waitForEachBroker := r.cr.Spec.RollingUpdate && !r.adminCredsChanged
-	if r.adminCredsChanged {
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	waitForEachBroker := r.cr.Spec.RollingUpdate && !adminChanged
+	if adminChanged {
 		r.logger.Info("Admin credentials changed: restarting all brokers without waiting for each one")
 	}
 	for brokerId := 1; brokerId <= replicas; brokerId++ {
@@ -366,7 +366,7 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 			}
 		}
 	}
-	if r.adminCredsChanged {
+	if adminChanged {
 		if err := r.waitUntilAllBrokersReady(r.cr.Spec.PodsReadyTimeout); err != nil {
 			return err
 		}
@@ -449,7 +449,9 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
-	if r.adminCredsChanged || (kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true") {
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	if adminChanged || (kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true") {
 		r.addDeploymentAnnotation(brokerDeployment, fmt.Sprintf(resourceVersionAnnotationTemplate, kafkaSecret.Name), kafkaSecret.ResourceVersion)
 	}
 	if err := r.reconciler.CreateOrUpdateDeployment(brokerDeployment, r.logger); err != nil {
@@ -836,11 +838,15 @@ func (r *ReconcileKafka) syncScramCredentials(kafkaSecret *corev1.Secret) error 
 		return nil
 	}
 
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	clientChanged := r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaClientCredsHashName] != secretCredsHash(kafkaSecret, "client-username", "client-password")
 	users := make([]struct{ name, password string }, 0, 2)
-	if r.adminCredsChanged {
+	if adminChanged {
 		users = append(users, struct{ name, password string }{adminUsername, adminPassword})
 	}
-	if r.clientCredsChanged && clientUsername != "" {
+	if clientChanged && clientUsername != "" {
 		users = append(users, struct{ name, password string }{clientUsername, clientPassword})
 	}
 	if len(users) == 0 {
