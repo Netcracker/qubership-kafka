@@ -1588,6 +1588,13 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "config": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "boolean", "integer", "number", "null"]
+          },
+          "description": "Native MirrorMaker configuration properties. Keys are preserved exactly as specified."
+        },
         "enableSsl": { "type": "boolean" },
         "sslSecretName": { "type": "string" },
         "saslMechanism": { "type": "string" }

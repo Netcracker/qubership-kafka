@@ -26,3 +26,4 @@ testbin/*
 
 *output*
 *_pycache_*
+.mcp.json

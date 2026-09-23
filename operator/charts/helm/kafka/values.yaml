@@ -244,6 +244,11 @@ kafka:
       additionalIpAddresses: []
   environmentVariables:
     - CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+  # config: {}
+  # # Example: native Kafka broker property names (keys are passed verbatim to server.properties):
+  # #   config:
+  # #     num.io.threads: "16"
+  # #     group.initial.rebalance.delay.ms: "3000"
   rollingUpdate: true
   customLabels: {}
   debugContainer: false

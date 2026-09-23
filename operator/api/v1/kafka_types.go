@@ -51,6 +51,7 @@ type KafkaSpec struct {
 	ExternalHostNames       []string                `json:"externalHostNames,omitempty"`
 	ExternalPorts           []int                   `json:"externalPorts,omitempty"`
 	EnvironmentVariables    []string                `json:"environmentVariables,omitempty"`
+	Config                  map[string]string       `json:"config,omitempty"`
 	RollbackTimeout         *int32                  `json:"rollbackTimeout,omitempty"`
 	HealthCheckTimeout      *int32                  `json:"healthCheckTimeout,omitempty"`
 	EnableAuditLogs         *bool                   `json:"enableAuditLogs,omitempty"`

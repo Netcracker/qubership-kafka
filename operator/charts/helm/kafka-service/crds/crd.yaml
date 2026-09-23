@@ -1671,6 +1671,10 @@ spec:
                       additionalProperties:
                         type: string
                       type: object
+                    config:
+                      additionalProperties:
+                        type: string
+                      type: object
                     dockerImage:
                       type: string
                     environmentVariables:
