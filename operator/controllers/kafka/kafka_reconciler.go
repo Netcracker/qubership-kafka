@@ -377,6 +377,13 @@ func (r ReconcileKafka) restartBrokersAfterPVCResize() error {
 			return err
 		}
 	}
+	pendingBrokers, err := r.waitUntilPVCExpansionSettled()
+	if err != nil {
+		return err
+	}
+	if len(pendingBrokers) > 0 {
+		return fmt.Errorf("filesystem resize is still pending for brokers %v after %d attempts", pendingBrokers, maxResizeAttempts)
+	}
 	return nil
 }
 
