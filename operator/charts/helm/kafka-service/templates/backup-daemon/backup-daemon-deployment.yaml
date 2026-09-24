@@ -212,24 +212,24 @@ spec:
             {{- end }}
           livenessProbe:
             httpGet:
-              path: /health/prometheus
+              path: /health/live
               port: {{ template "backupDaemon.port" . }}
               scheme: {{ include "backupDaemon.Protocol" . | upper }}
-            failureThreshold: 3
+            failureThreshold: 5
             initialDelaySeconds: 30
-            periodSeconds: 5
+            periodSeconds: 10
             successThreshold: 1
-            timeoutSeconds: 5
+            timeoutSeconds: 10
           readinessProbe:
             httpGet:
-              path: /health/prometheus
+              path: /health/ready
               port: {{ template "backupDaemon.port" . }}
               scheme: {{ include "backupDaemon.Protocol" . | upper }}
-            failureThreshold: 3
+            failureThreshold: 5
             initialDelaySeconds: 30
-            periodSeconds: 5
+            periodSeconds: 10
             successThreshold: 1
-            timeoutSeconds: 5
+            timeoutSeconds: 10
       {{- if .Values.backupDaemon.nodeSelector }}
       nodeSelector:
         {{ .Values.backupDaemon.nodeSelector | toYaml | indent 8 | trim }}
