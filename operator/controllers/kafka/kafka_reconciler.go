@@ -351,7 +351,7 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 			return err
 		}
 		if r.cr.Spec.RollingUpdate {
-			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
+			if err := r.waitUntilBrokerReadyAfterPVCResize(brokerId); err != nil {
 				return err
 			}
 		}
@@ -1068,7 +1068,7 @@ func (r *ReconcileKafka) waitUntilControllerIsReady(maxWaitingInterval int) erro
 func (r *ReconcileKafka) waitUntilBrokerIsReady(brokerId int, maxWaitingInterval int) error {
 	r.logger.Info(fmt.Sprintf("Waiting for kafka-%d deployment.", brokerId))
 	time.Sleep(waitingInterval)
-	err := wait.PollImmediate(waitingInterval, time.Duration(maxWaitingInterval)*time.Second, func() (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(maxWaitingInterval)*time.Second, true, func(context.Context) (bool, error) {
 		kafkaLabels := r.kafkaProvider.GetSelectorLabels()
 		kafkaLabels["name"] = fmt.Sprintf("%s-%d", r.cr.Name, brokerId)
 		return r.reconciler.AreDeploymentsReady(kafkaLabels, r.cr.Namespace, r.logger), nil
@@ -1078,6 +1078,24 @@ func (r *ReconcileKafka) waitUntilBrokerIsReady(brokerId int, maxWaitingInterval
 		return err
 	}
 	return nil
+}
+
+func (r ReconcileKafka) waitUntilBrokerReadyAfterPVCResize(brokerId int) error {
+	pvcName := fmt.Sprintf(persistentVolumeClaimPattern, r.cr.Name, brokerId)
+	pvc, err := r.reconciler.GetPersistentVolumeClaim(pvcName, r.cr.Namespace)
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	if err == nil {
+		if pending, _ := pvcHasResizePending(pvc); pending {
+			r.logger.Info("Restarting broker to finish filesystem resize", "broker", brokerId)
+			deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, brokerId)
+			if err = r.reconciler.DeleteKafkaDeploymentPods(deploymentName, r.cr.Name, r.cr.Namespace); err != nil {
+				return err
+			}
+		}
+	}
+	return r.waitUntilBrokerIsReady(brokerId, 300)
 }
 
 func (r *ReconcileKafka) waitUntilMigrationCompleted(maxWaitingInterval int) error {
