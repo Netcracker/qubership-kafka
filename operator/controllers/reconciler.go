@@ -303,21 +303,6 @@ func (r *Reconciler) DeleteDeployment(deployment *appsv1.Deployment, logger logr
 	}
 }
 
-func (r *Reconciler) DeleteKafkaDeploymentPods(deploymentName string, crName string, namespace string) error {
-	kafkaLabels := GetKafkaLabels(crName)
-	kafkaLabels["name"] = deploymentName
-	podList := &corev1.PodList{}
-	if err := r.Client.List(context.TODO(), podList, client.InNamespace(namespace), client.MatchingLabels(kafkaLabels)); err != nil {
-		return err
-	}
-	for i := range podList.Items {
-		if err := r.Client.Delete(context.TODO(), &podList.Items[i]); err != nil && !errors.IsNotFound(err) {
-			return err
-		}
-	}
-	return nil
-}
-
 func (r *Reconciler) FindDeployment(name string, namespace string, logger logr.Logger) (*appsv1.Deployment, error) {
 	logger.Info(fmt.Sprintf("Checking Existence of [%s] deployment", name))
 	foundDeployment := &appsv1.Deployment{}
