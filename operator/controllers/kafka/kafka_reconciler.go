@@ -16,6 +16,7 @@ package kafka
 
 import (
 	"bytes"
+	"context"
 	stderrors "errors"
 	"fmt"
 	"sort"
@@ -23,10 +24,10 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
@@ -48,6 +49,7 @@ const (
 	autoRestartAnnotation                      = "kafkaservice.netcracker.com/auto-restart"
 	resourceVersionAnnotationTemplate          = "%s/resource-version"
 	kraftMigrationControllerTroubleshootingURL = "/docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready"
+	persistentVolumeClaimPattern               = "pvc-%s-%d"
 )
 
 type ReconcileKafka struct {
@@ -297,6 +299,10 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		return err
 	}
 
+	if err := r.restartBrokersAfterPVCResize(); err != nil {
+		return err
+	}
+
 	if currentReplicas > 0 && currentReplicas < kafkaSpec.Replicas {
 		if err := r.reassignPartitionsWithStatusUpdate(int32(kafkaSpec.Replicas), true); err != nil {
 			return err
@@ -348,6 +354,157 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 		}
 	}
 	return nil
+}
+
+func (r ReconcileKafka) restartBrokersAfterPVCResize() error {
+	if r.cr.Spec.Storage.Size == "" || r.cr.Spec.Replicas <= 0 {
+		return nil
+	}
+	desired, err := resource.ParseQuantity(r.cr.Spec.Storage.Size)
+	if err != nil {
+		return err
+	}
+	for brokerID := 1; brokerID <= r.cr.Spec.Replicas; brokerID++ {
+		pvc, err := r.brokerPVC(brokerID)
+		if err != nil {
+			return err
+		}
+		if pvc == nil {
+			continue
+		}
+		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+		if capacity.Cmp(desired) >= 0 {
+			continue
+		}
+		r.logger.Info("Waiting for PVC resize state", "pvc", pvc.Name, "broker", brokerID)
+		restartRequired, err := r.waitForBrokerPVCResizeState(brokerID, desired)
+		if err != nil {
+			return err
+		}
+		if !restartRequired {
+			continue
+		}
+		if err = r.scaleBrokerForPVCResize(brokerID, desired); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r ReconcileKafka) waitForBrokerPVCResizeState(brokerID int, desired resource.Quantity) (bool, error) {
+	restartRequired := false
+	err := wait.PollUntilContextTimeout(context.Background(), time.Second, 2*time.Minute, true, func(context.Context) (bool, error) {
+		pvc, err := r.brokerPVC(brokerID)
+		if err != nil {
+			return false, err
+		}
+		if pvc == nil {
+			return true, nil
+		}
+		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+		if capacity.Cmp(desired) >= 0 {
+			return true, nil
+		}
+		if pvcFileSystemResizePending(pvc) {
+			restartRequired = true
+			return true, nil
+		}
+		return false, nil
+	})
+	return restartRequired, err
+}
+
+func (r ReconcileKafka) scaleBrokerForPVCResize(brokerID int, desired resource.Quantity) error {
+	deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, brokerID)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	attempt := 1
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timeout waiting for broker %d PVC resize", brokerID)
+		default:
+		}
+		delay := 10 * time.Second * time.Duration(1<<(attempt-1))
+		r.logger.Info("Scaling broker deployment down to complete PVC resize",
+			"deployment", deploymentName, "attempt", attempt, "delay", delay)
+		if err := r.reconciler.ScaleDeployment(deploymentName, 0, r.cr.Namespace, r.logger); err != nil {
+			return err
+		}
+		if err := r.waitUntilBrokerPodsDeleted(ctx, brokerID); err != nil {
+			return err
+		}
+		select {
+		case <-time.After(delay):
+		case <-ctx.Done():
+			return fmt.Errorf("timeout waiting for broker %d PVC resize", brokerID)
+		}
+		if err := r.reconciler.ScaleDeployment(deploymentName, 1, r.cr.Namespace, r.logger); err != nil {
+			return err
+		}
+		resized, err := r.waitForBrokerPVCCapacity(brokerID, desired, 30*time.Second)
+		if err != nil {
+			return err
+		}
+		if resized {
+			r.logger.Info("Broker PVC resized", "broker", brokerID, "size", desired.String())
+			return r.waitUntilBrokerIsReady(brokerID, 300)
+		}
+		attempt++
+	}
+}
+
+func (r ReconcileKafka) waitUntilBrokerPodsDeleted(ctx context.Context, brokerID int) error {
+	labels := r.kafkaProvider.GetSelectorLabels()
+	labels["name"] = fmt.Sprintf("%s-%d", r.cr.Name, brokerID)
+	return wait.PollUntilContextTimeout(ctx, time.Second, 2*time.Minute, true, func(context.Context) (bool, error) {
+		pods, err := r.reconciler.FindPodList(r.cr.Namespace, labels)
+		if err != nil {
+			return false, err
+		}
+		return len(pods.Items) == 0, nil
+	})
+}
+
+func (r ReconcileKafka) waitForBrokerPVCCapacity(brokerID int, desired resource.Quantity, timeout time.Duration) (bool, error) {
+	resized := false
+	err := wait.PollUntilContextTimeout(context.Background(), time.Second, timeout, true, func(context.Context) (bool, error) {
+		pvc, err := r.brokerPVC(brokerID)
+		if err != nil {
+			return false, err
+		}
+		if pvc == nil {
+			return false, nil
+		}
+		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+		if capacity.Cmp(desired) >= 0 {
+			resized = true
+			return true, nil
+		}
+		return false, nil
+	})
+	if stderrors.Is(err, context.DeadlineExceeded) {
+		return false, nil
+	}
+	return resized, err
+}
+
+func pvcFileSystemResizePending(pvc *corev1.PersistentVolumeClaim) bool {
+	for _, condition := range pvc.Status.Conditions {
+		if condition.Type == corev1.PersistentVolumeClaimFileSystemResizePending && condition.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
+}
+
+func (r ReconcileKafka) brokerPVC(brokerID int) (*corev1.PersistentVolumeClaim, error) {
+	pvcName := fmt.Sprintf(persistentVolumeClaimPattern, r.cr.Name, brokerID)
+	pvc, err := r.reconciler.GetPersistentVolumeClaim(pvcName, r.cr.Namespace)
+	if errors.IsNotFound(err) {
+		return nil, nil
+	}
+	return pvc, err
 }
 
 func (r ReconcileKafka) reassignPartitionsWithStatusUpdate(replicas int32, clusterScaling bool) error {
@@ -798,7 +955,7 @@ func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) e
 	adminPassword := string(kafkaSecret.Data["admin-password"])
 	clientUsername := string(kafkaSecret.Data["client-username"])
 	clientPassword := string(kafkaSecret.Data["client-password"])
-	if adminUsername == "" || adminPassword == ""  {
+	if adminUsername == "" || adminPassword == "" {
 		r.logger.Info("Skipping KRaft SCRAM sync: admin credentials are not set in Kafka secret")
 		return nil
 	}
@@ -944,7 +1101,7 @@ func (r *ReconcileKafka) waitUntilControllerIsReady(maxWaitingInterval int) erro
 func (r *ReconcileKafka) waitUntilBrokerIsReady(brokerId int, maxWaitingInterval int) error {
 	r.logger.Info(fmt.Sprintf("Waiting for kafka-%d deployment.", brokerId))
 	time.Sleep(waitingInterval)
-	err := wait.PollImmediate(waitingInterval, time.Duration(maxWaitingInterval)*time.Second, func() (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(maxWaitingInterval)*time.Second, true, func(context.Context) (bool, error) {
 		kafkaLabels := r.kafkaProvider.GetSelectorLabels()
 		kafkaLabels["name"] = fmt.Sprintf("%s-%d", r.cr.Name, brokerId)
 		return r.reconciler.AreDeploymentsReady(kafkaLabels, r.cr.Namespace, r.logger), nil

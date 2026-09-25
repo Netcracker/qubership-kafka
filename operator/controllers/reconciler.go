@@ -188,12 +188,17 @@ func (r *Reconciler) GetServiceIp(namespace, serviceName string) (string, error)
 	return foundService.Spec.ClusterIP, err
 }
 
-func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, previouslyManagedAnnotations map[string]string, logger logr.Logger) error {
-	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
+func (r *Reconciler) GetPersistentVolumeClaim(name string, namespace string) (*corev1.PersistentVolumeClaim, error) {
 	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
 	err := r.Client.Get(context.TODO(),
-		types.NamespacedName{Name: persistentVolumeClaim.Name, Namespace: persistentVolumeClaim.Namespace},
+		types.NamespacedName{Name: name, Namespace: namespace},
 		foundPersistentVolumeClaim)
+	return foundPersistentVolumeClaim, err
+}
+
+func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, previouslyManagedAnnotations map[string]string, logger logr.Logger) error {
+	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
+	foundPersistentVolumeClaim, err := r.GetPersistentVolumeClaim(persistentVolumeClaim.Name, persistentVolumeClaim.Namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Creating a new persistent volume claim",
@@ -226,6 +231,13 @@ func (r *Reconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *cor
 			"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
 	}
 
+	desired := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	current := foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	if desired.Cmp(current) < 0 {
+		return fmt.Errorf("PVC shrinking is forbidden, current PVC size is %s, desired is %s", current.String(), desired.String())
+	}
+	foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage] = desired
+
 	err := r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
 	if err != nil {
 		// There is no ability to update PVC for some environments.
@@ -237,10 +249,7 @@ func (r *Reconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *cor
 
 func (r *Reconciler) DeletePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, logger logr.Logger) error {
 	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
-	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
-	err := r.Client.Get(context.TODO(),
-		types.NamespacedName{Name: persistentVolumeClaim.Name, Namespace: persistentVolumeClaim.Namespace},
-		foundPersistentVolumeClaim)
+	foundPersistentVolumeClaim, err := r.GetPersistentVolumeClaim(persistentVolumeClaim.Name, persistentVolumeClaim.Namespace)
 	if err == nil {
 		err = r.Client.Delete(context.TODO(), foundPersistentVolumeClaim)
 		if err != nil {
