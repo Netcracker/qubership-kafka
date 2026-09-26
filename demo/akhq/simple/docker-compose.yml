@@ -1,11 +1,11 @@
 version: '2'
 services:
   zookeeper:
-    image: ghcr.io/netcracker/qubership-docker-zookeeper:main
+    image: ghcr.io/netcracker/qubership-docker-zookeeper:main@sha256:4e5ba04fd062ff7248bf07be1ee9a5fe5f40733303aea9e006a3d0a3530ef534
     ports:
       - 2181:2181
   kafka:
-    image: ghcr.io/netcracker/qubership-docker-kafka:main
+    image: ghcr.io/netcracker/qubership-docker-kafka:main@sha256:fe0fb45dacfb42d6165cd50c811f57c18eb791fd44404a5b9c98a4ff1c3f1271
     ports:
       - 9094:9094
     links:
@@ -22,7 +22,7 @@ services:
       - EXTERNAL_PORT=9094
       - CONF_KAFKA_MIN_INSYNC_REPLICAS=1
   akhq:
-    image: ghcr.io/netcracker/qubership-docker-akhq:main
+    image: ghcr.io/netcracker/qubership-docker-akhq:main@sha256:2975489922eec3496e986eb3c18ee8a5d78c51225902721a329593725967b0bb
     ports:
       - 8080:8080
     links:
