@@ -391,10 +391,11 @@ func (r ReconcileKafka) restartBrokersAfterPVCResize() error {
 	for brokerID := 1; brokerID <= r.cr.Spec.Replicas; brokerID++ {
 		pvc, err := r.brokerPVC(brokerID)
 		if err != nil {
-			return err
-		}
-		if pvc == nil {
-			continue
+			if errors.IsNotFound(err) {
+				continue
+			} else {
+				return err
+			}
 		}
 		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
 		if capacity.Cmp(desired) >= 0 {
@@ -420,10 +421,11 @@ func (r ReconcileKafka) waitForBrokerPVCResizeState(brokerID int, desired resour
 	err := wait.PollUntilContextTimeout(context.Background(), time.Second, 2*time.Minute, true, func(context.Context) (bool, error) {
 		pvc, err := r.brokerPVC(brokerID)
 		if err != nil {
-			return false, err
-		}
-		if pvc == nil {
-			return true, nil
+			if errors.IsNotFound(err) {
+				return false, nil
+			} else {
+				return false, err
+			}
 		}
 		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
 		if capacity.Cmp(desired) >= 0 {
@@ -495,10 +497,11 @@ func (r ReconcileKafka) waitForBrokerPVCCapacity(brokerID int, desired resource.
 	err := wait.PollUntilContextTimeout(context.Background(), time.Second, timeout, true, func(context.Context) (bool, error) {
 		pvc, err := r.brokerPVC(brokerID)
 		if err != nil {
-			return false, err
-		}
-		if pvc == nil {
-			return false, nil
+			if errors.IsNotFound(err) {
+				return false, nil
+			} else {
+				return false, err
+			}
 		}
 		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
 		if capacity.Cmp(desired) >= 0 {
@@ -524,11 +527,7 @@ func pvcFileSystemResizePending(pvc *corev1.PersistentVolumeClaim) bool {
 
 func (r ReconcileKafka) brokerPVC(brokerID int) (*corev1.PersistentVolumeClaim, error) {
 	pvcName := fmt.Sprintf(persistentVolumeClaimPattern, r.cr.Name, brokerID)
-	pvc, err := r.reconciler.GetPersistentVolumeClaim(pvcName, r.cr.Namespace)
-	if errors.IsNotFound(err) {
-		return nil, nil
-	}
-	return pvc, err
+	return r.reconciler.GetPersistentVolumeClaim(pvcName, r.cr.Namespace)
 }
 
 func (r ReconcileKafka) reassignPartitionsWithStatusUpdate(replicas int32, clusterScaling bool) error {
