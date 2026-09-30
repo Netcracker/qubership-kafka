@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.18
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.26@sha256:53bfd7bad14d9dd3e372678b1fbb11ddd09f699b9fd3f3430e3ea38aed6b57e9
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_BACKUP=/opt/kafka/backup-storage
