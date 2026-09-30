@@ -101,9 +101,7 @@ func (r ReconcileKafka) Reconcile() error {
 			}
 		}
 
-		if clientChanged && !adminChanged && !specChanged {
-			r.logger.Info("Client credentials changed; SCRAM updated without broker restart")
-		} else if r.cr.Spec.Replicas > 0 {
+		if r.cr.Spec.Replicas > 0 {
 			if err = r.processKafkaReplicas(kafkaSecret); err != nil {
 				return err
 			}
@@ -607,7 +605,9 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	}
 	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
 		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != secretCredsHash(kafkaSecret, "admin-username", "admin-password")
-	if adminChanged || (kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true") {
+	clientChanged := r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaClientCredsHashName] != secretCredsHash(kafkaSecret, "client-username", "client-password")
+	if adminChanged || clientChanged || (kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true") {
 		r.addDeploymentAnnotation(brokerDeployment, fmt.Sprintf(resourceVersionAnnotationTemplate, kafkaSecret.Name), kafkaSecret.ResourceVersion)
 	}
 	if err := r.reconciler.CreateOrUpdateDeployment(brokerDeployment, r.logger); err != nil {
