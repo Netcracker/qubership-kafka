@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.23
+FROM eclipse-temurin:21-jdk-alpine-3.23@sha256:03fa75f3434abc0336415e0c4ed24806f303d8c012ef7785d97392a6329df3e4
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \

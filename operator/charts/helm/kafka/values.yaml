@@ -41,7 +41,7 @@ pvc:
     # argocd.argoproj.io/sync-options: Prune=false
 
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-operator:main@sha256:20ea08bb2f83fa40125876fa088713c251ac58ef7610d10e72fc8bd3d2223813
   replicas: 1
   apiGroup: "netcracker.com"
   resources:
@@ -141,8 +141,8 @@ kafka:
   disruptionBudget:
     enabled: false
     maxUnavailable: 0
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:main
-  kafka3dockerImage: ghcr.io/netcracker/qubership-docker-kafka-3:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-4:main@sha256:6f5118bebdd7c9c552c43b806ae5e28eb10635ff2749e47a6d6cc46556d1e69e
+  kafka3dockerImage: ghcr.io/netcracker/qubership-docker-kafka-3:main@sha256:a369725a94c584f9bea22a90c8e13b90f7b6f8e618e70d4ea20a9d7b6026ae29
 #  consulAuthMethod: "consul-k8s-auth-method"
 #  kafkaDiscoveryMeta: {
 #    "key1": "value1",
@@ -279,7 +279,7 @@ groupMigration:
     limits:
       memory: 256Mi
       cpu: 100m
-  image: "ghcr.io/netcracker/qubership-docker-kubectl:main"
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:main@sha256:571eda404de2a3b302e86a57fd1efbf08f94b52b885488bdf0d42ab29bf191a0"
   imagePullPolicy: Always
   runAsNonRoot: true
 
