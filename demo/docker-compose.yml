@@ -3,7 +3,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    image: ghcr.io/netcracker/qubership-docker-kafka-4:main
+    image: ghcr.io/netcracker/qubership-docker-kafka-4:main@sha256:6f5118bebdd7c9c552c43b806ae5e28eb10635ff2749e47a6d6cc46556d1e69e
     ports:
       - "9092:9092"
     environment:
@@ -27,7 +27,7 @@ services:
 
   backup-daemon:
     read_only: true
-    image: ghcr.io/netcracker/qubership-kafka-backup-daemon:main
+    image: ghcr.io/netcracker/qubership-kafka-backup-daemon:main@sha256:661a5ca4c758469b381483480aaf84492d608bd6ce7c3325d3b5d7053ac505e5
     user: "0:0"
     ports:
       - "8080:8080"
@@ -53,7 +53,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    image: ghcr.io/netcracker/qubership-docker-akhq:main
+    image: ghcr.io/netcracker/qubership-docker-akhq:main@sha256:4da6afd48fccb74172b79f3a394849a9f745b76a3db13ee1e897e8c22e2fb11d
     ports:
       - "8081:8080"
     depends_on:
@@ -80,7 +80,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    image: ghcr.io/netcracker/qubership-kafka-monitoring:main
+    image: ghcr.io/netcracker/qubership-kafka-monitoring:main@sha256:495911d58ddd31b9668bdb5385fc60f4ea837165e87a15267ec305fa18641897
     depends_on:
       kafka:
         condition: service_healthy
@@ -106,7 +106,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    image: ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main
+    image: ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main@sha256:3b6cb8e31f9f8cda10a4fb64025b11990a80b9a0ec90676246cc40bae202d505
     ports:
       - "9308:9308"
     depends_on:
@@ -131,7 +131,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    image: ghcr.io/netcracker/qubership-kafka-integration-tests:main
+    image: ghcr.io/netcracker/qubership-kafka-integration-tests:main@sha256:56287e60f4b93cf24f9221a027ed0a1a029cdb82f919223c624bc09d60b501a6
     ports:
       - "8090:8080"
     depends_on:

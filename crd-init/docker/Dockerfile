@@ -1,4 +1,4 @@
-FROM python:3.11-alpine
+FROM python:3.11-alpine@sha256:f2cdc43fcddbabe870f53750cbdcc01ae4aa75b1959351252457fde88f91d20f
 
 ENV CRD_INIT_HOME=/opt/crd-init
 USER 0
