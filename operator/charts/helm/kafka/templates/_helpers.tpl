@@ -424,6 +424,23 @@ Find a kubectl image in various places.
   {{- end -}}
 {{- end }}
 
+{{/*
+Forbid renaming Kafka CR via global.name after install.
+Returns "true" if the name is allowed, "false" otherwise.
+Assumes at most one Kafka CR per namespace.
+*/}}
+{{- define "validateKafkaName" -}}
+  {{- $desiredName := include "kafka.name" . -}}
+  {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
+  {{- $kafkaList := lookup $apiVersion "Kafka" .Release.Namespace "" -}}
+  {{- if and $kafkaList $kafkaList.items -}}
+    {{- $existingName := (index $kafkaList.items 0).metadata.name -}}
+    {{- printf "%t" (eq $existingName $desiredName) -}}
+  {{- else -}}
+    {{- printf "%t" true -}}
+  {{- end -}}
+{{- end -}}
+
 {{- define "validateKafkaUpgrade" -}}
   {{- $apiVersion := printf "%s/v1" .Values.operator.apiGroup -}}
   {{- $kind := "Kafka" -}}
