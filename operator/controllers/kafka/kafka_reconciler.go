@@ -516,9 +516,6 @@ func (r ReconcileKafka) waitForBrokerPVCCapacity(brokerID int, desired resource.
 
 func pvcResizePending(pvc *corev1.PersistentVolumeClaim) bool {
 	for _, condition := range pvc.Status.Conditions {
-		if condition.Status != corev1.ConditionTrue {
-			continue
-		}
 		if condition.Type == corev1.PersistentVolumeClaimResizing || condition.Type == corev1.PersistentVolumeClaimFileSystemResizePending {
 			return true
 		}
