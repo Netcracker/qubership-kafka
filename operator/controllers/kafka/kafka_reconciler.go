@@ -429,7 +429,7 @@ func (r ReconcileKafka) waitForBrokerPVCResizeState(brokerID int, desired resour
 		if capacity.Cmp(desired) >= 0 {
 			return true, nil
 		}
-		if pvcFileSystemResizePending(pvc) {
+		if pvcResizePending(pvc) {
 			restartRequired = true
 			return true, nil
 		}
@@ -514,9 +514,12 @@ func (r ReconcileKafka) waitForBrokerPVCCapacity(brokerID int, desired resource.
 	return resized, err
 }
 
-func pvcFileSystemResizePending(pvc *corev1.PersistentVolumeClaim) bool {
+func pvcResizePending(pvc *corev1.PersistentVolumeClaim) bool {
 	for _, condition := range pvc.Status.Conditions {
-		if condition.Type == corev1.PersistentVolumeClaimFileSystemResizePending && condition.Status == corev1.ConditionTrue {
+		if condition.Status != corev1.ConditionTrue {
+			continue
+		}
+		if condition.Type == corev1.PersistentVolumeClaimResizing || condition.Type == corev1.PersistentVolumeClaimFileSystemResizePending {
 			return true
 		}
 	}
