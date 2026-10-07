@@ -310,10 +310,6 @@ func (r ReconcileKafka) processKafkaReplicas(kafkaSecret *corev1.Secret) error {
 		return err
 	}
 
-	if err := r.restartBrokersAfterPVCResize(); err != nil {
-		return err
-	}
-
 	if currentReplicas > 0 && currentReplicas < kafkaSpec.Replicas {
 		if err := r.reassignPartitionsWithStatusUpdate(int32(kafkaSpec.Replicas), true); err != nil {
 			return err
@@ -364,6 +360,9 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 		if err := r.rolloutBroker(brokerId, kraft, kafkaSecret); err != nil {
 			return err
 		}
+		if err := r.restartBrokerAfterPVCResize(brokerId); err != nil {
+			return err
+		}
 		if waitForEachBroker {
 			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
 				return err
@@ -378,40 +377,31 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 	return nil
 }
 
-func (r ReconcileKafka) restartBrokersAfterPVCResize() error {
-	if r.cr.Spec.Storage.Size == "" || r.cr.Spec.Replicas <= 0 {
+func (r ReconcileKafka) restartBrokerAfterPVCResize(brokerID int) error {
+	if r.cr.Spec.Storage.Size == "" {
 		return nil
 	}
 	desired, err := resource.ParseQuantity(r.cr.Spec.Storage.Size)
 	if err != nil {
 		return err
 	}
-	for brokerID := 1; brokerID <= r.cr.Spec.Replicas; brokerID++ {
-		pvc, err := r.brokerPVC(brokerID)
-		if err != nil {
-			if errors.IsNotFound(err) {
-				continue
-			} else {
-				return err
-			}
+	pvc, err := r.brokerPVC(brokerID)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
 		}
-		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
-		if capacity.Cmp(desired) >= 0 {
-			continue
-		}
-		r.logger.Info("Waiting for PVC resize state", "pvc", pvc.Name, "broker", brokerID)
-		restartRequired, err := r.waitForBrokerPVCResizeState(brokerID, desired)
-		if err != nil {
-			return err
-		}
-		if !restartRequired {
-			continue
-		}
-		if err = r.scaleBrokerForPVCResize(brokerID, desired); err != nil {
-			return err
-		}
+		return err
 	}
-	return nil
+	capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+	if capacity.Cmp(desired) >= 0 {
+		return nil
+	}
+	r.logger.Info("Waiting for PVC resize state", "pvc", pvc.Name, "broker", brokerID)
+	restartRequired, err := r.waitForBrokerPVCResizeState(brokerID, desired)
+	if err != nil || !restartRequired {
+		return err
+	}
+	return r.scaleBrokerForPVCResize(brokerID, desired)
 }
 
 func (r ReconcileKafka) waitForBrokerPVCResizeState(brokerID int, desired resource.Quantity) (bool, error) {
