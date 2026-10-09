@@ -1,4 +1,4 @@
-FROM telegraf:1.39.1-alpine
+FROM telegraf:1.39.1-alpine@sha256:4ab2541742661448a279287f41e3660e528b2083a7a46cccdf559a3094b8fd8f
 
 ENV KMM_MONITORING_HOME=/opt/kafka-mirror-maker-monitoring \
     MONITORING_LOGS=/tmp/monitoring/logs
