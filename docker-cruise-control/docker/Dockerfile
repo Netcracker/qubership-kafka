@@ -67,7 +67,7 @@ RUN chmod a+rw -R .
 ARG TMP_DIR="/tmp"
 
 # Download kafkactl
-ARG KAFKACTL_VERSION=5.19.0
+ARG KAFKACTL_VERSION=5.21.0
 ARG TARGETARCH
 
 RUN set -x \
@@ -81,9 +81,8 @@ RUN set -x \
     && chmod +x /usr/bin/kafkactl \
     && rm -rf ${TMP_DIR}
 
-# Upgrade tools from edge to avoid vulnerabilities
-RUN apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq gnupg libexpat musl-utils libssl3 libcrypto3 openssl libpng binutils 
+# Upgrade all tools to avoid vulnerabilities
+RUN set -x && apk upgrade --no-cache --available
 
 EXPOSE 9090
 USER 1001

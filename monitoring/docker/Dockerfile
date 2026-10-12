@@ -63,13 +63,6 @@ RUN set -x \
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
 
-# Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq net-snmp-tools net-snmp-libs net-snmp-agent-libs musl musl-dev musl-utils libssl3 \
-        libcrypto3 binutils openssl-dev nghttp2-libs nghttp2-dev setpriv libcap2 libcap libcap-setcap libcap-utils
-
 RUN rm /usr/lib/python3.14/EXTERNALLY-MANAGED
 
 # Install misc tools
@@ -84,7 +77,7 @@ RUN set -x \
     && rm -rf /var/cache/apk/*
 
 ARG TMP_DIR="/tmp"
-ARG KAFKACTL_VERSION="5.19.0"
+ARG KAFKACTL_VERSION="5.21.0"
 RUN set -x \
     && wget \
         -nv \
