@@ -252,9 +252,10 @@ func (krp KafkaResourceProvider) NewKafkaPersistentVolumeClaimForCR(brokerId int
 	labels["cloud-backuper.netcracker.com/exclude-from-physical-backup"] = "true"
 	persistentVolumeClaim := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf(persistentVolumeClaimPattern, krp.cr.Name, brokerId),
-			Namespace: krp.cr.Namespace,
-			Labels:    labels,
+			Name:        fmt.Sprintf(persistentVolumeClaimPattern, krp.cr.Name, brokerId),
+			Namespace:   krp.cr.Namespace,
+			Labels:      labels,
+			Annotations: krp.cr.Spec.PVC.Annotations,
 		},
 		Spec: spec,
 	}
@@ -311,9 +312,10 @@ func (krp KafkaResourceProvider) NewKafkaControllerPersistentVolumeClaimForCR() 
 
 	persistentVolumeClaim := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("pvc-%s-%s", krp.cr.Name, "kraft-controller"),
-			Namespace: krp.cr.Namespace,
-			Labels:    labels,
+			Name:        fmt.Sprintf("pvc-%s-%s", krp.cr.Name, "kraft-controller"),
+			Namespace:   krp.cr.Namespace,
+			Labels:      labels,
+			Annotations: krp.cr.Spec.PVC.Annotations,
 		},
 		Spec: spec,
 	}

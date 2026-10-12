@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"maps"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -187,37 +188,68 @@ func (r *Reconciler) GetServiceIp(namespace, serviceName string) (string, error)
 	return foundService.Spec.ClusterIP, err
 }
 
-func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, logger logr.Logger) error {
-	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
+func (r *Reconciler) GetPersistentVolumeClaim(name string, namespace string) (*corev1.PersistentVolumeClaim, error) {
 	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
 	err := r.Client.Get(context.TODO(),
-		types.NamespacedName{Name: persistentVolumeClaim.Name, Namespace: persistentVolumeClaim.Namespace},
+		types.NamespacedName{Name: name, Namespace: namespace},
 		foundPersistentVolumeClaim)
-	if err == nil {
-		logger.Info("Clean 'ownerReferences' for existing persistent volume claim",
-			"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
-		foundPersistentVolumeClaim.ObjectMeta.OwnerReferences = nil
-		foundPersistentVolumeClaim.Labels = util.JoinMaps(foundPersistentVolumeClaim.Labels, persistentVolumeClaim.Labels)
-		err = r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
-		if err != nil {
-			// There is no ability to update PVC for some environments.
-			log.Error(err, "Error occurred during updating existing PVC, skipping it")
-			return nil
+	return foundPersistentVolumeClaim, err
+}
+
+func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, previouslyManagedAnnotations map[string]string, logger logr.Logger) error {
+	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
+	foundPersistentVolumeClaim, err := r.GetPersistentVolumeClaim(persistentVolumeClaim.Name, persistentVolumeClaim.Namespace)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Creating a new persistent volume claim",
+				"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
+			return r.Client.Create(context.TODO(), persistentVolumeClaim)
 		}
-	} else if errors.IsNotFound(err) {
-		logger.Info("Creating a new persistent volume claim",
-			"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
-		err = r.Client.Create(context.TODO(), persistentVolumeClaim)
+		return err
 	}
-	return err
+	return r.updatePersistentVolumeClaim(foundPersistentVolumeClaim, persistentVolumeClaim, previouslyManagedAnnotations, logger)
+}
+
+func (r *Reconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *corev1.PersistentVolumeClaim,
+	persistentVolumeClaim *corev1.PersistentVolumeClaim, previouslyManagedAnnotations map[string]string, logger logr.Logger) error {
+	logger.Info("Clean 'ownerReferences' for existing persistent volume claim",
+		"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
+	foundPersistentVolumeClaim.ObjectMeta.OwnerReferences = nil
+	foundPersistentVolumeClaim.Labels = util.JoinMaps(foundPersistentVolumeClaim.Labels, persistentVolumeClaim.Labels)
+
+	if !maps.Equal(persistentVolumeClaim.Annotations, previouslyManagedAnnotations) {
+		if foundPersistentVolumeClaim.Annotations == nil {
+			foundPersistentVolumeClaim.Annotations = map[string]string{}
+		}
+		maps.Copy(foundPersistentVolumeClaim.Annotations, persistentVolumeClaim.Annotations)
+		for key := range previouslyManagedAnnotations {
+			if _, exists := persistentVolumeClaim.Annotations[key]; !exists {
+				delete(foundPersistentVolumeClaim.Annotations, key)
+			}
+		}
+		logger.Info("Updating annotations on the found persistent volume claim",
+			"PersistentVolumeClaim.Namespace", foundPersistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", foundPersistentVolumeClaim.Name)
+	}
+
+	desired := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	current := foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]
+	if desired.Cmp(current) < 0 {
+		return fmt.Errorf("PVC shrinking is forbidden, current PVC size is %s, desired is %s", current.String(), desired.String())
+	}
+	foundPersistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage] = desired
+
+	err := r.Client.Update(context.TODO(), foundPersistentVolumeClaim)
+	if err != nil {
+		// There is no ability to update PVC for some environments.
+		log.Error(err, "Error occurred during updating existing PVC, skipping it")
+		return nil
+	}
+	return nil
 }
 
 func (r *Reconciler) DeletePersistentVolumeClaim(persistentVolumeClaim *corev1.PersistentVolumeClaim, logger logr.Logger) error {
 	logger.Info(fmt.Sprintf("Checking Existence of [%s] persistent volume claim", persistentVolumeClaim.Name))
-	foundPersistentVolumeClaim := &corev1.PersistentVolumeClaim{}
-	err := r.Client.Get(context.TODO(),
-		types.NamespacedName{Name: persistentVolumeClaim.Name, Namespace: persistentVolumeClaim.Namespace},
-		foundPersistentVolumeClaim)
+	foundPersistentVolumeClaim, err := r.GetPersistentVolumeClaim(persistentVolumeClaim.Name, persistentVolumeClaim.Namespace)
 	if err == nil {
 		err = r.Client.Delete(context.TODO(), foundPersistentVolumeClaim)
 		if err != nil {

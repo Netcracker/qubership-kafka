@@ -386,7 +386,7 @@ project(':cruise-control') {
     implementation 'io.github.classgraph:classgraph:4.8.141'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     // Temporary pin for vulnerability
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.9'
     api "io.vertx:vertx-web-openapi:${vertxVersion}"
     api "io.vertx:vertx-core:${vertxVersion}"
     api "io.vertx:vertx-web:${vertxVersion}"
@@ -410,11 +410,11 @@ project(':cruise-control') {
     testImplementation 'org.easymock:easymock:5.5.0'
     testImplementation "org.apache.kafka:kafka_$scalaBinaryVersion:$kafkaVersion:test"
     testImplementation "org.apache.kafka:kafka-clients:$kafkaVersion:test"
-    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'commons-io:commons-io:2.14.0'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.13:tests'
     testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
     testImplementation 'org.apache.kerby:kerb-simplekdc:2.1.0'
-    testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
+    testImplementation 'com.jayway.jsonpath:json-path:2.9.0'
     testImplementation 'org.powermock:powermock-module-junit4:2.0.9'
     testImplementation 'org.powermock:powermock-api-easymock:2.0.9'
   }
@@ -548,7 +548,7 @@ project(':cruise-control-metrics-reporter') {
     implementation "org.apache.kafka:kafka-clients:$kafkaVersion"
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     // Temporary pin for vulnerability
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.9'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
@@ -560,7 +560,7 @@ project(':cruise-control-metrics-reporter') {
     testImplementation "org.apache.kafka:kafka-metadata:$kafkaVersion"
     testImplementation "org.apache.kafka:kafka-raft:$kafkaVersion"
     testImplementation "org.apache.kafka:kafka-storage:$kafkaVersion"
-    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'commons-io:commons-io:2.14.0'
     testImplementation "org.testcontainers:kafka:1.21.3"
     testOutput sourceSets.test.output
   }

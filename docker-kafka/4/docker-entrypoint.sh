@@ -773,10 +773,11 @@ if [[ -f ${CONF_KAFKA_LOG_DIRS}/.lock ]]; then
     rm "${CONF_KAFKA_LOG_DIRS}/.lock"
 fi
 
-# WA for https://issues.apache.org/jira/browse/KAFKA-9444
-if [[ -f ${CONF_KAFKA_LOG_DIRS}/meta.properties ]]; then
+if [[ "$KRAFT_ENABLED" != "true" ]]; then
+  if [[ -f ${CONF_KAFKA_LOG_DIRS}/meta.properties ]]; then
     echo "WARNING: There is meta.properties file. Removing it."
     rm "${CONF_KAFKA_LOG_DIRS}/meta.properties"
+  fi
 fi
 
 if [[ ${SCAN_FILE_SYSTEM} == "true" ]]; then
@@ -837,7 +838,8 @@ case $1 in
       fi
     done
     if [[ "$KRAFT_ENABLED" == "true" ]]; then
-      ${KAFKA_HOME}/bin/kafka-storage.sh format -t "${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" ${KAFKA_CREDENTIALS}
+      echo "Formatting KRaft storage if needed"
+      ${KAFKA_HOME}/bin/kafka-storage.sh format -t "${KRAFT_CLUSTER_ID}" -c "${KAFKA_CONFIG}/server.properties" --ignore-formatted ${KAFKA_CREDENTIALS}
     fi
     exec ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_CONFIG}/server.properties
     ;;

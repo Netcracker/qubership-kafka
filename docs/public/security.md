@@ -73,6 +73,7 @@ Any credential in the `global.secrets.kafka` section can be changed and run with
 Operator performs necessary logic to apply new credentials to Kafka, AKHQ and Backup Daemon pods.
 
 **Note:** It requires full cluster restart.
+Changing the admin password requires downtime: brokers are restarted together, not one by one.
 
 The manual password changing procedures for Kafka Service is described in respective guide:
 

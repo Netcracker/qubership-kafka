@@ -16,6 +16,7 @@ package kafka
 
 import (
 	"bytes"
+	"context"
 	stderrors "errors"
 	"fmt"
 	"sort"
@@ -23,10 +24,10 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
@@ -45,9 +46,12 @@ var ErrNoKafkaPods = stderrors.New("no Kafka pods found")
 const (
 	kafkaConditionReason                       = "KafkaReadinessStatus"
 	kafkaHashName                              = "spec"
+	kafkaAdminCredsHashName                    = "secret-admin-creds"
+	kafkaClientCredsHashName                   = "secret-client-creds"
 	autoRestartAnnotation                      = "kafkaservice.netcracker.com/auto-restart"
 	resourceVersionAnnotationTemplate          = "%s/resource-version"
 	kraftMigrationControllerTroubleshootingURL = "/docs/public/troubleshooting.md#kraft-migration-controller-is-not-ready"
+	persistentVolumeClaimPattern               = "pvc-%s-%d"
 )
 
 type ReconcileKafka struct {
@@ -79,13 +83,20 @@ func (r ReconcileKafka) Reconcile() error {
 
 	secretChanged := kafkaSecret.Name != "" &&
 		r.reconciler.ResourceVersions[kafkaSecret.Name] != kafkaSecret.ResourceVersion
-	kafkaConfigurationChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash || secretChanged
+	adminHash := secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	clientHash := secretCredsHash(kafkaSecret, "client-username", "client-password")
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != adminHash
+	clientChanged := r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaClientCredsHashName] != clientHash
+	specChanged := r.reconciler.ResourceHashes[kafkaHashName] != kafkaSpecHash
+	kafkaConfigurationChanged := specChanged || secretChanged
 
 	if !kafkaConfigurationChanged {
 		r.logger.Info("Kafka configuration didn't change, skipping reconcile loop")
 	} else {
-		if secretChanged && r.cr.Spec.Kraft.Enabled && !r.kafkaProvider.IsSecurityDisabled() {
-			if err = r.syncKraftScramCredentials(kafkaSecret); err != nil {
+		if !r.kafkaProvider.IsSecurityDisabled() && (clientChanged || adminChanged) {
+			if err = r.syncScramCredentials(kafkaSecret); err != nil {
 				return err
 			}
 		}
@@ -123,6 +134,8 @@ func (r ReconcileKafka) Reconcile() error {
 
 	r.reconciler.ResourceVersions[kafkaSecret.Name] = kafkaSecret.ResourceVersion
 	r.reconciler.ResourceHashes[kafkaHashName] = kafkaSpecHash
+	r.reconciler.ResourceHashes[kafkaAdminCredsHashName] = adminHash
+	r.reconciler.ResourceHashes[kafkaClientCredsHashName] = clientHash
 	return nil
 }
 
@@ -337,17 +350,172 @@ func (r *ReconcileKafka) isRollingUpdateApplicable(currentReplicas int) (bool, e
 
 func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *corev1.Secret) error {
 	r.logger.Info("Perform brokers rollout procedure")
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	waitForEachBroker := r.cr.Spec.RollingUpdate && !adminChanged
+	if adminChanged {
+		r.logger.Info("Admin credentials changed: restarting all brokers without waiting for each one")
+	}
 	for brokerId := 1; brokerId <= replicas; brokerId++ {
 		if err := r.rolloutBroker(brokerId, kraft, kafkaSecret); err != nil {
 			return err
 		}
-		if r.cr.Spec.RollingUpdate {
+		if err := r.restartBrokerAfterPVCResize(brokerId); err != nil {
+			return err
+		}
+		if waitForEachBroker {
 			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
 				return err
 			}
 		}
 	}
+	if adminChanged {
+		if err := r.waitUntilAllBrokersReady(r.cr.Spec.PodsReadyTimeout); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func (r ReconcileKafka) restartBrokerAfterPVCResize(brokerID int) error {
+	if r.cr.Spec.Storage.Size == "" {
+		return nil
+	}
+	desired, err := resource.ParseQuantity(r.cr.Spec.Storage.Size)
+	if err != nil {
+		return err
+	}
+	pvc, err := r.brokerPVC(brokerID)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+	if capacity.Cmp(desired) >= 0 {
+		return nil
+	}
+	r.logger.Info("Waiting for PVC resize state", "pvc", pvc.Name, "broker", brokerID)
+	restartRequired, err := r.waitForBrokerPVCResizeState(brokerID, desired)
+	if err != nil || !restartRequired {
+		return err
+	}
+	return r.scaleBrokerForPVCResize(brokerID, desired)
+}
+
+func (r ReconcileKafka) waitForBrokerPVCResizeState(brokerID int, desired resource.Quantity) (bool, error) {
+	restartRequired := false
+	err := wait.PollUntilContextTimeout(context.Background(), time.Second, 2*time.Minute, true, func(context.Context) (bool, error) {
+		pvc, err := r.brokerPVC(brokerID)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				return false, nil
+			} else {
+				return false, err
+			}
+		}
+		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+		if capacity.Cmp(desired) >= 0 {
+			return true, nil
+		}
+		if pvcResizePending(pvc) {
+			restartRequired = true
+			return true, nil
+		}
+		return false, nil
+	})
+	return restartRequired, err
+}
+
+func (r ReconcileKafka) scaleBrokerForPVCResize(brokerID int, desired resource.Quantity) error {
+	deploymentName := fmt.Sprintf("%s-%d", r.cr.Name, brokerID)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	attempt := 1
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timeout waiting for broker %d PVC resize", brokerID)
+		default:
+		}
+		delay := 10 * time.Second * time.Duration(1<<(attempt-1))
+		r.logger.Info("Scaling broker deployment down to complete PVC resize",
+			"deployment", deploymentName, "attempt", attempt, "delay", delay)
+		if err := r.reconciler.ScaleDeployment(deploymentName, 0, r.cr.Namespace, r.logger); err != nil {
+			return err
+		}
+		if err := r.waitUntilBrokerPodsDeleted(ctx, brokerID); err != nil {
+			return err
+		}
+		select {
+		case <-time.After(delay):
+		case <-ctx.Done():
+			return fmt.Errorf("timeout waiting for broker %d PVC resize", brokerID)
+		}
+		if err := r.reconciler.ScaleDeployment(deploymentName, 1, r.cr.Namespace, r.logger); err != nil {
+			return err
+		}
+		resized, err := r.waitForBrokerPVCCapacity(brokerID, desired, 30*time.Second)
+		if err != nil {
+			return err
+		}
+		if resized {
+			r.logger.Info("Broker PVC resized", "broker", brokerID, "size", desired.String())
+			return r.waitUntilBrokerIsReady(brokerID, 300)
+		}
+		attempt++
+	}
+}
+
+func (r ReconcileKafka) waitUntilBrokerPodsDeleted(ctx context.Context, brokerID int) error {
+	labels := r.kafkaProvider.GetSelectorLabels()
+	labels["name"] = fmt.Sprintf("%s-%d", r.cr.Name, brokerID)
+	return wait.PollUntilContextTimeout(ctx, time.Second, 2*time.Minute, true, func(context.Context) (bool, error) {
+		pods, err := r.reconciler.FindPodList(r.cr.Namespace, labels)
+		if err != nil {
+			return false, err
+		}
+		return len(pods.Items) == 0, nil
+	})
+}
+
+func (r ReconcileKafka) waitForBrokerPVCCapacity(brokerID int, desired resource.Quantity, timeout time.Duration) (bool, error) {
+	resized := false
+	err := wait.PollUntilContextTimeout(context.Background(), time.Second, timeout, true, func(context.Context) (bool, error) {
+		pvc, err := r.brokerPVC(brokerID)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				return false, nil
+			} else {
+				return false, err
+			}
+		}
+		capacity := pvc.Status.Capacity[corev1.ResourceStorage]
+		if capacity.Cmp(desired) >= 0 {
+			resized = true
+			return true, nil
+		}
+		return false, nil
+	})
+	if stderrors.Is(err, context.DeadlineExceeded) {
+		return false, nil
+	}
+	return resized, err
+}
+
+func pvcResizePending(pvc *corev1.PersistentVolumeClaim) bool {
+	for _, condition := range pvc.Status.Conditions {
+		if condition.Type == corev1.PersistentVolumeClaimResizing || condition.Type == corev1.PersistentVolumeClaimFileSystemResizePending {
+			return true
+		}
+	}
+	return false
+}
+
+func (r ReconcileKafka) brokerPVC(brokerID int) (*corev1.PersistentVolumeClaim, error) {
+	pvcName := fmt.Sprintf(persistentVolumeClaimPattern, r.cr.Name, brokerID)
+	return r.reconciler.GetPersistentVolumeClaim(pvcName, r.cr.Namespace)
 }
 
 func (r ReconcileKafka) reassignPartitionsWithStatusUpdate(replicas int32, clusterScaling bool) error {
@@ -403,7 +571,7 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 
 	persistentVolumeClaim := r.kafkaProvider.NewKafkaPersistentVolumeClaimForCR(brokerId)
 	if persistentVolumeClaim != nil {
-		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.logger); err != nil {
+		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.cr.Status.PVCStatus.Annotations, r.logger); err != nil {
 			return err
 		}
 	}
@@ -425,7 +593,11 @@ func (r *ReconcileKafka) rolloutBroker(brokerId int, kraft bool, kafkaSecret *co
 	if err := r.reconciler.SetControllerReference(r.cr, brokerDeployment, r.reconciler.Scheme); err != nil {
 		return err
 	}
-	if kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true" {
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	clientChanged := r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaClientCredsHashName] != secretCredsHash(kafkaSecret, "client-username", "client-password")
+	if adminChanged || clientChanged || (kafkaSecret.Annotations != nil && kafkaSecret.Annotations[autoRestartAnnotation] == "true") {
 		r.addDeploymentAnnotation(brokerDeployment, fmt.Sprintf(resourceVersionAnnotationTemplate, kafkaSecret.Name), kafkaSecret.ResourceVersion)
 	}
 	if err := r.reconciler.CreateOrUpdateDeployment(brokerDeployment, r.logger); err != nil {
@@ -482,7 +654,7 @@ func (r *ReconcileKafka) createMigrationControllerEntities(zkClusterID string) e
 
 	persistentVolumeClaim := r.kafkaProvider.NewKafkaControllerPersistentVolumeClaimForCR()
 	if persistentVolumeClaim != nil {
-		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.logger); err != nil {
+		if err := r.reconciler.CreatePersistentVolumeClaim(persistentVolumeClaim, r.cr.Status.PVCStatus.Annotations, r.logger); err != nil {
 			return err
 		}
 	}
@@ -655,7 +827,6 @@ func (r *ReconcileKafka) runCommandInPod(podName string, container string, names
 			return "", fmt.Errorf("there is a problem during command execution: %s", execErr.String())
 		}
 	}
-	log.Info(fmt.Sprintf("Executed command output: %s", execOut.String()))
 	return execOut.String(), nil
 }
 
@@ -793,13 +964,13 @@ func (r *ReconcileKafka) getKafkaCertificates() (*controllers.SslCertificates, e
 	return &controllers.SslCertificates{}, nil
 }
 
-func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) error {
+func (r *ReconcileKafka) syncScramCredentials(kafkaSecret *corev1.Secret) error {
 	adminUsername := string(kafkaSecret.Data["admin-username"])
 	adminPassword := string(kafkaSecret.Data["admin-password"])
 	clientUsername := string(kafkaSecret.Data["client-username"])
 	clientPassword := string(kafkaSecret.Data["client-password"])
-	if adminUsername == "" || adminPassword == ""  {
-		r.logger.Info("Skipping KRaft SCRAM sync: admin credentials are not set in Kafka secret")
+	if adminUsername == "" || adminPassword == "" {
+		r.logger.Info("Skipping SCRAM sync: admin credentials are not set in Kafka secret")
 		return nil
 	}
 
@@ -809,23 +980,40 @@ func (r *ReconcileKafka) syncKraftScramCredentials(kafkaSecret *corev1.Secret) e
 	}
 	pod := controllers.GetFirstAvailablePod(pods)
 	if pod == nil {
-		r.logger.Info("Skipping KRaft SCRAM sync: no ready Kafka pod")
+		r.logger.Info("Skipping SCRAM sync: no ready Kafka pod")
 		return nil
 	}
 
-	users := []struct{ name, password string }{
-		{adminUsername, adminPassword},
+	adminChanged := r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaAdminCredsHashName] != secretCredsHash(kafkaSecret, "admin-username", "admin-password")
+	clientChanged := r.reconciler.ResourceHashes[kafkaClientCredsHashName] != "" &&
+		r.reconciler.ResourceHashes[kafkaClientCredsHashName] != secretCredsHash(kafkaSecret, "client-username", "client-password")
+	users := make([]struct{ name, password string }, 0, 2)
+	if adminChanged {
+		users = append(users, struct{ name, password string }{adminUsername, adminPassword})
 	}
-	if clientUsername != "" {
+	if clientChanged && clientUsername != "" {
 		users = append(users, struct{ name, password string }{clientUsername, clientPassword})
+	}
+	if len(users) == 0 {
+		return nil
 	}
 	for _, user := range users {
 		if err := r.updateScramUserInPod(pod.Name, user.name, user.password); err != nil {
-			return fmt.Errorf("failed to update SCRAM user %q in pod %s: %w", user.name, pod.Name, err)
+			return fmt.Errorf("failed to update SCRAM credentials in pod %s: %w", pod.Name, err)
 		}
 	}
-	r.logger.Info("Synced KRaft SCRAM credentials via pod exec before broker restart", "pod", pod.Name)
+	r.logger.Info("Synced SCRAM credentials via pod exec", "pod", pod.Name)
 	return nil
+}
+
+func secretCredsHash(secret *corev1.Secret, usernameKey, passwordKey string) string {
+	username, password := "", ""
+	if secret != nil && secret.Data != nil {
+		username = string(secret.Data[usernameKey])
+		password = string(secret.Data[passwordKey])
+	}
+	return util.StringHash(usernameKey + "\x00" + username + "\x00" + passwordKey + "\x00" + password)
 }
 
 func (r *ReconcileKafka) updateScramUserInPod(podName, username, password string) error {
@@ -944,13 +1132,26 @@ func (r *ReconcileKafka) waitUntilControllerIsReady(maxWaitingInterval int) erro
 func (r *ReconcileKafka) waitUntilBrokerIsReady(brokerId int, maxWaitingInterval int) error {
 	r.logger.Info(fmt.Sprintf("Waiting for kafka-%d deployment.", brokerId))
 	time.Sleep(waitingInterval)
-	err := wait.PollImmediate(waitingInterval, time.Duration(maxWaitingInterval)*time.Second, func() (done bool, err error) {
+	err := wait.PollUntilContextTimeout(context.Background(), waitingInterval, time.Duration(maxWaitingInterval)*time.Second, true, func(context.Context) (bool, error) {
 		kafkaLabels := r.kafkaProvider.GetSelectorLabels()
 		kafkaLabels["name"] = fmt.Sprintf("%s-%d", r.cr.Name, brokerId)
 		return r.reconciler.AreDeploymentsReady(kafkaLabels, r.cr.Namespace, r.logger), nil
 	})
 	if err != nil {
 		r.logger.Error(err, fmt.Sprintf("Deployment kafka-%d failed.", brokerId))
+		return err
+	}
+	return nil
+}
+
+func (r *ReconcileKafka) waitUntilAllBrokersReady(maxWaitingInterval int) error {
+	r.logger.Info("Waiting for all Kafka brokers after simultaneous restart")
+	time.Sleep(waitingInterval)
+	err := wait.PollImmediate(waitingInterval, time.Duration(maxWaitingInterval)*time.Second, func() (done bool, err error) {
+		return r.reconciler.AreDeploymentsReady(r.kafkaProvider.GetSelectorLabels(), r.cr.Namespace, r.logger), nil
+	})
+	if err != nil {
+		r.logger.Error(err, "Kafka brokers are not ready after secret change")
 		return err
 	}
 	return nil

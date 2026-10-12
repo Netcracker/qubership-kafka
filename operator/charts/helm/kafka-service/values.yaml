@@ -123,6 +123,11 @@ global:
         user: ""
         password: ""
 
+pvc:
+  metadata:
+    annotations: {}
+    # argocd.argoproj.io/sync-options: Prune=false
+
 operator:
   dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main
   replicas: 1
