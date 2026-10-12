@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine3.24 as builder
+FROM golang:1.27.2-alpine3.24 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -22,7 +22,7 @@ RUN set -x \
 # Build
 RUN GOOS=linux GOARCH=amd64 GO111MODULE=on go build -tags musl -a -o additional-metrics main.go
 
-FROM telegraf:1.39.1-alpine
+FROM telegraf:1.40.1-alpine
 
 ENV KAFKA_MONITORING_HOME=/opt/kafka-monitoring \
     KAFKA_CTL_CONFIG=/tmp/monitoring/kafkactl.yml \
@@ -42,9 +42,9 @@ RUN chmod +x /docker-entrypoint.sh
 
 
 
-# Set the Alpine version to 3.23
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories
+# Set the Alpine version to 3.24
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories
 
 
 RUN set -x \
@@ -70,7 +70,7 @@ RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositori
         pcre2 curl gnutls libcurl jq net-snmp-tools net-snmp-libs net-snmp-agent-libs musl musl-dev musl-utils libssl3 \
         libcrypto3 binutils openssl-dev nghttp2-libs nghttp2-dev setpriv libcap2 libcap libcap-setcap libcap-utils
 
-RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED
+RUN rm /usr/lib/python3.14/EXTERNALLY-MANAGED
 
 # Install misc tools
 RUN set -x \

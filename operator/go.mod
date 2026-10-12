@@ -1,6 +1,6 @@
 module github.com/Netcracker/qubership-kafka/operator
 
-go 1.25.0
+go 1.27.2
 
 require (
 	github.com/IBM/sarama v1.50.3
