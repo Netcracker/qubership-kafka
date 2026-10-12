@@ -1,2 +1,2 @@
-kubernetes==36.0.2
+kubernetes==36.0.3
 pyyaml==6.0.3
