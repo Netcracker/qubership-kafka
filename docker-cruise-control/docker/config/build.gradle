@@ -221,8 +221,9 @@ project(':cruise-control-core') {
                 details.because("Fix CVE")
             }
 
-            // Netty
-            if (details.requested.group == "io.netty") {
+            // Netty. tcnative uses its own version line and is not a 4.1.x artifact.
+            if (details.requested.group == "io.netty"
+                    && !details.requested.name.startsWith("netty-tcnative")) {
                 details.useVersion("4.1.138.Final")
                 details.because("Fix CVE")
             }
@@ -372,7 +373,8 @@ project(':cruise-control') {
       exclude group: 'log4j', module: 'log4j'
       exclude group: 'ch.qos.logback'
       resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == "io.netty") {
+        if (details.requested.group == "io.netty"
+                && !details.requested.name.startsWith("netty-tcnative")) {
           details.useVersion("4.1.138.Final")
         }
         if (details.requested.group == "org.eclipse.jetty" && details.requested.name.startsWith("jetty-")) {

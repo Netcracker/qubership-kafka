@@ -19,6 +19,7 @@ RUN set -x \
         rsync \
         grep \
         ca-certificates \
+        curl \
         wget \
         jattach \
         kcat \
@@ -184,7 +185,7 @@ RUN set -eux; \
     netty-transport-native-epoll \
     netty-transport-native-unix-common \
   ; do \
-    curl -fL -o "${a}-${NETTY_VER}.jar" \
+    wget -nv -O "${a}-${NETTY_VER}.jar" \
       "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
   done; \
   rm -f netty-*-4.1.125.Final.jar;
