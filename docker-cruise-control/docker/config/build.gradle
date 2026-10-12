@@ -383,7 +383,7 @@ project(':cruise-control') {
     implementation 'io.dropwizard.metrics:metrics-jmx:4.2.9'
     implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
     implementation 'io.swagger.parser.v3:swagger-parser-v3:2.1.16'
-    implementation 'io.github.classgraph:classgraph:4.8.141'
+    implementation 'io.github.classgraph:classgraph:4.8.196'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     // Temporary pin for vulnerability
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.9'
