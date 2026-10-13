@@ -167,6 +167,9 @@ RUN set -x \
     && wget -nv -O ${KAFKA_HOME}/libs/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar \
         "https://repo1.maven.org/maven2/org/qubership/kafka-security/kafka-security-oauth-client/${KAFKA_SECURITY_OAUTH_VERSION}/kafka-security-oauth-client-${KAFKA_SECURITY_OAUTH_VERSION}.jar"
 
+RUN apk add --update --upgrade --no-cache \
+    pcre2 curl gnutls libcurl jq openssl libcrypto3 binutils libssl3
+  
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
 
@@ -185,7 +188,7 @@ RUN set -eux; \
     netty-transport-native-epoll \
     netty-transport-native-unix-common \
   ; do \
-    wget -nv -O "${a}-${NETTY_VER}.jar" \
+    curl -fL -o "${a}-${NETTY_VER}.jar" \
       "https://repo1.maven.org/maven2/io/netty/${a}/${NETTY_VER}/${a}-${NETTY_VER}.jar"; \
   done; \
   rm -f netty-*-4.1.125.Final.jar;
