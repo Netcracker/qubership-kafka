@@ -244,8 +244,10 @@ Delete Backup By ID
     Create Topic With Generated Data  ${KAFKA_BACKUP_TOPIC}-1
     ${backup_id}=  Full Backup
     Delete Backup  ${backup_id}
-    Check Backup Absence In Backup Daemon  ${backup_id}
-    [Teardown]  Delete Topics
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Check Backup Absence In Backup Daemon  ${backup_id}
+    [Teardown]  Run Keywords  Delete Topics
+    ...  AND  Run Keyword If Test Failed  Delete Backup  ${backup_id}
 
 Unauthorized Access
     [Tags]  kafka  backup  unauthorized_access
