@@ -1159,6 +1159,13 @@
           }
         },
         "environmentVariables": { "type": "array", "items": { "type": "string" } },
+        "config": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "boolean", "integer", "number", "null"]
+          },
+          "description": "Native Kafka broker configuration properties. Keys are preserved exactly as specified."
+        },
         "rollbackTimeout": { "type": ["integer", "null"] },
         "healthCheckTimeout": { "type": ["integer", "null"] },
         "enableAuditLogs": { "type": ["boolean", "null"] },

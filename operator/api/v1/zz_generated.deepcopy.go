@@ -382,6 +382,13 @@ func (in *KafkaSpec) DeepCopyInto(out *KafkaSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.Config != nil {
+		in, out := &in.Config, &out.Config
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	out.Kraft = in.Kraft
 	in.MigrationController.DeepCopyInto(&out.MigrationController)
 	in.PVC.DeepCopyInto(&out.PVC)
