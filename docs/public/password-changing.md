@@ -16,6 +16,10 @@ To update Kafka credentials:
 5. Restart Kafka brokers to apply the newly specified credentials
    (or rely on `kafka.autoRestartOnSecretChange` if enabled).
 
+**Note:** Changing the admin password (`admin-password`) requires downtime.
+The operator restarts all brokers at once and does not wait for each broker to become ready before restarting the next one.
+A client password change can still use a rolling restart.
+
 where:
 
 * `${KAFKA_NAMESPACE}` is the name of the namespace where Kafka is installed.
@@ -27,8 +31,9 @@ where:
   before the broker process starts.
 * **KRaft mode:** when `${SERVICE_NAME}-secret` changes, the Kafka operator execs into a running
   broker and runs `kafka-configs.sh` (using the pod's existing `adminclient.properties`) to update
-  admin/client SCRAM credentials from the Secret **before** rolling brokers. After that, brokers
-  restart and load the new passwords into JAAS / health-check configs.
+  admin/client SCRAM credentials from the Secret **before** brokers restart. After that, brokers
+  restart and load the new passwords into JAAS / health-check configs. An admin password change
+  restarts all brokers at once.
 
 **Note:** If there are related services (e.g. Kafka Monitoring, Streaming Platform) you have to change their Kafka's credentials and
 restart pods after updating Kafka secret.

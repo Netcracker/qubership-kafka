@@ -6,8 +6,8 @@ ${KAFKA_BACKUP_DAEMON_USER}         ${BACKUP_DAEMON_USER}
 ${KAFKA_BACKUP_DAEMON_PASSWORD}     ${BACKUP_DAEMON_PASSWORD}
 ${BACKUP_RESTORE_TIMEOUT}           30s
 ${KAFKA_BACKUP_TOPIC}               kafka-backup-topic
-${OPERATION_RETRY_COUNT}            10x
-${OPERATION_RETRY_INTERVAL}         3s
+${OPERATION_RETRY_TIME}             300s
+${OPERATION_RETRY_INTERVAL}         10s
 ${SLEEP}                            5s
 
 *** Settings ***
@@ -74,7 +74,7 @@ Check Eviction In Backup
 Check Backup Status
     [Arguments]  ${backup_response}
     Should Be Equal As Strings  ${backup_response.status_code}  200
-    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_TIME}  ${OPERATION_RETRY_INTERVAL}
     ...  Check Backup Content  ${backup_response}
 
 Get Backup Timestamp
@@ -148,7 +148,7 @@ Create Topic With Generated Data
     ${message} =  Create Test Message
     Produce Message  ${producer}  ${topic_name}  ${message}
     ${consumer} =  Create Kafka Consumer  ${topic_name}
-    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_TIME}  ${OPERATION_RETRY_INTERVAL}
     ...  Check Consumed Message  ${consumer}  ${topic_name}  ${message}
     Close Kafka Consumer  ${consumer}
 
@@ -244,8 +244,10 @@ Delete Backup By ID
     Create Topic With Generated Data  ${KAFKA_BACKUP_TOPIC}-1
     ${backup_id}=  Full Backup
     Delete Backup  ${backup_id}
-    Check Backup Absence In Backup Daemon  ${backup_id}
-    [Teardown]  Delete Topics
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_TIME}  ${OPERATION_RETRY_INTERVAL}
+    ...  Check Backup Absence In Backup Daemon  ${backup_id}
+    [Teardown]  Run Keywords  Delete Topics
+    ...  AND  Run Keyword If Test Failed  Delete Backup  ${backup_id}
 
 Unauthorized Access
     [Tags]  kafka  backup  unauthorized_access

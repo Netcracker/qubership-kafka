@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk-alpine-3.23
+FROM eclipse-temurin:25-jdk-alpine-3.24
 
 USER 0:0
 
@@ -29,7 +29,7 @@ RUN set -x \
     && ln -sf /usr/bin/kcat /usr/bin/kafkacat
 
 # Download libraries and adapt grants
-ARG AKHQ_VERSION="0.27.1"
+ARG AKHQ_VERSION="0.28.0"
 RUN set -x \
     && wget -nv -O ${AKHQ_HOME}/akhq.jar \
         "https://github.com/tchiotludo/akhq/releases/download/${AKHQ_VERSION}/akhq-${AKHQ_VERSION}-all.jar" \
@@ -39,11 +39,7 @@ RUN set -x \
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
 
-# Upgrade tools from edge to avoid vulnerabilities
-RUN  apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq
-
-ARG KAFKACTL_VERSION="5.19.0"
+ARG KAFKACTL_VERSION="5.21.0"
 ARG TARGETARCH
 RUN set -x \
     && wget \
