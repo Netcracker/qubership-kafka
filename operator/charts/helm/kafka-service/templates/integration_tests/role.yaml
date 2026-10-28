@@ -32,4 +32,11 @@ rules:
       - update
       - watch
       - create
+  - apiGroups:
+      - {{ .Values.operator.apiGroup }}
+    resources:
+      - kafkas
+    verbs:
+      - get
+      - list
 {{- end }}

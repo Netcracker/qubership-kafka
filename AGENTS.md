@@ -101,6 +101,8 @@ directory provides a Docker Compose stack for local testing.
 ### Mandatory – every change must be tested
 
 - Any change in docker folders where Dockerfile are placed must be tested with Docker build.
+- Any code change must ve covered with unit tests.
+- Any fynctional feature of components that can be tested without redeploy must be covered with robot framework tests.
 - Before submitting any change to `backup-daemon` or `integration-tests` folders, run **at minimum** the `kafka_crud`, `kafka_consumer_producer` and `backup` suites.
 
 ```sh

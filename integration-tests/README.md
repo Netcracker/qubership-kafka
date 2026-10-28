@@ -11,11 +11,20 @@ For the full local setup (Docker Compose stack, build instructions, and test com
 | Suite | Tags | What it covers |
 | --- | --- | --- |
 | `kafka/crud/topic_tests.robot` | `kafka_crud` | Topic creation, partition change, deletion |
+| `kafka/native_config/native_config_tests.robot` | `kafka_crud`, `native_config` | Kafka CR `config` and `CONF_KAFKA_*` `environmentVariables` are applied to brokers (requires Kubernetes, skipped in the demo stack) |
 | `kafka/cp_tests/consumer_producer_tests.robot` | `kafka_consumer_producer` | Produce and consume a message end-to-end |
 | `kafka/backup/backup.robot` | `backup` | Full/granular backup, restore, eviction, unauthorized access |
 | `kafka/acl_backup/acl_backup.robot` | `backup` | ACL backup and restore |
 | `kafka/acl/acl_tests.robot` | — | ACL CRUD operations |
 | `kafka/ha/ha_tests.robot` | — | High-availability scenarios |
+
+# Library Unit Tests
+
+Unit tests for `robot/tests/shared/lib` live in `unit-tests/` and need `kafka-python` and `robotframework`:
+
+```bash
+python -m unittest discover -s unit-tests
+```
 
 # Mandatory Test Coverage
 

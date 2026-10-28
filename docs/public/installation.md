@@ -68,6 +68,14 @@ The following topics are covered in this chapter:
     * [DR Scheme](#dr-scheme-3)
   * [Aiven Kafka](#aiven-kafka)
   * [KRaft](#kraft)
+  * [Configure Kafka and Mirror Maker](#configure-kafka-and-mirror-maker)
+    * [Configure Kafka](#configure-kafka)
+      * [Native Kafka Properties](#native-kafka-properties)
+      * [Kafka Environment Variables](#kafka-environment-variables)
+    * [Configure Mirror Maker](#configure-mirror-maker)
+      * [Native Mirror Maker Properties](#native-mirror-maker-properties)
+      * [Mirror Maker Environment Variables](#mirror-maker-environment-variables)
+    * [What Not to Do](#what-not-to-do)
 * [Upgrade](#upgrade)
   * [Common](#common-1)
   * [Scale-In Cluster](#scale-in-cluster)
@@ -694,6 +702,8 @@ See detailed prerequisites an appropriate doc [AWS Prerequisites](/docs/public/m
 # Best Practices and Recommendations
 
 ## Kafka Configurations
+
+For the ways to set Kafka broker properties, see [Configure Kafka and Mirror Maker](#configure-kafka-and-mirror-maker).
 
 ### Automatic Topic Creation
 
@@ -1330,6 +1340,7 @@ By default, both controllers watch all Kubernetes namespaces.
 | kafka.tls.subjectAlternativeName.additionalDnsNames    | list    | no        | []                            | The list of additional DNS names to be added to the "Subject Alternative Name" field of SSL certificate. If access to Kafka for external clients is enabled, DNS names from `kafka.externalHostNames` parameter must be specified in here.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | kafka.tls.subjectAlternativeName.additionalIpAddresses | list    | no        | []                            | The list of additional IP addresses to be added to the "Subject Alternative Name" field of SSL certificate. If access to Kafka for external clients is enabled, IP addresses from `kafka.externalHostNames` parameter must be specified in here.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | kafka.environmentVariables                             | list    | no        | []                            | The list of additional environment variables for Kafka deployments in `key=value` format. The parameter value can be empty.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| kafka.config                                           | map     | no        | {}                            | Native Kafka broker configuration properties. Keys are the exact Apache Kafka property names (e.g. `num.io.threads`) and values are quoted strings. Each entry is applied to `server.properties`. When the same property is specified in both `kafka.config` and `kafka.environmentVariables`, the `environmentVariables` value takes effect. For more information, see [Configure Kafka](#configure-kafka).                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | kafka.storage.size                                     | string  | no        | 1Gi                           | The size of the persistent volume in Gi. Increasing this value is supported when the StorageClass has `allowVolumeExpansion: true`. Decreasing the size is not supported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | kafka.storage.volumes                                  | list    | no        | []                            | The list of persistent volume names that are used to bind with the persistent volume claims. The number of persistent volume names must be equal to the value of replicas` parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | kafka.storage.labels                                   | list    | no        | []                            | The list of labels that is used to bind suitable persistent volumes with the persistent volume claims. The number of labels must be equal to the value of replicas` parameter, one label per persistent volume in `key=value` format. You must specify this parameter only for the label selector volume binding.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -1544,6 +1555,7 @@ monitoring:
 | mirrorMaker.refreshTopicsIntervalSeconds | integer | no        | 5                        | The interval in seconds to refresh topics.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | mirrorMaker.refreshGroupsIntervalSeconds | integer | no        | 5                        | The interval in seconds to refresh groups.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | mirrorMaker.environmentVariables         | list    | no        | []                       | The list of additional environment variables for Kafka Mirror Maker deployments in `key=value` format. To specify common variable for all Kafka clusters, add list element in the format `CONF_<propertyName>=<propertyValue>`. To specify variable for specific Kafka cluster, add list element in the format `<clusterAlias>_CONF_<propertyName>=<propertyValue>`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| mirrorMaker.config                       | map     | no        | {}                       | Native MirrorMaker (Kafka Connect / MM2) configuration properties. Keys are the exact property names (e.g. `refresh.topics.interval.seconds`) and values are quoted strings. Each entry is applied to `mm2.properties` as a common (unscoped) property. When the same property is specified in both `mirrorMaker.config` and `mirrorMaker.environmentVariables`, the `environmentVariables` value takes effect. Scoped properties (per-cluster or per-flow) must still use `mirrorMaker.environmentVariables`. For more information, see [Configure Mirror Maker](#configure-mirror-maker).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | mirrorMaker.securityContext              | object  | no        | {}                       | The pod-level security attributes and common container settings. The parameter value can be empty and specified in `json` format. For example, you can add `{"fsGroup": 1000}`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | mirrorMaker.customLabels                 | object  | no        | {}                       | The custom labels for all Kafka Mirror Maker pods. The parameter is empty by default.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | mirrorMaker.transformation.transforms    | list    | no        | []                       | The list of transformations to make lightweight message-at-a-time modifications. For more detailed information, refer to [Transformations](https://kafka.apache.org/documentation/#connect_transforms). Each transformation has the following parameters:<br>* `name` - Alias for the transformation. This parameter is mandatory.<br>* `type` - Fully qualified class name for the transformation. This parameter is mandatory.<br>* `predicate` - Alias of predicate to be associated with the transformation.<br>* `negate` - Parameter allows to invert associated condition of associated predicate.<br>* `params` - List of configuration properties for the transformation. Parameter value can contain `${replication_prefix}` placeholder which can be replaced with the following:<br>- prefix in format `<sourceClusterName>.` (for example: `dc2.`) if `mirrorMaker.replicationPrefixEnabled` is set to `true` and `global.disasterRecovery.mirrorMakerReplication.enabled` is set to `false`.<br>- empty string if `mirrorMaker.replicationPrefixEnabled` is set to `false` or `global.disasterRecovery.mirrorMakerReplication.enabled` is set to `true`.<br>**Pay attention**, custom transformations are applied to all messages produced by Kafka Mirror Maker, including system ones such as heartbeats and checkpoints, so use predicates or transformations that allows to limit the topics to which the transformation is applied.<br>**Note**: These settings will only be updated in `<name>-mirror-maker-configuration` configmap if `operator.kmmConfiguratorEnabled` is set to `false`. |
@@ -1637,6 +1649,9 @@ You can use the following tags:
         * `restore_by_regex` tag runs `Granular Backup And Restore By Topic Regex` test.
     * `kafka_consumer_producer` tag runs `Test Producing And Consuming Data` test.
     * `kafka_crud` tag runs all tests for creating, reading, updating and removing Kafka data.
+    * `native_config` tag runs `Test Kafka CR Properties Are Applied To Brokers` test. It reads the Kafka custom resource
+      and verifies that properties from `kafka.config` and `CONF_KAFKA_*` entries of `kafka.environmentVariables`
+      are applied to all Kafka brokers. The test is skipped for external Kafka or Kafka not managed by operator.
     * `kafka_ha` tag runs all tests connected to HA scenarios:
         * `kafka_ha_without_zookeeper` tag runs `Test Producing And Consuming Data Without Zookeeper` test.
         * `kafka_ha_without_kafka_master` tag runs `Test Producing And Consuming Data Without Kafka Master` test.
@@ -1965,6 +1980,124 @@ In this mode you don't need to set ZooKeeper parameters. Currently, some feature
 
 Migration from ZooKeeper Kafka to KRaft is disabled by default, you can enable automatic migration with `kafka.kraft.migration` 
 or perform manual migration using this [guide](kraft-migration.md)
+
+## Configure Kafka and Mirror Maker
+
+Kafka broker configuration and Mirror Maker 2 configuration are delivered through deployment parameters: Kafka broker
+properties are values of the `kafka` Helm chart (`kafka.*`), Mirror Maker properties are values of the `kafka-service`
+Helm chart (`mirrorMaker.*`). Use this section when a change has to survive redeploys.
+
+Both components support two ways to set properties:
+
+* **Native properties** — `kafka.config` and `mirrorMaker.config`. This is the **recommended** way, available since
+  release `2.9.0`. Properties are specified under the same names as in the Apache Kafka documentation.
+* **Environment variables** — `kafka.environmentVariables` and `mirrorMaker.environmentVariables`. This way is still
+  fully supported. Use it for releases before `2.9.0` and for Mirror Maker properties of a specific cluster or
+  replication flow, which native properties do not cover.
+
+When the same property is set in both ways, the `environmentVariables` value is applied and the `config` value is ignored.
+
+### Configure Kafka
+
+#### Native Kafka Properties
+
+Kafka broker properties — thread pools, log retention, replication defaults, topic auto-creation and similar — are set
+through the `kafka.config` value. The value is a map: each key is the exact broker property name from
+[Apache Kafka Broker Configs](https://kafka.apache.org/documentation/#brokerconfigs), each value is a string.
+
+Example — increase I/O threads and keep logs for 7 days:
+
+```yaml
+kafka:
+  config:
+    num.io.threads: "16"
+    log.retention.hours: "168"
+```
+
+Keep in mind the following:
+
+* Quote every value. The custom resource field accepts only strings, so unquoted numbers and booleans are rejected
+  by Kubernetes.
+* Write property names exactly as in the Apache Kafka documentation: lowercase and dot-separated.
+
+After editing the deployment parameters, redeploy the `kafka` chart through your delivery mechanism, for example,
+`helm upgrade`. The operator passes the properties to the Kafka pods and restarts them, and every broker writes the
+properties to its `server.properties` on startup.
+
+#### Kafka Environment Variables
+
+Each list item has the format `CONF_KAFKA_<PROPERTY_NAME>=<value>`, where `<PROPERTY_NAME>` is the property name in
+upper case with dots replaced by underscores. For example, `num.io.threads` becomes `CONF_KAFKA_NUM_IO_THREADS`.
+
+```yaml
+kafka:
+  environmentVariables:
+    - CONF_KAFKA_NUM_IO_THREADS=16
+    - CONF_KAFKA_LOG_RETENTION_HOURS=168
+```
+
+The default values of the `kafka` chart already contain `CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false` in
+`kafka.environmentVariables`. Helm replaces lists instead of merging them, so when you override
+`kafka.environmentVariables`, repeat the entries you want to keep.
+
+An `environmentVariables` entry overrides the same property from `kafka.config`:
+
+```yaml
+kafka:
+  config:
+    num.io.threads: "8"             # ignored, overridden by environmentVariables
+    log.retention.hours: "168"      # applied
+  environmentVariables:
+    - CONF_KAFKA_NUM_IO_THREADS=32  # applied
+```
+
+### Configure Mirror Maker
+
+#### Native Mirror Maker Properties
+
+Common Mirror Maker 2 properties — the ones that apply to all clusters and replication flows, such as topic refresh
+interval, offset synchronization and heartbeats — are set through the `mirrorMaker.config` value of the `kafka-service`
+chart. The value has the same shape as `kafka.config`: each key is the exact property name from
+[Apache Kafka Mirror Maker Configs](https://kafka.apache.org/documentation/#mirrormakerconfigs), each value is a
+quoted string.
+
+Example — refresh the list of replicated topics every 30 seconds and synchronize consumer group offsets:
+
+```yaml
+mirrorMaker:
+  config:
+    refresh.topics.interval.seconds: "30"
+    sync.group.offsets.enabled: "true"
+```
+
+After editing the deployment parameters, redeploy the `kafka-service` chart through your delivery mechanism, for
+example, `helm upgrade`. The operator passes the properties to the Mirror Maker pods and restarts them, and the properties
+are written to `mm2.properties` as common properties.
+
+#### Mirror Maker Environment Variables
+
+Mirror Maker environment variables have three scopes:
+
+* `CONF_<PROPERTY_NAME>=<value>` — common property for all clusters, for example, `CONF_EMIT_HEARTBEATS_INTERVAL_SECONDS=5`.
+* `<CLUSTER_ALIAS>_CONF_<PROPERTY_NAME>=<value>` — property of a specific Kafka cluster, for example,
+  `FIRST_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets`.
+* `<SOURCE_ALIAS>_<TARGET_ALIAS>_CONF_<PROPERTY_NAME>=<value>` — property of a specific replication flow, for example,
+  `FIRST_SECOND_CONF_TOPICS=test-topic,test-topic-2`.
+
+Cluster aliases are the `name` values from `mirrorMaker.clusters` in upper case. Property names are converted the same
+way as for Kafka.
+
+Per-cluster and per-flow properties can be set only through environment variables, so combine both ways when you need
+them:
+
+```yaml
+mirrorMaker:
+  config:
+    refresh.topics.interval.seconds: "30"
+  environmentVariables:
+    - FIRST_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets
+    - FIRST_SECOND_CONF_TOPICS=test-topic,test-topic-2
+```
 
 # Upgrade
 
@@ -2432,15 +2565,7 @@ the corresponding configuration map or secret.
 ### Redeploy with New Configuration
 
 To change Kafka Mirror Maker configuration, you can redeploy Kafka Mirror Maker with necessary parameters.
-It is important to remember the following points:
-
-* To specify common parameters for all Kafka clusters, add to `environmentVariables` parameter the
-  property in the format `CONF_<propertyName>=<propertyValue>`. For example, `CONF_EMIT_HEARTBEATS_INTERVAL_SECONDS=5`.
-* To specify parameters for specific Kafka cluster, add to `environmentVariables` parameter the property in the format
-  `<clusterAlias>_CONF_<propertyName>=<propertyValue>`. For example, `FIRST_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets`.
-* To specify parameters for specific connector from one Kafka cluster to another, add to `environmentVariables` parameter the property in
-  the format `<sourceClusterAlias>_<targetClusterAlias>_CONF_<propertyName>=<propertyValue>`.
-  For example, `FIRST_SECOND_CONF_TOPICS=test-topic,test-topic-2`.
+For the ways to set common, per-cluster and per-flow properties, see [Configure Mirror Maker](#configure-mirror-maker).
 
 ## Multi-datacenter Deployment with Cross-datacenter Replication (XDCR)
 
