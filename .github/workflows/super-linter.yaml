@@ -83,6 +83,7 @@ jobs:
         VALIDATE_ALL_CODEBASE: ${{ inputs.full_scan || false }}
         VALIDATE_KUBERNETES_KUBECONFORM: false
         VALIDATE_PYTHON_RUFF_FORMAT: false
+        FILTER_REGEX_EXCLUDE: '(^|/)(openspec/|\.claude/|\.cursor/)'
         # To report GitHub Actions status checks
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DEFAULT_BRANCH: ${{ github.event.pull_request.base.ref || github.event.push.ref }}

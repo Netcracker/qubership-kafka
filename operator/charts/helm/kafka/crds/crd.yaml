@@ -455,6 +455,10 @@ spec:
                   type: boolean
                 enableAuthorization:
                   type: boolean
+                config:
+                  additionalProperties:
+                    type: string
+                  type: object
                 environmentVariables:
                   items:
                     type: string
