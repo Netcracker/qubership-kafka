@@ -513,12 +513,12 @@
         "kraft": { "$ref": "#/$defs/kraft" },
         "kafka": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "description": "Legacy nested TLS overrides used by the kafka chart.",
           "properties": {
             "tls": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "cipherSuites": {
                   "type": "array",
@@ -530,7 +530,7 @@
         },
         "tls": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -558,7 +558,7 @@
             },
             "generateCerts": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -587,7 +587,7 @@
         },
         "externalKafka": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -633,7 +633,7 @@
         },
         "velero": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "preHookBackupEnabled": {
               "type": "boolean",
@@ -649,7 +649,7 @@
         },
         "disasterRecovery": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "siteManagerApiGroup": {
               "type": "string",
@@ -666,7 +666,7 @@
             },
             "tls": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -694,7 +694,7 @@
             },
             "httpAuth": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -752,7 +752,7 @@
             },
             "serviceExport": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -763,7 +763,7 @@
             },
             "mirrorMakerReplication": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -774,7 +774,7 @@
             },
             "topicsBackup": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -792,7 +792,7 @@
           "properties": {
             "kafka": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "disableSecurity": {
                   "type": "boolean",
@@ -831,7 +831,7 @@
             },
             "monitoring": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "prometheusUsername": {
                   "type": "string",
@@ -857,7 +857,7 @@
             },
             "akhq": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "defaultUsername": {
                   "type": "string",
@@ -883,7 +883,7 @@
             },
             "backupDaemon": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "username": {
                   "type": "string",
@@ -897,7 +897,7 @@
                 },
                 "s3": {
                   "type": "object",
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "keyId": {
                       "type": "string",
@@ -915,7 +915,7 @@
             },
             "cruiseControl": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "adminUsername": {
                   "type": "string",
@@ -941,11 +941,11 @@
             },
             "integrationTests": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "properties": {
                 "zabbix": {
                   "type": "object",
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "username": { "type": "string", "default": "" },
                     "password": { "type": "string", "default": "" }
@@ -953,7 +953,7 @@
                 },
                 "idp": {
                   "type": "object",
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "username": { "type": "string", "default": "" },
                     "password": { "type": "string", "default": "" },
@@ -962,7 +962,7 @@
                 },
                 "prometheus": {
                   "type": "object",
-                  "additionalProperties": false,
+                  "additionalProperties": true,
                   "properties": {
                     "user": { "type": "string", "default": "" },
                     "password": { "type": "string", "default": "" }
