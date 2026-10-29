@@ -45,7 +45,7 @@ global:
 
   disasterRecovery:
     siteManagerApiGroup: "netcracker.com"
-    image: ghcr.io/netcracker/qubership-disaster-recovery-daemon:main
+    image: ghcr.io/netcracker/qubership-disaster-recovery-daemon:main@sha256:fdddd5b119a86a9f0dc21b213051b8d5f88901f785dbc02babe6a25f14c7c48b
     tls:
       enabled: true
       certificates:
@@ -129,7 +129,7 @@ pvc:
     # argocd.argoproj.io/sync-options: Prune=false
 
 operator:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-service-operator:main@sha256:8709ed9a30df92996119ac049c634adb2a14bc9bcd2d1579583888ed8ce5c10a
   replicas: 1
   apiGroup: "netcracker.com"
   secondaryApiGroup: ""
@@ -184,7 +184,7 @@ operator:
   securityContext: {}
 
 crdInit:
-  dockerImage: ghcr.io/netcracker/qubership-kafka-crd-init:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-crd-init:main@sha256:849cf68b960ccb4db3298224186ee28a76e738d8dc15a10d24ee6b26c5cbd80e
   lifetimeAfterCompletion: 120
   sleepAfterCompletion: 10
 
@@ -197,7 +197,7 @@ kafka:
 
 monitoring:
   install: true
-  dockerImage: ghcr.io/netcracker/qubership-kafka-monitoring:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-monitoring:main@sha256:fb707b4f61b6e474af5ff3c946c8240d559786674e0276d8c9c54f08cb0acbc0
   serviceMonitorEnabled: true
 #  affinity: {
 #    "podAffinity": {
@@ -282,7 +282,7 @@ monitoring:
     logEnableSarama: true
     verbosity: 1
     service:
-      image: "ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main"
+      image: "ghcr.io/netcracker/qubership-docker-kafka-lag-exporter:main@sha256:8b4d5c104be5acfa1810d9b58ad59e1ad50d1bf6343649e93b965ca7c675dd3c"
       port: 8000
     pollIntervalSeconds: 30
     lookupTableSize: 60
@@ -310,7 +310,7 @@ monitoring:
 
 akhq:
   install: true
-  dockerImage: ghcr.io/netcracker/qubership-docker-akhq:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-akhq:main@sha256:52f08d69ad610f75878ffd9dca4434f3c53083f3d22f85e02128ef20e09b56b8
 #  affinity: {
 #    "podAffinity": {
 #      "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -396,7 +396,7 @@ akhq:
 
 mirrorMaker:
   install: false
-  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-mirror-maker:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-kafka-mirror-maker:main@sha256:8ffd629014ce14d011a9a2b304b2b3e288e2cf390f33e4537bdcd37fd9c5f3ba
 #  affinity: {
 #    "podAffinity": {
 #      "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -478,7 +478,7 @@ mirrorMaker:
 
 mirrorMakerMonitoring:
   install: false
-  dockerImage: ghcr.io/netcracker/qubership-kafka-mirror-maker-monitoring:main
+  dockerImage: ghcr.io/netcracker/qubership-kafka-mirror-maker-monitoring:main@sha256:5a1fdf132357012d44ba44bf82da2b2c064a5373336081cd1e6a6b78eb468903
 #  affinity: {
 #    "podAffinity": {
 #      "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -529,7 +529,7 @@ mirrorMakerMonitoring:
 # integration tests are not performed by default
 integrationTests:
   install: false
-  image: "ghcr.io/netcracker/qubership-kafka-integration-tests:main"
+  image: "ghcr.io/netcracker/qubership-kafka-integration-tests:main@sha256:fff37194df6ce80d9ea6697a931f0048c4296c2cba8af8a03d7f2c0515b62e7b"
   service:
     name: kafka-integration-tests-runner
   waitForResult: true
@@ -597,7 +597,7 @@ integrationTests:
 backupDaemon:
   # Enable Backup Daemon installation.
   install: false
-  dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main"
+  dockerImage: "ghcr.io/netcracker/qubership-kafka-backup-daemon:main@sha256:a6afc6a9bf93f8041dfd0797f9727ceb97ac15418a4c9f2eae5c7039002f58b7"
 
   cloudBackuper:
     useBackupDaemon: true
@@ -721,7 +721,7 @@ backupDaemon:
 
 cruiseControl:
   install: false
-  dockerImage: ghcr.io/netcracker/qubership-docker-cruise-control:main
+  dockerImage: ghcr.io/netcracker/qubership-docker-cruise-control:main@sha256:3b53dde8add12faabb8074bd6f7c0ee997ec3cbdc1f5ce65906a6768c42baa51
   config:
     sample.store.topic.replication.factor: "{{ template \"cruise-control.replicationFactor\" . }}"
     self.healing.enabled: false
@@ -822,7 +822,7 @@ groupMigration:
     limits:
       memory: 256Mi
       cpu: 100m
-  image: "ghcr.io/netcracker/qubership-docker-kubectl:main"
+  image: "ghcr.io/netcracker/qubership-docker-kubectl:main@sha256:571eda404de2a3b302e86a57fd1efbf08f94b52b885488bdf0d42ab29bf191a0"
   imagePullPolicy: Always
   runAsNonRoot: true
 
