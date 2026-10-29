@@ -1,0 +1,13 @@
+name: troubleshoot-kafka
+version: 1.0.0
+description: Diagnose Kafka broker, disk, memory, lag, ZooKeeper, and KRaft migration failures.
+author: Netcracker
+targets:
+  - claude
+  - copilot
+  - cursor
+dependencies:
+  apm: []
+  mcp: []
+includes: auto
+scripts: {}

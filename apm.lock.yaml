@@ -1,0 +1,111 @@
+lockfile_version: '1'
+apm_version: 0.35.0
+dependencies:
+- repo_url: _local/troubleshoot-kafka
+  name: troubleshoot-kafka
+  version: 1.0.0
+  package_type: apm_package
+  deployed_files:
+  - .agents/skills/troubleshoot-kafka
+  - .agents/skills/troubleshoot-kafka/SKILL.md
+  - .agents/skills/troubleshoot-kafka/references/troubleshooting.md
+  - .claude/rules/troubleshoot-kafka.md
+  - .claude/skills/troubleshoot-kafka
+  - .claude/skills/troubleshoot-kafka/SKILL.md
+  - .claude/skills/troubleshoot-kafka/references/troubleshooting.md
+  - .cursor/rules/troubleshoot-kafka.mdc
+  - .github/instructions/troubleshoot-kafka.instructions.md
+  deployed_file_hashes:
+    .agents/skills/troubleshoot-kafka/SKILL.md: sha256:ba1fb021ed9bfc721ea572efa2a765ecb4e7e8c1c4c5bb489ce2e9ca231bf54f
+    .agents/skills/troubleshoot-kafka/references/troubleshooting.md: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+    .claude/rules/troubleshoot-kafka.md: sha256:2fdc3620ca0501036868203b3b522d5dd7e2398554165d3fcb2ba155cadc68b6
+    .claude/skills/troubleshoot-kafka/SKILL.md: sha256:ba1fb021ed9bfc721ea572efa2a765ecb4e7e8c1c4c5bb489ce2e9ca231bf54f
+    .claude/skills/troubleshoot-kafka/references/troubleshooting.md: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+    .cursor/rules/troubleshoot-kafka.mdc: sha256:6f945ab6e0325551fbb0a42c71069e9b7dd2ed7114098e0b7aaeb194047628d8
+    .github/instructions/troubleshoot-kafka.instructions.md: sha256:7a505375323252627d4013ef2e807d5041edff8f25b9c5c5e0957e8793e771c2
+  source: local
+  local_path: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:d11c1f396c931fef452915afb29e8cd7c899cb15ab538493ccdc06a5a3dffc91
+  is_dev: true
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/rules/troubleshoot-kafka.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:2fdc3620ca0501036868203b3b522d5dd7e2398554165d3fcb2ba155cadc68b6
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-kafka
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-kafka/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:ba1fb021ed9bfc721ea572efa2a765ecb4e7e8c1c4c5bb489ce2e9ca231bf54f
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-kafka/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-kafka
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: null
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-kafka/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:ba1fb021ed9bfc721ea572efa2a765ecb4e7e8c1c4c5bb489ce2e9ca231bf54f
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-kafka/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+- kind: project-relative
+  target: copilot
+  value: .github/instructions/troubleshoot-kafka.instructions.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:7a505375323252627d4013ef2e807d5041edff8f25b9c5c5e0957e8793e771c2
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/troubleshoot-kafka.mdc
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-kafka/
+  active_owner: ./agent-packages/troubleshoot-kafka/
+  content_hash: sha256:6f945ab6e0325551fbb0a42c71069e9b7dd2ed7114098e0b7aaeb194047628d8
