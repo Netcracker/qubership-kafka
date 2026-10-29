@@ -1,0 +1,8 @@
+# OpenSpec planning artifacts and generated agent workflows
+openspec/
+.cursor/skills/
+.cursor/commands/
+.claude/skills/
+.claude/commands/
+.agents/
+agent-packages/
