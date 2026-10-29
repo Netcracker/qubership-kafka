@@ -17,15 +17,15 @@ dependencies:
   - .github/instructions/troubleshoot-kafka.instructions.md
   deployed_file_hashes:
     .agents/skills/troubleshoot-kafka/SKILL.md: sha256:ba1fb021ed9bfc721ea572efa2a765ecb4e7e8c1c4c5bb489ce2e9ca231bf54f
-    .agents/skills/troubleshoot-kafka/references/troubleshooting.md: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+    .agents/skills/troubleshoot-kafka/references/troubleshooting.md: sha256:2928f03104317febfefe57d9cdc8ca2be3d5db9daf642f5fc2f6d8984d3408e5
     .claude/rules/troubleshoot-kafka.md: sha256:2fdc3620ca0501036868203b3b522d5dd7e2398554165d3fcb2ba155cadc68b6
     .claude/skills/troubleshoot-kafka/SKILL.md: sha256:ba1fb021ed9bfc721ea572efa2a765ecb4e7e8c1c4c5bb489ce2e9ca231bf54f
-    .claude/skills/troubleshoot-kafka/references/troubleshooting.md: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+    .claude/skills/troubleshoot-kafka/references/troubleshooting.md: sha256:2928f03104317febfefe57d9cdc8ca2be3d5db9daf642f5fc2f6d8984d3408e5
     .cursor/rules/troubleshoot-kafka.mdc: sha256:6f945ab6e0325551fbb0a42c71069e9b7dd2ed7114098e0b7aaeb194047628d8
     .github/instructions/troubleshoot-kafka.instructions.md: sha256:7a505375323252627d4013ef2e807d5041edff8f25b9c5c5e0957e8793e771c2
   source: local
   local_path: ./agent-packages/troubleshoot-kafka/
-  content_hash: sha256:d11c1f396c931fef452915afb29e8cd7c899cb15ab538493ccdc06a5a3dffc91
+  content_hash: sha256:45c14b54f22ef93e7d25c9915798b37e7ffbe36a954a5de26a884891b4e50f92
   is_dev: true
 deployments:
 - kind: project-relative
@@ -63,7 +63,7 @@ deployments:
   owners:
   - ./agent-packages/troubleshoot-kafka/
   active_owner: ./agent-packages/troubleshoot-kafka/
-  content_hash: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+  content_hash: sha256:2928f03104317febfefe57d9cdc8ca2be3d5db9daf642f5fc2f6d8984d3408e5
 - kind: project-relative
   target: copilot
   value: .agents/skills/troubleshoot-kafka
@@ -90,7 +90,7 @@ deployments:
   owners:
   - ./agent-packages/troubleshoot-kafka/
   active_owner: ./agent-packages/troubleshoot-kafka/
-  content_hash: sha256:bbe83dcc08377cc6ad53ac7f67e6eeee6d1dd08423a25e2adf9bfb541fd29fee
+  content_hash: sha256:2928f03104317febfefe57d9cdc8ca2be3d5db9daf642f5fc2f6d8984d3408e5
 - kind: project-relative
   target: copilot
   value: .github/instructions/troubleshoot-kafka.instructions.md

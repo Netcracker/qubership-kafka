@@ -132,7 +132,7 @@ Not applicable
 If the disk approaches 100% utilization, you must adjust the number of days that data is being
 retained. An optimal value of data to retain should be 85% or less of the disk capacity.
 
-For more information, see [Kafka Disk Filled on All Nodes](scenarios/kafka_disk_filled_on_all_nodes.md).
+For more information, see [Kafka Disk Filled on All Nodes](#disk-filled-procedure).
 
 ### Alerts
 
@@ -175,7 +175,7 @@ Once the node is fixed, it will rejoin ensemble as a follower node.
 
 ### Alerts
 
-* [KafkaIsDegradedAlert](./alerts.md#kafkaisdegradedalert)
+* [KafkaIsDegradedAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkaisdegradedalert)
 
 ### Stack trace
 
@@ -201,7 +201,7 @@ A `Down` status on monitoring indicates that all the Kafka brokers have failed.
 
 ### Alerts
 
-* [KafkaIsDownAlert](./alerts.md#kafkaisdownalert)
+* [KafkaIsDownAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkaisdownalert)
 
 ### Stack trace
 
@@ -226,7 +226,7 @@ in `Down` status. It leads failed status for "right" Kafka mirror maker node.
 
 ### Alerts
 
-* [KafkaMirrorMakerIsDegradedAlarm](./alerts.md#kafkamirrormakerisdegradedalarm)
+* [KafkaMirrorMakerIsDegradedAlarm](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkamirrormakerisdegradedalarm)
 
 ### Stack trace
 
@@ -251,7 +251,7 @@ A possible reason - left and right part of Disaster Recovery schema have failed 
 
 ### Alerts
 
-* [KafkaMirrorMakerIsDownAlarm](./alerts.md#kafkamirrormakerisdownalarm)
+* [KafkaMirrorMakerIsDownAlarm](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkamirrormakerisdownalarm)
 
 ### Stack trace
 
@@ -274,7 +274,7 @@ reaches the resource limit. You may need to increase CPU resource requests and l
 
 ### Alerts
 
-* [KafkaCPUUsageAlert](./alerts.md#kafkacpuusagealert)
+* [KafkaCPUUsageAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkacpuusagealert)
 
 ### Stack trace
 
@@ -295,13 +295,13 @@ Not applicable
 Kafka request processing may be impacted, including up to potential node failure, when memory consumption
 reaches the resource limit. You may need to increase resource requests and limits or scale out the cluster.
 
-For more information, see [Kafka Memory Limit](scenarios/kafka_memory_limit.md).
+For more information, see [Kafka Memory Limit](#memory-limit-procedure).
 
 ### Alerts
 
-* [KafkaMemoryUsageAlert](./alerts.md#kafkamemoryusagealert)
-* [KafkaHeapMemoryUsageAlert](./alerts.md#kafkaheapmemoryusagealert)
-* [KafkaGCCountAlert](./alerts.md#kafkagccountalert)
+* [KafkaMemoryUsageAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkamemoryusagealert)
+* [KafkaHeapMemoryUsageAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkaheapmemoryusagealert)
+* [KafkaGCCountAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkagccountalert)
 
 ### Stack trace
 
@@ -342,9 +342,9 @@ The Kafka data can be lost because its persistence is based on retention.
 
 ### Alerts
 
-* [KafkaLagAlert](./alerts.md#kafkalagalert)
-* [KafkaEstimatedLagSecondsAlert](./alerts.md#kafkaestimatedlagsecondsalert)
-* [Custom Consumer Lag Alerts](./alerts.md#custom-consumer-lag-alerts)
+* [KafkaLagAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkalagalert)
+* [KafkaEstimatedLagSecondsAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkaestimatedlagsecondsalert)
+* [Custom Consumer Lag Alerts](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#custom-consumer-lag-alerts)
 
 ### Stack trace
 
@@ -355,7 +355,7 @@ Not applicable
 There are several options for resolving the issue:
 
 * Increase the number of topic partitions and the number of consumers.
-* Increase resource requests and limits. Recommend to check the [performance guide](./performance.md).
+* Increase resource requests and limits. Recommend to check the [performance guide](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/performance.md).
 
 ### Recommendations
 
@@ -542,7 +542,7 @@ kraft migration controller deployment "kafka-kraft-controller" was not found. Se
    * ZooKeeper connectivity and credentials are valid while migration is still in progress.
 5. After the controller becomes ready, restart `kafka-operator` to rerun reconcile, or rerun the upgrade job if the migration is executed by an upgrade procedure.
 
-For manual validation steps and expected controller configuration, refer to [Kraft migration guide](./kraft-migration.md#creating-kraft-controller).
+For manual validation steps and expected controller configuration, refer to [Kraft migration guide](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kraft-migration.md#creating-kraft-controller).
 
 ### Recommendations
 
@@ -762,7 +762,7 @@ Usage of shared storage between ZooKeeper and Kafka can also lead to performance
 
 Thus, it is not recommended to use NFS as main storage for Kafka brokers.
 
-For more information about features of working Kafka with NFS, refer to [Kafka on NFS](kafka-on-nfs.md).
+For more information about features of working Kafka with NFS, refer to [Kafka on NFS](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kafka-on-nfs.md).
 
 **Note**: There is a general recommendation against running Apache Kafka on NFS storage.
 
@@ -821,7 +821,7 @@ Usage of shared storage between ZooKeeper and Kafka can also lead to performance
 
 Thus, it is not recommended to use NFS as main storage for Kafka brokers.
 
-For more information about features of working Kafka with NFS, refer to [Kafka on NFS](kafka-on-nfs.md).
+For more information about features of working Kafka with NFS, refer to [Kafka on NFS](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/kafka-on-nfs.md).
 
 **Note**: There is a general recommendation against running Apache Kafka on NFS storage.
 
@@ -974,7 +974,7 @@ To check the replication factor, you can use the command:
 
 ### Alerts
 
-* [KafkaPartitionCountAlert](./alerts.md#kafkapartitioncountalert)
+* [KafkaPartitionCountAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkapartitioncountalert)
 
 ### Stack trace
 
@@ -1033,7 +1033,7 @@ Not applicable
 
 There can be many causes why one of the node can be overloaded, but most often it is due to incorrect partition leaders distribution.
 
-You can find partitions and leaders distribution on Kafka Monitoring dashboard  here, ([Monitoring](./monitoring.md)).
+You can find partitions and leaders distribution on Kafka Monitoring dashboard  here, ([Monitoring](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/monitoring.md)).
 
 You can also describe topics with leaders using the command:
 
@@ -1054,7 +1054,7 @@ Topic: test_topic    PartitionCount: 10      ReplicationFactor: 3    Configs: mi
 
 ### Alerts
 
-* [KafkaCPUUsageAlert](./alerts.md#kafkacpuusagealert)
+* [KafkaCPUUsageAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkacpuusagealert)
 
 ### Stack trace
 
@@ -1402,7 +1402,7 @@ The following error in Kafka log means that ZooKeeper already has ephemeral ZNod
 There can be 2 reason for this issue:
 
 1. You try to install Kafka cluster with ZooKeeper which is already used for another Kafka cluster.
-   To resolve this issue refer to [How to deploy several Kafka clusters with one ZooKeeper](/docs/public/installation.md#how-to-deploy-several-kafka-clusters-with-one-zookeeper).
+   To resolve this issue refer to [How to deploy several Kafka clusters with one ZooKeeper](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/installation.md#how-to-deploy-several-kafka-clusters-with-one-zookeeper).
 2. There are Kafka pods in terminating status which block ZNode.
    To resolve this issue you can force delete terminating pods. For example:
 
@@ -1439,11 +1439,11 @@ the producer latency of consumer lag. One of additional symptoms of this issue i
 The most usual cause of such behaviour is overloaded  Kafka with big topic partitions number.
 
 There are strong restrictions for every Kafka cluster type and allowed number of partitions,
-you can find then in [HWE](/docs/public/installation.md#hwe).
+you can find then in [HWE](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/installation.md#hwe).
 
 ### Alerts
 
-* [KafkaPartitionCountAlert](./alerts.md#kafkapartitioncountalert)
+* [KafkaPartitionCountAlert](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/alerts.md#kafkapartitioncountalert)
 
 ### Stack trace
 
@@ -1462,7 +1462,7 @@ the following approaches:
 
 1. Remove unused topics (Kafka spends resource even on empty and not used topics).
    Pay attention, MaaS created topics should be removed only via MaaS.
-2. Scale In Kafka cluster with new brokers using [Scaling Guide](/docs/public/scaling.md).
+2. Scale In Kafka cluster with new brokers using [Scaling Guide](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/scaling.md).
 3. Spit one Kafka cluster into several for each project environment. This is most recommended option,
    because it covers the real production scenario.
 
@@ -1737,7 +1737,7 @@ are too low. It can potentially lead to the increase of response times or crashe
 
 ### Grafana Dashboard
 
-![Heap Usage](/docs/public/images/heap-usage.png)
+![Heap Usage](https://github.com/Netcracker/qubership-kafka/blob/main/docs/public/images/heap-usage.png)
 
 To retrieve the metric of memory usage the following query can be used:
 
