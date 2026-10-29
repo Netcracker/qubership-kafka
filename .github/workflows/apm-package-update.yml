@@ -1,0 +1,36 @@
+name: APM Packages Auto-Update
+run-name: "APM update #${{ github.run_number }} — triggered by ${{ github.actor }} (${{ github.event_name }})"
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Run APM update in dry-run mode and skip pull request creation"
+        type: boolean
+        default: false
+      auto-merge:
+        description: "Automatically enable auto-merge for the created pull request"
+        type: boolean
+        default: true
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ secrets.APM_UPDATE_TOKEN }}
+          persist-credentials: false
+
+      - name: Update APM packages
+        uses: netcracker/qubership-workflow-hub/actions/apm-packages-update@e6afd0a6bcc4f24d73e3e4d5fb9a31ada009e3f1 # v2.8.2
+        with:
+          dry-run: ${{ inputs.dry-run || 'false' }}
+          auto-merge: ${{ inputs.auto-merge || 'true' }}
+          token: ${{ secrets.APM_UPDATE_TOKEN }} # PAT with `repo` scope

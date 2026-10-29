@@ -30,3 +30,6 @@ testbin/*
 
 # Maven build output
 target/
+
+# APM dependencies
+apm_modules/
