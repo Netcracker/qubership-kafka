@@ -1158,3 +1158,15 @@ Find a kubectl image in various places.
 {{- define "kubectl.image" -}}
     {{- printf "%s" .Values.groupMigration.image -}}
 {{- end -}}
+
+{{/*
+Return type for gateway
+*/}}
+{{- define "gateway.type" -}}
+{{- if and .Values.GATEWAY_SYSTEM_TYPE .Values.global.cloudIntegrationEnabled }}
+{{- .Values.GATEWAY_SYSTEM_TYPE }}
+{{- else }}
+{{- "legacy-ingress" }}
+{{- end -}}
+{{- end -}}
+
