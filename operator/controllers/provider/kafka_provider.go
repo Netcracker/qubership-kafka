@@ -537,7 +537,7 @@ func (krp KafkaResourceProvider) NewKafkaBrokerDeploymentForCR(brokerId int, rac
 				Spec: corev1.PodSpec{
 					Volumes:                       volumes,
 					InitContainers:                krp.getInitContainers(),
-					Containers:                    krp.createDeploymentContainers(buildEnvs(envVars, krp.spec.EnvironmentVariables, krp.logger), volumeMounts, kraftEnabled, false),
+					Containers:                    krp.createDeploymentContainers(buildEnvs(append(configMapToEnvVars(krp.spec.Config, "CONF_KAFKA_", krp.spec.EnvironmentVariables, krp.logger), envVars...), krp.spec.EnvironmentVariables, krp.logger), volumeMounts, kraftEnabled, false),
 					SecurityContext:               &krp.cr.Spec.SecurityContext,
 					ServiceAccountName:            krp.GetServiceAccountName(),
 					TerminationGracePeriodSeconds: &terminationGracePeriod,
@@ -729,7 +729,7 @@ func (krp KafkaResourceProvider) NewKafkaKraftControllerDeploymentForCR(zkCluste
 				Spec: corev1.PodSpec{
 					Volumes:                       volumes,
 					InitContainers:                krp.getInitContainers(),
-					Containers:                    krp.createDeploymentContainers(buildEnvs(envVars, krp.spec.EnvironmentVariables, krp.logger), volumeMounts, false, true),
+					Containers:                    krp.createDeploymentContainers(buildEnvs(append(configMapToEnvVars(krp.spec.Config, "CONF_KAFKA_", krp.spec.EnvironmentVariables, krp.logger), envVars...), krp.spec.EnvironmentVariables, krp.logger), volumeMounts, false, true),
 					SecurityContext:               &krp.cr.Spec.SecurityContext,
 					ServiceAccountName:            krp.GetServiceAccountName(),
 					TerminationGracePeriodSeconds: &terminationGracePeriod,

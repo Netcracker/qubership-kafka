@@ -470,6 +470,11 @@ mirrorMaker:
   transformation: {}
   # Do not change this value without a cause. This is internal ability to disable `dedicated.mode.enable.internal.rest` for KMM.
   internalRestEnabled: null
+  # config: {}
+  # # Example: native MirrorMaker property names (keys are passed verbatim to mm2.properties):
+  # #   config:
+  # #     refresh.topics.interval.seconds: "30"
+  # #     sync.group.offsets.enabled: "true"
 
 mirrorMakerMonitoring:
   install: false

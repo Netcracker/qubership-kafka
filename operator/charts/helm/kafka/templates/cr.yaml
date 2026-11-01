@@ -148,6 +148,10 @@ spec:
     - {{ . }}
   {{- end }}
 {{- end }}
+{{- if .Values.kafka.config }}
+  config:
+    {{- toYaml .Values.kafka.config | nindent 4 }}
+{{- end }}
 {{- if .Values.kafka.oauth }}
   oauth:
     clockSkew: {{ .Values.kafka.oauth.clockSkew }}

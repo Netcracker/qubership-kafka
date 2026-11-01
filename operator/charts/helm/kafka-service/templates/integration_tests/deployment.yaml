@@ -83,6 +83,10 @@ spec:
               {{- end }}
             - name: KAFKA_HOST
               value: {{ include "integrationTests.kafkaHost" . }}
+            - name: KAFKA_API_GROUP
+              value: {{ .Values.operator.apiGroup | quote }}
+            - name: KAFKA_CR_NAME
+              value: {{ include "kafka.name" . | quote }}
             - name: KAFKA_PORT
               value: {{ .Values.integrationTests.kafkaPort | quote }}
             - name: KAFKA_ENABLE_SSL

@@ -78,6 +78,39 @@ func getConfigMapEnvVarSource(configMapName string, key string) *corev1.EnvVarSo
 	}
 }
 
+// configMapToEnvVars converts a native-name config map to env vars with the given prefix.
+// Each key is uppercased and dots replaced with underscores, then prefixed with envPrefix.
+// Entries whose encoded name already appears in existingEnvVars are skipped so that
+// environmentVariables always takes precedence over config.
+func configMapToEnvVars(config map[string]string, envPrefix string, existingEnvVars []string, logger logr.Logger) []corev1.EnvVar {
+	if len(config) == 0 {
+		return nil
+	}
+	declared := make(map[string]struct{}, len(existingEnvVars))
+	for _, ev := range existingEnvVars {
+		parts := strings.SplitN(ev, "=", 2)
+		if len(parts) == 2 {
+			if name := strings.TrimSpace(parts[0]); len(name) > 0 {
+				declared[name] = struct{}{}
+			}
+		}
+	}
+	var result []corev1.EnvVar
+	for key, value := range config {
+		if len(key) == 0 {
+			logger.Info("config entry with empty key is skipped")
+			continue
+		}
+		encoded := envPrefix + strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
+		if _, exists := declared[encoded]; exists {
+			logger.Info(fmt.Sprintf("config key %q conflicts with environmentVariables entry %s; environmentVariables value is used", key, encoded))
+			continue
+		}
+		result = append(result, corev1.EnvVar{Name: encoded, Value: value})
+	}
+	return result
+}
+
 // buildEnvs builds array of specified environment variables with additional list of environment variables
 func buildEnvs(envVars []corev1.EnvVar, additionalEnvs []string, logger logr.Logger) []corev1.EnvVar {
 	envsMap := make(map[string]string)

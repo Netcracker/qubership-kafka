@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine-3.23
+FROM eclipse-temurin:21-jdk-alpine-3.24
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
@@ -71,7 +71,7 @@ RUN set -x \
     && rm -f ${TMP_DIR}/async-profiler-3.0-linux-${AP_ARCH}.tar.gz
 
 # Download kafkactl
-ARG KAFKACTL_VERSION="5.19.0"
+ARG KAFKACTL_VERSION="5.21.0"
 
 RUN set -x \
     && wget \
@@ -206,12 +206,6 @@ RUN ln -s ${KAFKA_WORK}/bin/adminclient.properties ${KAFKA_HOME}/bin/adminclient
 
 # Upgrade all tools to avoid vulnerabilities
 RUN set -x && apk upgrade --no-cache --available
-
-# Upgrade tools from edge to avoid vulnerabilities
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
-        pcre2 curl gnutls libcurl jq openssl libcrypto3 binutils libssl3
 
 USER 1000:0
 WORKDIR ${KAFKA_HOME}

@@ -31,6 +31,8 @@ CA_CERT_PATH = '/tls/ca.crt'
 TLS_CERT_PATH = '/tls/tls.crt'
 TLS_KEY_PATH = '/tls/tls.key'
 
+KAFKA_ENV_CONFIG_PREFIX = 'CONF_KAFKA_'
+
 # Errors that are typically transient (a broker is being rolled/restarted, a leader or
 # coordinator is being re-elected, etc.). Operations failing with these should be retried
 # instead of failing the whole test, e.g. when tests run concurrently with a Kafka
@@ -613,3 +615,43 @@ class KafkaLibrary(object):
         for conf in config_list:
             if config_name in conf:
                 return conf[1]
+
+    def normalize_environment_variables(self, variables) -> dict:
+        """
+        Converts `CONF_KAFKA_*` environment variables to Kafka properties the same way as the Kafka entrypoint does.
+        Other variables are ignored.
+        *Args:*\n
+            _variables_ (list) - environment variables in `NAME=value` format;\n
+        *Returns:*\n
+            dict - property values by property names
+        *Example:*\n
+            | Normalize Environment Variables | ${variables} |
+        """
+        properties = {}
+        for variable in variables or []:
+            name, separator, value = str(variable).partition('=')
+            name = name.strip()
+            if separator and name.startswith(KAFKA_ENV_CONFIG_PREFIX):
+                properties[name[len(KAFKA_ENV_CONFIG_PREFIX):].lower().replace('_', '.')] = value.strip()
+        return properties
+
+    def get_broker_properties(self) -> dict:
+        """
+        Receives configuration of every Kafka broker via Admin API.
+        *Returns:*\n
+            dict - property values by property names for each broker id
+        *Example:*\n
+            | Get Broker Properties |
+        """
+        def _describe(admin):
+            resources = [ConfigResource(ConfigResourceType.BROKER, str(broker['node_id']))
+                         for broker in admin.describe_cluster()['brokers']]
+            return admin.describe_configs(resources)
+
+        brokers = {}
+        for response in self.__execute_with_retry(_describe, 'describe broker configs'):
+            for error_code, error_message, _, broker_id, entries in response.resources:
+                if error_code:
+                    self.builtin.fail(f'Failed to describe configs of broker {broker_id}: {error_message}')
+                brokers[broker_id] = {entry[0]: entry[1] for entry in entries}
+        return brokers

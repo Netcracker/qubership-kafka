@@ -21,14 +21,15 @@ RUN set -x && apk upgrade --no-cache --available
 # Align critical Python tooling/libs versions across builds (CVE/stability).
 # Base image upgrades pip/setuptools, but does not pin them to exact versions.
 RUN set -x \
-    && pip3 install --no-cache-dir --upgrade pip==26.0 \
+    && pip3 install --no-cache-dir --upgrade pip==26.2.1 \
     && pip3 install --no-cache-dir \
         "setuptools==80.10.2" \
         "jaraco.context==6.1.0" \
         "jaraco.text==4.2.0" \
-        "urllib3==2.6.3" \
-        "pyasn1==0.6.3" \
-        "PyJWT==2.12.0" \
+        "urllib3==2.8.0" \
+        "pyasn1==0.6.4" \
+        "PyJWT==2.15.0" \
+        "aiohttp==3.14.4" \
         "wheel==0.46.2" \
     && pip3 install --no-cache-dir -r ${ROBOT_HOME}/requirements.txt \
     && rm -rf /var/cache/apk/*
