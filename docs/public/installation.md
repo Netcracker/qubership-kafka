@@ -1107,26 +1107,26 @@ refer to [Performance Guide](/docs/public/performance.md).
 
 ## Cloud Integration Parameters
 
-| Parameter                       | Type    | Mandatory | Default value                 | Description                                                       |
-|---------------------------------|---------|-----------|-------------------------------|-------------------------------------------------------------------|
-| SERVICE_NAME                    | string  | yes       | `"kafka"` or `kafka-services` | The name of the Service exposed for the database.                 |
-| PART_OF                         | string  | yes       | `"kafka"` or `kafka-services` | Microservice belonging to a group.                                |
-| DELIMITER                       | string  | yes       | `"-"`                         | Delimiter for labels.                                             |
-| ARTIFACT_DESCRIPTOR_VERSION     | string  | yes       | `""`                          | Artifact descriptor version which is installed.                   |
-| STORAGE_RWO_CLASS               | string  | yes       | `""`                          | This parameter specifies the storage class.                       |
-| MONITORING_ENABLED              | boolean | no        | `true`                        | Specifies whether Monitoring component is to be deployed or not.  |
-| PRODUCTION_MODE                 | boolean | no        | `false`                       | Whether AKHQ client ingress is to be enabled.                     |
-| GATEWAY_SYSTEM_TYPE             | string  | no        | `"legacy-ingress"`            | Identifies whether to deploy HTTPRouter or Ingress resources, or both.|
-| SERVER_HOSTNAME                 | string  | no        | `""`                          | This parameter specifies service hostname.                        |
-| INFRA_KAFKA_FS_GROUP            | string  | no        | `""`                          | This parameter specifies fs group.                                |
-| INFRA_KAFKA_ADMIN_USERNAME      | string  | yes       | `""`                          | The username of the internal administrator Kafka user.            |
-| INFRA_KAFKA_ADMIN_PASSWORD      | string  | yes       | `""`                          | The password of the internal administrator Kafka user.            |
-| INFRA_KAFKA_CLIENT_USERNAME     | string  | yes       | `""`                          | The username of the external Kafka user that is used by clients.  |
-| INFRA_KAFKA_CLIENT_PASSWORD     | string  | yes       | `""`                          | The password of  the external Kafka user that is used by clients. |
-| INFRA_ZOOKEEPER_CLIENT_USERNAME | string  | no        | `""`                          | The username of the ZooKeeper client user.                        |
-| INFRA_ZOOKEEPER_CLIENT_PASSWORD | string  | no        | `""`                          | The password of the ZooKeeper client user.                        |
-| INFRA_KAFKA_ZOOKEEPER_ADDRESS   | string  | yes       | `""`                          | The ZooKeeper connection string.                                  |
-| INFRA_KAFKA_REPLICAS            | integer | no        | `3`                           | The number of Kafka servers.                                      |
+| Parameter                       | Type    | Mandatory | Default value                 | Description                                                            |
+|---------------------------------|---------|-----------|-------------------------------|------------------------------------------------------------------------|
+| SERVICE_NAME                    | string  | yes       | `"kafka"` or `kafka-services` | The name of the Service exposed for the database.                      |
+| PART_OF                         | string  | yes       | `"kafka"` or `kafka-services` | Microservice belonging to a group.                                     |
+| DELIMITER                       | string  | yes       | `"-"`                         | Delimiter for labels.                                                  |
+| ARTIFACT_DESCRIPTOR_VERSION     | string  | yes       | `""`                          | Artifact descriptor version which is installed.                        |
+| STORAGE_RWO_CLASS               | string  | yes       | `""`                          | This parameter specifies the storage class.                            |
+| MONITORING_ENABLED              | boolean | no        | `true`                        | Specifies whether Monitoring component is to be deployed or not.       |
+| PRODUCTION_MODE                 | boolean | no        | `false`                       | Whether AKHQ client ingress is to be enabled.                          |
+| GATEWAY_SYSTEM_TYPE             | string  | no        | `"legacy-ingress"`            | Identifies whether to deploy HTTPRouter or Ingress resources, or both. |
+| SERVER_HOSTNAME                 | string  | no        | `""`                          | This parameter specifies service hostname.                             |
+| INFRA_KAFKA_FS_GROUP            | string  | no        | `""`                          | This parameter specifies fs group.                                     |
+| INFRA_KAFKA_ADMIN_USERNAME      | string  | yes       | `""`                          | The username of the internal administrator Kafka user.                 |
+| INFRA_KAFKA_ADMIN_PASSWORD      | string  | yes       | `""`                          | The password of the internal administrator Kafka user.                 |
+| INFRA_KAFKA_CLIENT_USERNAME     | string  | yes       | `""`                          | The username of the external Kafka user that is used by clients.       |
+| INFRA_KAFKA_CLIENT_PASSWORD     | string  | yes       | `""`                          | The password of  the external Kafka user that is used by clients.      |
+| INFRA_ZOOKEEPER_CLIENT_USERNAME | string  | no        | `""`                          | The username of the ZooKeeper client user.                             |
+| INFRA_ZOOKEEPER_CLIENT_PASSWORD | string  | no        | `""`                          | The password of the ZooKeeper client user.                             |
+| INFRA_KAFKA_ZOOKEEPER_ADDRESS   | string  | yes       | `""`                          | The ZooKeeper connection string.                                       |
+| INFRA_KAFKA_REPLICAS            | integer | no        | `3`                           | The number of Kafka servers.                                           |
 
 **Note**: The `GATEWAY_SYSTEM_TYPE` parameter is not defined in the `values.yaml` of the `kafka-service` chart, because it is
 passed by the deployment tooling at deploy time. If it is not set, `legacy-ingress` is used by default, so only `Ingress`
@@ -1138,7 +1138,6 @@ resources are created. The parameter defines which resources are created for ext
 | `gateway-api-default`                       | Only Gateway API `HTTPRoute` (`akhq-httproute`, `cruise-control-httproute`). `Ingress` resources are not created even if `akhq.ingress.host` or `cruiseControl.ingress.host` is specified.                       |
 | `legacy-ingress,gateway-api-default`        | Both `Ingress` and `HTTPRoute`. Each `Ingress` gets the `gateway-api-converter.netcracker.com/ignore: "true"` annotation, so the Gateway API converter skips it because a native `HTTPRoute` already exists.     |
 | Any other value                             | Neither `Ingress` nor `HTTPRoute` is created.                                                                                                                                                                    |
-
 
 ## Global
 
