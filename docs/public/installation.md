@@ -1116,6 +1116,7 @@ refer to [Performance Guide](/docs/public/performance.md).
 | STORAGE_RWO_CLASS               | string  | yes       | `""`                          | This parameter specifies the storage class.                       |
 | MONITORING_ENABLED              | boolean | no        | `true`                        | Specifies whether Monitoring component is to be deployed or not.  |
 | PRODUCTION_MODE                 | boolean | no        | `false`                       | Whether AKHQ client ingress is to be enabled.                     |
+| GATEWAY_SYSTEM_TYPE             | string  | no        | `"legacy-ingress"`            | Identifies whether to deploy HTTPRouter or Ingress resources, or both.|
 | SERVER_HOSTNAME                 | string  | no        | `""`                          | This parameter specifies service hostname.                        |
 | INFRA_KAFKA_FS_GROUP            | string  | no        | `""`                          | This parameter specifies fs group.                                |
 | INFRA_KAFKA_ADMIN_USERNAME      | string  | yes       | `""`                          | The username of the internal administrator Kafka user.            |
@@ -1126,6 +1127,18 @@ refer to [Performance Guide](/docs/public/performance.md).
 | INFRA_ZOOKEEPER_CLIENT_PASSWORD | string  | no        | `""`                          | The password of the ZooKeeper client user.                        |
 | INFRA_KAFKA_ZOOKEEPER_ADDRESS   | string  | yes       | `""`                          | The ZooKeeper connection string.                                  |
 | INFRA_KAFKA_REPLICAS            | integer | no        | `3`                           | The number of Kafka servers.                                      |
+
+**Note**: The `GATEWAY_SYSTEM_TYPE` parameter is not defined in the `values.yaml` of the `kafka-service` chart, because it is
+passed by the deployment tooling at deploy time. If it is not set, `legacy-ingress` is used by default, so only `Ingress`
+resources are created. The parameter defines which resources are created for external access to the AKHQ and Cruise Control UI:
+
+| `GATEWAY_SYSTEM_TYPE` value                 | Created resources                                                                                                                                                                                                |
+|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Not set (default) or `legacy-ingress`       | Only `Ingress` (`akhq-ingress`, `cruise-control-ingress`). `HTTPRoute` resources are not created even if `akhq.envoyGateway.enabled` or `cruiseControl.envoyGateway.enabled` is `true`.                          |
+| `gateway-api-default`                       | Only Gateway API `HTTPRoute` (`akhq-httproute`, `cruise-control-httproute`). `Ingress` resources are not created even if `akhq.ingress.host` or `cruiseControl.ingress.host` is specified.                       |
+| `legacy-ingress,gateway-api-default`        | Both `Ingress` and `HTTPRoute`. Each `Ingress` gets the `gateway-api-converter.netcracker.com/ignore: "true"` annotation, so the Gateway API converter skips it because a native `HTTPRoute` already exists.     |
+| Any other value                             | Neither `Ingress` nor `HTTPRoute` is created.                                                                                                                                                                    |
+
 
 ## Global
 

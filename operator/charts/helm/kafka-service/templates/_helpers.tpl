@@ -1163,10 +1163,6 @@ Find a kubectl image in various places.
 Return type for gateway
 */}}
 {{- define "gateway.type" -}}
-{{- if .Values.GATEWAY_SYSTEM_TYPE }}
-{{- .Values.GATEWAY_SYSTEM_TYPE }}
-{{- else }}
-{{- "legacy-ingress" }}
-{{- end -}}
+    {{- default "legacy-ingress" .Values.GATEWAY_SYSTEM_TYPE -}}
 {{- end -}}
 
