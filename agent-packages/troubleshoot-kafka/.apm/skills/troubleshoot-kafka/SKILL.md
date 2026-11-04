@@ -7,7 +7,7 @@ description: Diagnose qubership-kafka failures in Jira tickets, CI/CD pipelines,
 
 Fast entrypoint for Kafka assessment. Failure steps stay in `references/troubleshooting.md`. This file does not repeat them.
 
-`references/troubleshooting.md` is the fact source for known failure modes. It is `docs/public/troubleshooting.md` from this repository, with the memory and disk procedures that guide points at appended as their own sections. Do not read it in full for a single symptom.
+[references/troubleshooting.md](./references/troubleshooting.md) is the fact source for known failure modes. It is `docs/public/troubleshooting.md` from this repository, with the memory and disk procedures that guide points at appended as their own sections. Do not read it in full for a single symptom.
 
 1. Grep headers with line numbers first: `grep -n '^#' references/troubleshooting.md`
 2. Match the symptom against the jump table below, or the raw headers if the table is stale.
