@@ -33,6 +33,12 @@ metadata:
 spec:
   waitForPodsReady: {{ .Values.global.waitForPodsReady }}
   podReadinessTimeout: {{ .Values.global.podReadinessTimeout | default 600 }}
+{{- with ((.Values.pvc).metadata).annotations }}
+  pvc:
+    metadata:
+      annotations:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
 {{- if .Values.kafka.affinity }}
   affinity:
     {{ .Values.kafka.affinity | toJson }}
@@ -144,6 +150,10 @@ spec:
   {{- range .Values.kafka.environmentVariables }}
     - {{ . }}
   {{- end }}
+{{- end }}
+{{- if .Values.kafka.config }}
+  config:
+    {{- toYaml .Values.kafka.config | nindent 4 }}
 {{- end }}
 {{- if .Values.kafka.oauth }}
   oauth:

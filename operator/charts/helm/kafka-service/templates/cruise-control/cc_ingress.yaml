@@ -1,14 +1,19 @@
 {{- if and .Values.cruiseControl.install (eq (include "cruise-control.ingressEnabled" .) "true") .Values.cruiseControl.ui.enabled }}
+{{- if contains "legacy-ingress" (include "gateway.type" .) }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cruise-control-ingress
   labels:
     {{- include "kafka-services.defaultLabels" . | nindent 4 }}
+    deployment.netcracker.com/ingress-type: 'private-network'
+    deployment.netcracker.com/ingress-audience-type: 'ops-user'
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     route.openshift.io/termination: edge
+    {{- if contains "gateway-api-default" (include "gateway.type" .) }}
     gateway-api-converter.netcracker.com/ignore: "true"
+    {{- end }}
 spec:
   rules:
     - host: {{ include "cruise-control.ingressHost" . }}
@@ -21,4 +26,5 @@ spec:
                 name: {{ template "kafka.name" . }}-cruise-control
                 port:
                   number: 9090
+{{- end }}
 {{- end }}

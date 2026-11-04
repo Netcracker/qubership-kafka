@@ -68,6 +68,14 @@ The following topics are covered in this chapter:
     * [DR Scheme](#dr-scheme-3)
   * [Aiven Kafka](#aiven-kafka)
   * [KRaft](#kraft)
+  * [Configure Kafka and Mirror Maker](#configure-kafka-and-mirror-maker)
+    * [Configure Kafka](#configure-kafka)
+      * [Native Kafka Properties](#native-kafka-properties)
+      * [Kafka Environment Variables](#kafka-environment-variables)
+    * [Configure Mirror Maker](#configure-mirror-maker)
+      * [Native Mirror Maker Properties](#native-mirror-maker-properties)
+      * [Mirror Maker Environment Variables](#mirror-maker-environment-variables)
+    * [What Not to Do](#what-not-to-do)
 * [Upgrade](#upgrade)
   * [Common](#common-1)
   * [Scale-In Cluster](#scale-in-cluster)
@@ -695,6 +703,8 @@ See detailed prerequisites an appropriate doc [AWS Prerequisites](/docs/public/m
 
 ## Kafka Configurations
 
+For the ways to set Kafka broker properties, see [Configure Kafka and Mirror Maker](#configure-kafka-and-mirror-maker).
+
 ### Automatic Topic Creation
 
 It is recommended to disable automatic topic creation for Kafka and create topics with corresponding API on applications side or via MaaS. 
@@ -1097,25 +1107,37 @@ refer to [Performance Guide](/docs/public/performance.md).
 
 ## Cloud Integration Parameters
 
-| Parameter                       | Type    | Mandatory | Default value                 | Description                                                       |
-|---------------------------------|---------|-----------|-------------------------------|-------------------------------------------------------------------|
-| SERVICE_NAME                    | string  | yes       | `"kafka"` or `kafka-services` | The name of the Service exposed for the database.                 |
-| PART_OF                         | string  | yes       | `"kafka"` or `kafka-services` | Microservice belonging to a group.                                |
-| DELIMITER                       | string  | yes       | `"-"`                         | Delimiter for labels.                                             |
-| ARTIFACT_DESCRIPTOR_VERSION     | string  | yes       | `""`                          | Artifact descriptor version which is installed.                   |
-| STORAGE_RWO_CLASS               | string  | yes       | `""`                          | This parameter specifies the storage class.                       |
-| MONITORING_ENABLED              | boolean | no        | `true`                        | Specifies whether Monitoring component is to be deployed or not.  |
-| PRODUCTION_MODE                 | boolean | no        | `false`                       | Whether AKHQ client ingress is to be enabled.                     |
-| SERVER_HOSTNAME                 | string  | no        | `""`                          | This parameter specifies service hostname.                        |
-| INFRA_KAFKA_FS_GROUP            | string  | no        | `""`                          | This parameter specifies fs group.                                |
-| INFRA_KAFKA_ADMIN_USERNAME      | string  | yes       | `""`                          | The username of the internal administrator Kafka user.            |
-| INFRA_KAFKA_ADMIN_PASSWORD      | string  | yes       | `""`                          | The password of the internal administrator Kafka user.            |
-| INFRA_KAFKA_CLIENT_USERNAME     | string  | yes       | `""`                          | The username of the external Kafka user that is used by clients.  |
-| INFRA_KAFKA_CLIENT_PASSWORD     | string  | yes       | `""`                          | The password of  the external Kafka user that is used by clients. |
-| INFRA_ZOOKEEPER_CLIENT_USERNAME | string  | no        | `""`                          | The username of the ZooKeeper client user.                        |
-| INFRA_ZOOKEEPER_CLIENT_PASSWORD | string  | no        | `""`                          | The password of the ZooKeeper client user.                        |
-| INFRA_KAFKA_ZOOKEEPER_ADDRESS   | string  | yes       | `""`                          | The ZooKeeper connection string.                                  |
-| INFRA_KAFKA_REPLICAS            | integer | no        | `3`                           | The number of Kafka servers.                                      |
+| Parameter                       | Type    | Mandatory | Default value                 | Description                                                            |
+|---------------------------------|---------|-----------|-------------------------------|------------------------------------------------------------------------|
+| SERVICE_NAME                    | string  | yes       | `"kafka"` or `kafka-services` | The name of the Service exposed for the database.                      |
+| PART_OF                         | string  | yes       | `"kafka"` or `kafka-services` | Microservice belonging to a group.                                     |
+| DELIMITER                       | string  | yes       | `"-"`                         | Delimiter for labels.                                                  |
+| ARTIFACT_DESCRIPTOR_VERSION     | string  | yes       | `""`                          | Artifact descriptor version which is installed.                        |
+| STORAGE_RWO_CLASS               | string  | yes       | `""`                          | This parameter specifies the storage class.                            |
+| MONITORING_ENABLED              | boolean | no        | `true`                        | Specifies whether Monitoring component is to be deployed or not.       |
+| PRODUCTION_MODE                 | boolean | no        | `false`                       | Whether AKHQ client ingress is to be enabled.                          |
+| GATEWAY_SYSTEM_TYPE             | string  | no        | `"legacy-ingress"`            | Identifies whether to deploy HTTPRouter or Ingress resources, or both. |
+| SERVER_HOSTNAME                 | string  | no        | `""`                          | This parameter specifies service hostname.                             |
+| INFRA_KAFKA_FS_GROUP            | string  | no        | `""`                          | This parameter specifies fs group.                                     |
+| INFRA_KAFKA_ADMIN_USERNAME      | string  | yes       | `""`                          | The username of the internal administrator Kafka user.                 |
+| INFRA_KAFKA_ADMIN_PASSWORD      | string  | yes       | `""`                          | The password of the internal administrator Kafka user.                 |
+| INFRA_KAFKA_CLIENT_USERNAME     | string  | yes       | `""`                          | The username of the external Kafka user that is used by clients.       |
+| INFRA_KAFKA_CLIENT_PASSWORD     | string  | yes       | `""`                          | The password of  the external Kafka user that is used by clients.      |
+| INFRA_ZOOKEEPER_CLIENT_USERNAME | string  | no        | `""`                          | The username of the ZooKeeper client user.                             |
+| INFRA_ZOOKEEPER_CLIENT_PASSWORD | string  | no        | `""`                          | The password of the ZooKeeper client user.                             |
+| INFRA_KAFKA_ZOOKEEPER_ADDRESS   | string  | yes       | `""`                          | The ZooKeeper connection string.                                       |
+| INFRA_KAFKA_REPLICAS            | integer | no        | `3`                           | The number of Kafka servers.                                           |
+
+**Note**: The `GATEWAY_SYSTEM_TYPE` parameter is not defined in the `values.yaml` of the `kafka-service` chart, because it is
+passed by the deployment tooling at deploy time. If it is not set, `legacy-ingress` is used by default, so only `Ingress`
+resources are created. The parameter defines which resources are created for external access to the AKHQ and Cruise Control UI:
+
+| `GATEWAY_SYSTEM_TYPE` value                 | Created resources                                                                                                                                                                                                |
+|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Not set (default) or `legacy-ingress`       | Only `Ingress` (`akhq-ingress`, `cruise-control-ingress`). `HTTPRoute` resources are not created even if `akhq.envoyGateway.enabled` or `cruiseControl.envoyGateway.enabled` is `true`.                          |
+| `gateway-api-default`                       | Only Gateway API `HTTPRoute` (`akhq-httproute`, `cruise-control-httproute`). `Ingress` resources are not created even if `akhq.ingress.host` or `cruiseControl.ingress.host` is specified.                       |
+| `legacy-ingress,gateway-api-default`        | Both `Ingress` and `HTTPRoute`. Each `Ingress` gets the `gateway-api-converter.netcracker.com/ignore: "true"` annotation, so the Gateway API converter skips it because a native `HTTPRoute` already exists.     |
+| Any other value                             | Neither `Ingress` nor `HTTPRoute` is created.                                                                                                                                                                    |
 
 ## Global
 
@@ -1125,7 +1147,7 @@ refer to [Performance Guide](/docs/public/performance.md).
 | global.waitForPodsReady                    | boolean | no        | true          | Whether the operator should wait for the pods to be ready in order to publish the status to the Custom Resource.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | global.podReadinessTimeout                 | integer | no        | 600           | The timeout in seconds for how long the operator should wait for the pods to be ready for each service.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | global.ipv6                                | boolean | no        | false         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| global.monitoringType                      | string  | no        | prometheus    | The monitoring type of output plugin that is used for Kafka and Kafka Mirror Maker monitoring. The possible values are `influxdb` and `prometheus`. If the value of this parameter is `influxdb`, you need to check and specify the parameters necessary for InfluxDB plugin such as `global.smDbHost`, `global.smDbName`, `global.secrets.monitoring.smDbUsername`, and `global.secrets.monitoring.smDbPassword`. If the value of this parameter is prometheus, you need to check and specify the parameters necessary for Prometheus plugin such as `global.secrets.monitoring.prometheusUsername` and `global.secrets.monitoring.prometheusPassword`. All monitoring components in the Kafka service use this parameter. |
+| global.monitoringType                      | string  | no        | prometheus    | The monitoring type of output plugin that is used for Kafka and Kafka Mirror Maker monitoring. The possible values are `influxdb` and `prometheus`. If the value of this parameter is `influxdb`, you need to check and specify the parameters necessary for InfluxDB plugin such as `global.smDbHost`, `global.smDbName`, `global.secrets.monitoring.smDbUsername`, and `global.secrets.monitoring.smDbPassword`. Prometheus plugin does not require additional parameters for the configuration. All monitoring components in the Kafka service use this parameter.                                                                                                                                                       |
 | global.customLabels                        | object  | no        | {}            | The custom labels for all pods that are related to the Kafka Service. These labels can be overridden by the component `customLabel` parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | global.installDashboard                    | boolean | no        | true          | Specifies whether Kafka and Kafka Mirror Maker Grafana dashboards are to be applied or not. All monitoring components in the Kafka service use this parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | global.velero.preHookBackupEnabled         | boolean | no        | true          | Whether Velero backup pre-hook with Kafka Backup Daemon command is to be enabled. If parameter is set to `true`, Kafka Backup Daemon initiates backup of topics configurations and writes to the storage before Velero backup procedure. Applicable only for External Kafka. If localStorage on Backup Daemon is used it also saves file with `backup-id` to the disk. For more information about Velero backup hooks, see [Backup Hooks](https://velero.io/docs/v1.9/backup-hooks/).                                                                                                                                                                                                                                       |
@@ -1142,6 +1164,7 @@ refer to [Performance Guide](/docs/public/performance.md).
 | global.tls.generateCerts.durationDays      | integer | no        | 365           | The TLS certificate validity duration in days.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | global.tls.generateCerts.clusterIssuerName | string  | no        | ""            | The name of the `ClusterIssuer` resource. If the parameter is not set or empty, the `Issuer` resource in the current Kubernetes namespace is used. It is used when the `global.tls.generateCerts.certProvider` parameter is set to `cert-manager`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | global.restrictedEnvironment               | boolean | no        | false         | Whether the deployment is being performed in a restricted access environment.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| pvc.metadata.annotations                   | object  | no        | {}            | The custom annotations added to all Persistent Volume Claims (PVCs) created by the operator.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ### External Kafka
 
@@ -1212,13 +1235,11 @@ For more information, see [Kafka Service Disaster Recovery](disaster-recovery.md
 |-------------------------------------------------------|---------|-----------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | global.secrets.kafka.disableSecurity                  | boolean | no        | false         | Disables security, particularly the authentication when set to `true`.                                                                                                                                                                                                                                                                                                                                                                   |
 | global.secrets.kafka.adminUsername                    | string  | yes       | ""            | The username of the internal administrator Kafka user. Kafka itself uses these credentials. This value is required. You must specify it explicitly during installation. If the property `global.secrets.kafka.disableSecurity` is set to `true`, the value may be omitted. The password for this user is `global.secrets.kafka.adminPassword`.                                                                                           |
-| global.secrets.kafka.adminPassword                    | string  | yes       | ""            | The password of the internal administrator Kafka user.                                                                                                                                                                                                                                                                                                                                                                                   |
+| global.secrets.kafka.adminPassword                    | string  | yes       | ""            | The password of the internal administrator Kafka user. Changing this password requires downtime: all brokers are restarted at once.                                                                                                                                                                                                                                                                                                      |
 | global.secrets.kafka.clientUsername                   | string  | yes       | ""            | The username of the external Kafka user that is used by clients. The client (producers/consumers) uses these credentials to establish a connection with Kafka. The value is required, and you must specify it explicitly during installation. <br/>**Note**: If the property `global.secrets.kafka.disableSecurity` is set to `true`, the value may be omitted.The password for this user is `global.secrets.kafka.clientPassword`.      |
 | global.secrets.kafka.clientPassword                   | string  | yes       | ""            | The password of  the external Kafka user that is used by clients.                                                                                                                                                                                                                                                                                                                                                                        |
 | global.secrets.kafka.zookeeperClientUsername          | string  | no        | ""            | The username of the ZooKeeper client user. If the value is empty, Kafka tries to connect to ZooKeeper without authentication.                                                                                                                                                                                                                                                                                                            |
 | global.secrets.kafka.zookeeperClientPassword          | string  | no        | ""            | The password of the ZooKeeper client user. The ZooKeeper client uses these credentials to establish connection with the ZooKeeper server.                                                                                                                                                                                                                                                                                                |
-| global.secrets.monitoring.prometheusUsername          | string  | no        | ""            | The username for authentication in Prometheus client. You must specify this parameter only if `global.monitoringType` parameter value is equal to `prometheus`.                                                                                                                                                                                                                                                                          |
-| global.secrets.monitoring.prometheusPassword          | string  | no        | ""            | the password for authentication in Prometheus client. You must specify this parameter only if `global.monitoringType` parameter value is equal to `prometheus`.                                                                                                                                                                                                                                                                          |
 | global.secrets.monitoring.smDbUsername                | string  | no        | ""            | The name of the database user in System Monitoring. You should specify this parameter if the `monitoring.monitoringType` parameter is equal to `influxdb` and authentication is enabled in System Monitoring.                                                                                                                                                                                                                            |
 | global.secrets.monitoring.smDbPassword                | string  | no        | ""            | The password of the database user in System Monitoring. You should specify this parameter if the `monitoring.monitoringType` parameter is equal to `influxdb` and authentication is enabled in System Monitoring.                                                                                                                                                                                                                        |
 | global.secrets.backupDaemon.username                  | string  | no        | ""            | The username of the Kafka Backup Daemon API user. This parameter enables the Kafka Backup Daemon authentication. The password for this user is `global.secrets.backupDaemon.password`. If the parameter value is empty, Kafka Backup Daemon deploys with disabled authentication.                                                                                                                                                        |
@@ -1331,7 +1352,8 @@ By default, both controllers watch all Kubernetes namespaces.
 | kafka.tls.subjectAlternativeName.additionalDnsNames    | list    | no        | []                            | The list of additional DNS names to be added to the "Subject Alternative Name" field of SSL certificate. If access to Kafka for external clients is enabled, DNS names from `kafka.externalHostNames` parameter must be specified in here.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | kafka.tls.subjectAlternativeName.additionalIpAddresses | list    | no        | []                            | The list of additional IP addresses to be added to the "Subject Alternative Name" field of SSL certificate. If access to Kafka for external clients is enabled, IP addresses from `kafka.externalHostNames` parameter must be specified in here.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | kafka.environmentVariables                             | list    | no        | []                            | The list of additional environment variables for Kafka deployments in `key=value` format. The parameter value can be empty.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| kafka.storage.size                                     | string  | no        | 1Gi                           | The size of the persistent volume in Gi.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| kafka.config                                           | map     | no        | {}                            | Native Kafka broker configuration properties. Keys are the exact Apache Kafka property names (e.g. `num.io.threads`) and values are quoted strings. Each entry is applied to `server.properties`. When the same property is specified in both `kafka.config` and `kafka.environmentVariables`, the `environmentVariables` value takes effect. For more information, see [Configure Kafka](#configure-kafka).                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| kafka.storage.size                                     | string  | no        | 1Gi                           | The size of the persistent volume in Gi. Increasing this value is supported when the StorageClass has `allowVolumeExpansion: true`. Decreasing the size is not supported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | kafka.storage.volumes                                  | list    | no        | []                            | The list of persistent volume names that are used to bind with the persistent volume claims. The number of persistent volume names must be equal to the value of replicas` parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | kafka.storage.labels                                   | list    | no        | []                            | The list of labels that is used to bind suitable persistent volumes with the persistent volume claims. The number of labels must be equal to the value of replicas` parameter, one label per persistent volume in `key=value` format. You must specify this parameter only for the label selector volume binding.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | kafka.storage.nodes                                    | list    | no        | []                            | The list of node names that is used to schedule on which nodes the pods run. This parameter is mandatory if Kafka uses storage.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -1545,6 +1567,7 @@ monitoring:
 | mirrorMaker.refreshTopicsIntervalSeconds | integer | no        | 5                        | The interval in seconds to refresh topics.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | mirrorMaker.refreshGroupsIntervalSeconds | integer | no        | 5                        | The interval in seconds to refresh groups.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | mirrorMaker.environmentVariables         | list    | no        | []                       | The list of additional environment variables for Kafka Mirror Maker deployments in `key=value` format. To specify common variable for all Kafka clusters, add list element in the format `CONF_<propertyName>=<propertyValue>`. To specify variable for specific Kafka cluster, add list element in the format `<clusterAlias>_CONF_<propertyName>=<propertyValue>`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| mirrorMaker.config                       | map     | no        | {}                       | Native MirrorMaker (Kafka Connect / MM2) configuration properties. Keys are the exact property names (e.g. `refresh.topics.interval.seconds`) and values are quoted strings. Each entry is applied to `mm2.properties` as a common (unscoped) property. When the same property is specified in both `mirrorMaker.config` and `mirrorMaker.environmentVariables`, the `environmentVariables` value takes effect. Scoped properties (per-cluster or per-flow) must still use `mirrorMaker.environmentVariables`. For more information, see [Configure Mirror Maker](#configure-mirror-maker).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | mirrorMaker.securityContext              | object  | no        | {}                       | The pod-level security attributes and common container settings. The parameter value can be empty and specified in `json` format. For example, you can add `{"fsGroup": 1000}`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | mirrorMaker.customLabels                 | object  | no        | {}                       | The custom labels for all Kafka Mirror Maker pods. The parameter is empty by default.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | mirrorMaker.transformation.transforms    | list    | no        | []                       | The list of transformations to make lightweight message-at-a-time modifications. For more detailed information, refer to [Transformations](https://kafka.apache.org/documentation/#connect_transforms). Each transformation has the following parameters:<br>* `name` - Alias for the transformation. This parameter is mandatory.<br>* `type` - Fully qualified class name for the transformation. This parameter is mandatory.<br>* `predicate` - Alias of predicate to be associated with the transformation.<br>* `negate` - Parameter allows to invert associated condition of associated predicate.<br>* `params` - List of configuration properties for the transformation. Parameter value can contain `${replication_prefix}` placeholder which can be replaced with the following:<br>- prefix in format `<sourceClusterName>.` (for example: `dc2.`) if `mirrorMaker.replicationPrefixEnabled` is set to `true` and `global.disasterRecovery.mirrorMakerReplication.enabled` is set to `false`.<br>- empty string if `mirrorMaker.replicationPrefixEnabled` is set to `false` or `global.disasterRecovery.mirrorMakerReplication.enabled` is set to `true`.<br>**Pay attention**, custom transformations are applied to all messages produced by Kafka Mirror Maker, including system ones such as heartbeats and checkpoints, so use predicates or transformations that allows to limit the topics to which the transformation is applied.<br>**Note**: These settings will only be updated in `<name>-mirror-maker-configuration` configmap if `operator.kmmConfiguratorEnabled` is set to `false`. |
@@ -1638,6 +1661,9 @@ You can use the following tags:
         * `restore_by_regex` tag runs `Granular Backup And Restore By Topic Regex` test.
     * `kafka_consumer_producer` tag runs `Test Producing And Consuming Data` test.
     * `kafka_crud` tag runs all tests for creating, reading, updating and removing Kafka data.
+    * `native_config` tag runs `Test Kafka CR Properties Are Applied To Brokers` test. It reads the Kafka custom resource
+      and verifies that properties from `kafka.config` and `CONF_KAFKA_*` entries of `kafka.environmentVariables`
+      are applied to all Kafka brokers. The test is skipped for external Kafka or Kafka not managed by operator.
     * `kafka_ha` tag runs all tests connected to HA scenarios:
         * `kafka_ha_without_zookeeper` tag runs `Test Producing And Consuming Data Without Zookeeper` test.
         * `kafka_ha_without_kafka_master` tag runs `Test Producing And Consuming Data Without Kafka Master` test.
@@ -1750,9 +1776,6 @@ global:
       clientPassword: 'client'
       zookeeperClientUsername: 'zclient'
       zookeeperClientPassword: 'zclient'
-    monitoring:
-      prometheusUsername: 'prometheus'
-      prometheusPassword: 'prometheus'
     akhq:
       defaultUsername: 'admin'
       defaultPassword: 'admin'
@@ -1852,9 +1875,6 @@ global:
       clientPassword: 'client'
       zookeeperClientUsername: 'zclient'
       zookeeperClientPassword: 'zclient'
-    monitoring:
-      prometheusUsername: 'prometheus'
-      prometheusPassword: 'prometheus'
     akhq:
       defaultUsername: 'admin'
       defaultPassword: 'admin'
@@ -1972,6 +1992,124 @@ In this mode you don't need to set ZooKeeper parameters. Currently, some feature
 
 Migration from ZooKeeper Kafka to KRaft is disabled by default, you can enable automatic migration with `kafka.kraft.migration` 
 or perform manual migration using this [guide](kraft-migration.md)
+
+## Configure Kafka and Mirror Maker
+
+Kafka broker configuration and Mirror Maker 2 configuration are delivered through deployment parameters: Kafka broker
+properties are values of the `kafka` Helm chart (`kafka.*`), Mirror Maker properties are values of the `kafka-service`
+Helm chart (`mirrorMaker.*`). Use this section when a change has to survive redeploys.
+
+Both components support two ways to set properties:
+
+* **Native properties** — `kafka.config` and `mirrorMaker.config`. This is the **recommended** way, available since
+  release `2.9.0`. Properties are specified under the same names as in the Apache Kafka documentation.
+* **Environment variables** — `kafka.environmentVariables` and `mirrorMaker.environmentVariables`. This way is still
+  fully supported. Use it for releases before `2.9.0` and for Mirror Maker properties of a specific cluster or
+  replication flow, which native properties do not cover.
+
+When the same property is set in both ways, the `environmentVariables` value is applied and the `config` value is ignored.
+
+### Configure Kafka
+
+#### Native Kafka Properties
+
+Kafka broker properties — thread pools, log retention, replication defaults, topic auto-creation and similar — are set
+through the `kafka.config` value. The value is a map: each key is the exact broker property name from
+[Apache Kafka Broker Configs](https://kafka.apache.org/documentation/#brokerconfigs), each value is a string.
+
+Example — increase I/O threads and keep logs for 7 days:
+
+```yaml
+kafka:
+  config:
+    num.io.threads: "16"
+    log.retention.hours: "168"
+```
+
+Keep in mind the following:
+
+* Quote every value. The custom resource field accepts only strings, so unquoted numbers and booleans are rejected
+  by Kubernetes.
+* Write property names exactly as in the Apache Kafka documentation: lowercase and dot-separated.
+
+After editing the deployment parameters, redeploy the `kafka` chart through your delivery mechanism, for example,
+`helm upgrade`. The operator passes the properties to the Kafka pods and restarts them, and every broker writes the
+properties to its `server.properties` on startup.
+
+#### Kafka Environment Variables
+
+Each list item has the format `CONF_KAFKA_<PROPERTY_NAME>=<value>`, where `<PROPERTY_NAME>` is the property name in
+upper case with dots replaced by underscores. For example, `num.io.threads` becomes `CONF_KAFKA_NUM_IO_THREADS`.
+
+```yaml
+kafka:
+  environmentVariables:
+    - CONF_KAFKA_NUM_IO_THREADS=16
+    - CONF_KAFKA_LOG_RETENTION_HOURS=168
+```
+
+The default values of the `kafka` chart already contain `CONF_KAFKA_AUTO_CREATE_TOPICS_ENABLE=false` in
+`kafka.environmentVariables`. Helm replaces lists instead of merging them, so when you override
+`kafka.environmentVariables`, repeat the entries you want to keep.
+
+An `environmentVariables` entry overrides the same property from `kafka.config`:
+
+```yaml
+kafka:
+  config:
+    num.io.threads: "8"             # ignored, overridden by environmentVariables
+    log.retention.hours: "168"      # applied
+  environmentVariables:
+    - CONF_KAFKA_NUM_IO_THREADS=32  # applied
+```
+
+### Configure Mirror Maker
+
+#### Native Mirror Maker Properties
+
+Common Mirror Maker 2 properties — the ones that apply to all clusters and replication flows, such as topic refresh
+interval, offset synchronization and heartbeats — are set through the `mirrorMaker.config` value of the `kafka-service`
+chart. The value has the same shape as `kafka.config`: each key is the exact property name from
+[Apache Kafka Mirror Maker Configs](https://kafka.apache.org/documentation/#mirrormakerconfigs), each value is a
+quoted string.
+
+Example — refresh the list of replicated topics every 30 seconds and synchronize consumer group offsets:
+
+```yaml
+mirrorMaker:
+  config:
+    refresh.topics.interval.seconds: "30"
+    sync.group.offsets.enabled: "true"
+```
+
+After editing the deployment parameters, redeploy the `kafka-service` chart through your delivery mechanism, for
+example, `helm upgrade`. The operator passes the properties to the Mirror Maker pods and restarts them, and the properties
+are written to `mm2.properties` as common properties.
+
+#### Mirror Maker Environment Variables
+
+Mirror Maker environment variables have three scopes:
+
+* `CONF_<PROPERTY_NAME>=<value>` — common property for all clusters, for example, `CONF_EMIT_HEARTBEATS_INTERVAL_SECONDS=5`.
+* `<CLUSTER_ALIAS>_CONF_<PROPERTY_NAME>=<value>` — property of a specific Kafka cluster, for example,
+  `FIRST_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets`.
+* `<SOURCE_ALIAS>_<TARGET_ALIAS>_CONF_<PROPERTY_NAME>=<value>` — property of a specific replication flow, for example,
+  `FIRST_SECOND_CONF_TOPICS=test-topic,test-topic-2`.
+
+Cluster aliases are the `name` values from `mirrorMaker.clusters` in upper case. Property names are converted the same
+way as for Kafka.
+
+Per-cluster and per-flow properties can be set only through environment variables, so combine both ways when you need
+them:
+
+```yaml
+mirrorMaker:
+  config:
+    refresh.topics.interval.seconds: "30"
+  environmentVariables:
+    - FIRST_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets
+    - FIRST_SECOND_CONF_TOPICS=test-topic,test-topic-2
+```
 
 # Upgrade
 
@@ -2439,15 +2577,7 @@ the corresponding configuration map or secret.
 ### Redeploy with New Configuration
 
 To change Kafka Mirror Maker configuration, you can redeploy Kafka Mirror Maker with necessary parameters.
-It is important to remember the following points:
-
-* To specify common parameters for all Kafka clusters, add to `environmentVariables` parameter the
-  property in the format `CONF_<propertyName>=<propertyValue>`. For example, `CONF_EMIT_HEARTBEATS_INTERVAL_SECONDS=5`.
-* To specify parameters for specific Kafka cluster, add to `environmentVariables` parameter the property in the format
-  `<clusterAlias>_CONF_<propertyName>=<propertyValue>`. For example, `FIRST_CONF_OFFSET_STORAGE_TOPIC=mm2-offsets`.
-* To specify parameters for specific connector from one Kafka cluster to another, add to `environmentVariables` parameter the property in
-  the format `<sourceClusterAlias>_<targetClusterAlias>_CONF_<propertyName>=<propertyValue>`.
-  For example, `FIRST_SECOND_CONF_TOPICS=test-topic,test-topic-2`.
+For the ways to set common, per-cluster and per-flow properties, see [Configure Mirror Maker](#configure-mirror-maker).
 
 ## Multi-datacenter Deployment with Cross-datacenter Replication (XDCR)
 

@@ -23,6 +23,8 @@ import (
 	"github.com/Netcracker/qubership-kafka/operator/controllers/provider"
 	"github.com/Netcracker/qubership-kafka/operator/util"
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -52,9 +54,19 @@ func NewReconcileMonitoring(r *KafkaServiceReconciler, cr *kafkaservice.KafkaSer
 }
 
 func (r ReconcileMonitoring) Reconcile() error {
-	monitoringSecret, err := r.reconciler.WatchSecret(r.cr.Spec.Monitoring.SecretName, r.cr, r.logger)
-	if err != nil {
-		return err
+	monitoringSecret := &corev1.Secret{}
+	if r.cr.Spec.Monitoring.SecretName != "" {
+		secret, err := r.reconciler.WatchSecret(r.cr.Spec.Monitoring.SecretName, r.cr, r.logger)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				r.logger.Info(fmt.Sprintf("Monitoring secret [%s] is not found, skip watching",
+					r.cr.Spec.Monitoring.SecretName))
+			} else {
+				return err
+			}
+		} else {
+			monitoringSecret = secret
+		}
 	}
 
 	kafkaServicesSecret, err := r.reconciler.WatchSecret(fmt.Sprintf("%s-services-secret", r.cr.Name), r.cr, r.logger)
@@ -121,7 +133,9 @@ func (r ReconcileMonitoring) Reconcile() error {
 		r.logger.Info("Kafka monitoring configuration didn't change, skipping reconcile loop")
 	}
 
-	r.reconciler.ResourceVersions[monitoringSecret.Name] = monitoringSecret.ResourceVersion
+	if monitoringSecret.Name != "" {
+		r.reconciler.ResourceVersions[monitoringSecret.Name] = monitoringSecret.ResourceVersion
+	}
 	r.reconciler.ResourceVersions[kafkaServicesSecret.Name] = kafkaServicesSecret.ResourceVersion
 	r.reconciler.ResourceHashes[monitoringHashName] = monitoringHash
 	if r.cr.Spec.Monitoring.LagExporter != nil {

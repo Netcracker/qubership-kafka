@@ -332,7 +332,7 @@ func (mmrp MirrorMakerResourceProvider) NewMirrorMakerDeploymentForCR(cluster ka
 								SuccessThreshold:    1,
 								FailureThreshold:    5,
 							},
-							Env:             buildEnvs(envVars, mmrp.spec.EnvironmentVariables, mmrp.logger),
+							Env:             buildEnvs(append(configMapToEnvVars(mmrp.spec.Config, "CONF_", mmrp.spec.EnvironmentVariables, mmrp.logger), envVars...), mmrp.spec.EnvironmentVariables, mmrp.logger),
 							Resources:       mmrp.spec.Resources,
 							VolumeMounts:    volumeMounts,
 							ImagePullPolicy: corev1.PullAlways,

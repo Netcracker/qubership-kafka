@@ -1,5 +1,6 @@
 # Ingress for AKHQ UI
 {{- if (and .Values.akhq.install (eq (include "akhq.ingressEnabled" .) "true")) }}
+{{- if contains "legacy-ingress" (include "gateway.type" .) }}
 kind: Ingress
 {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
 apiVersion: networking.k8s.io/v1
@@ -20,7 +21,10 @@ metadata:
     {{- end }}
     nginx.ingress.kubernetes.io/rewrite-target: /
     route.openshift.io/termination: edge
+    {{- if contains "gateway-api-default" (include "gateway.type" .) }}
     gateway-api-converter.netcracker.com/ignore: "true"
+    {{- end }}
+
 spec:
   {{- if and .Values.akhq.ingress.className (.Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress") }}
   ingressClassName: {{ .Values.akhq.ingress.className }}
@@ -42,4 +46,5 @@ spec:
               serviceName: akhq
               servicePort: 8080
             {{- end }}
+{{- end }}
 {{- end }}

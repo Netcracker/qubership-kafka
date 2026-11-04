@@ -1,0 +1,15 @@
+name: qubership-kafka
+version: 1.0.0
+description: APM project for qubership-kafka
+targets:
+  - claude
+  - copilot
+  - cursor
+dependencies:
+  apm: []
+  mcp: []
+includes: auto
+scripts: {}
+devDependencies:
+  apm:
+    - ./agent-packages/troubleshoot-kafka/

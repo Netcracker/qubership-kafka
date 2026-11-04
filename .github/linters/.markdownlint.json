@@ -1,0 +1,29 @@
+{
+  "MD013": {
+    "line_length": 250,
+    "heading_line_length": 140,
+    "code_block_line_length": 120,
+    "code_blocks": false,
+    "tables": false,
+    "headings": true,
+    "strict": false,
+    "stern": false
+  },
+  "MD024": {
+    "siblings_only": true
+  },
+  "MD041": false,
+  "MD033": false,
+  "MD036": false,
+  "MD011": false,
+  "MD037": false,
+  "MD004": false,
+  "MD007": false,
+  "MD009": false,
+  "MD010": false,
+  "MD051": false,
+  "MD025": false,
+  "MD040": false,
+  "MD055": false,
+  "MD056": false
+}

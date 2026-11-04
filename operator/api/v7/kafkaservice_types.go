@@ -158,6 +158,7 @@ type MirrorMaker struct {
 	SecretName                   string                  `json:"secretName"`
 	SecurityContext              v1.PodSecurityContext   `json:"securityContext,omitempty"`
 	EnvironmentVariables         []string                `json:"environmentVariables,omitempty"`
+	Config                       map[string]string       `json:"config,omitempty"`
 	RegionName                   string                  `json:"regionName,omitempty"`
 	RepeatedReplication          *bool                   `json:"repeatedReplication,omitempty"`
 	CustomLabels                 map[string]string       `json:"customLabels,omitempty"`
