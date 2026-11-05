@@ -1,4 +1,8 @@
+This document provides an overview of the Prometheus alerts defined for the Kafka deployment. It describes each alert, its possible causes, impact, and recommended remediation steps.
+
 # Prometheus Alerts
+
+The below sub-sections describe the Prometheus alerts.
 
 ## KafkaIsDegradedAlert
 
@@ -204,7 +208,7 @@ For more information refer to [Memory Limit](./troubleshooting.md#memory-limit-r
 
 Garbage collections count rate of one of the pods in the Kafka cluster comes close to the specified limit.
 
-This limit can be overridden with parameter `thresholds.gcCountAlert` described in
+This limit can be overridden with parameter `thresholds.gcCountAlert` described in  
 [Kafka Monitoring Parameters](/docs/public/installation.md#monitoring).
 
 For more information refer to [Memory Limit Reached](./troubleshooting.md#memory-limit-reached).
@@ -367,8 +371,8 @@ For more information refer to [Kafka Mirror Maker is Down](./troubleshooting.md#
 
 ### Description
 
-Partition count of one of the broker in the Kafka cluster comes close to the specified limit.
-There are strong restrictions for every Kafka cluster type and allowed number of partitions,
+Partition count of one of the broker in the Kafka cluster comes close to the specified limit.  
+There are strong restrictions for every Kafka cluster type and allowed number of partitions,  
 you can find then in [HWE](/docs/public/installation.md#hwe).
 
 This limit can be overridden with parameter `thresholds.partitionCountAlert` described in [Kafka Monitoring Parameters](/docs/public/installation.md#monitoring)
@@ -388,9 +392,9 @@ This limit can be overridden with parameter `thresholds.partitionCountAlert` des
 ### Recommended Actions to Resolve Issue
 
 1. Perform rebalance of Kafka cluster if only one pod has overloaded partition number.
-   You can find the rebalance command in [Topics with Insufficient Replication Factor](./troubleshooting.md#topics-with-insufficient-replication-factor).
+  You can find the rebalance command in [Topics with Insufficient Replication Factor](./troubleshooting.md#topics-with-insufficient-replication-factor).
 2. Refer [Kafka Works Slowly or Consumes a lot of CPU For All Nodes](./troubleshooting.md#kafka-works-slowly-and-consumes-a-lot-of-cpu-for-all-nodes)
-   to see options when the number or partitions are exceeded for whole cluster.
+  to see options when the number or partitions are exceeded for whole cluster.
 
 ## KafkaBrokerSkewAlert
 
@@ -444,7 +448,7 @@ This limit can be overridden with parameter `thresholds.brokerSkewAlert` describ
 
 ### Description
 
-Kafka supplementary services in namespace is not compatible with installed Apache Kafka version,
+Kafka supplementary services in namespace is not compatible with installed Apache Kafka version,  
 allowed range of supported version is provided by supplementary services.
 
 for more information refer to [Upgrade Guide](/docs/public/installation.md#upgrade)
