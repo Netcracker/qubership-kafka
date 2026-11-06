@@ -22,7 +22,7 @@ RUN set -x \
 # Build
 RUN GOOS=linux GOARCH=amd64 GO111MODULE=on go build -tags musl -a -o additional-metrics main.go
 
-FROM telegraf:1.40.2-alpine
+FROM telegraf:1.40.2-alpine@sha256:4a62bd294bf2f4c1e3781194fe7b625b7e527244eeb31afd5758227914a16229
 
 ENV KAFKA_MONITORING_HOME=/opt/kafka-monitoring \
     KAFKA_CTL_CONFIG=/tmp/monitoring/kafkactl.yml \
