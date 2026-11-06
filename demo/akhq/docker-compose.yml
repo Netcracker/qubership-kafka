@@ -1,13 +1,13 @@
 version: '2'
 services:
   zookeeper:
-    image: ghcr.io/netcracker/qubership-docker-zookeeper:main
+    image: ghcr.io/netcracker/qubership-docker-zookeeper:main@sha256:48e4a3ae1af3927a8e511bb39559d5cad9a56a6235d29a7eb2c02876636d02b8
     ports:
       - 2181:2181
 #    volumes:
 #      - ./zk-data:/var/opt/zookeeper/data
   kafka-1:
-    image: ghcr.io/netcracker/qubership-docker-kafka:main
+    image: ghcr.io/netcracker/qubership-docker-kafka:main@sha256:fe0fb45dacfb42d6165cd50c811f57c18eb791fd44404a5b9c98a4ff1c3f1271
     ports:
       - 9094:9094
     links:
@@ -27,7 +27,7 @@ services:
       - EXTERNAL_HOST_NAME=localhost
       - EXTERNAL_PORT=9094
   kafka-2:
-    image: ghcr.io/netcracker/qubership-docker-kafka:main
+    image: ghcr.io/netcracker/qubership-docker-kafka:main@sha256:fe0fb45dacfb42d6165cd50c811f57c18eb791fd44404a5b9c98a4ff1c3f1271
     ports:
       - 9095:9094
     links:
@@ -47,7 +47,7 @@ services:
       - EXTERNAL_HOST_NAME=localhost
       - EXTERNAL_PORT=9095
   kafka-3:
-    image: ghcr.io/netcracker/qubership-docker-kafka:main
+    image: ghcr.io/netcracker/qubership-docker-kafka:main@sha256:fe0fb45dacfb42d6165cd50c811f57c18eb791fd44404a5b9c98a4ff1c3f1271
     ports:
       - 9096:9094
     links:
@@ -67,7 +67,7 @@ services:
       - EXTERNAL_HOST_NAME=localhost
       - EXTERNAL_PORT=9096
   akhq:
-    image: ghcr.io/netcracker/qubership-docker-akhq:main
+    image: ghcr.io/netcracker/qubership-docker-akhq:main@sha256:3414843cc699fd913ea35ea1d170313215d8b71335919336d2ab8bc4464dc49b
     ports:
       - 8080:8080
     links:
