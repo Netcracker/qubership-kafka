@@ -1,6 +1,6 @@
 ---
 name: troubleshoot-kafka
-description: Diagnose and resolve Kafka failures in clusters managed by the kafka-service-operator (charts `operator/charts/helm/kafka` and `operator/charts/helm/kafka-service`). Use when a Kafka CR (netcracker.com/v1), a KafkaService CR (netcracker.com/v7), a KafkaUser, monitoring, Mirror Maker, or KRaft migration shows KafkaIsDegradedAlert, KafkaIsDownAlert, KafkaCPUUsageAlert, KafkaMemoryUsageAlert, KafkaHeapMemoryUsageAlert, KafkaLagAlert, KafkaMirrorMakerIsDegradedAlarm, KafkaMirrorMakerIsDownAlarm, No space left on device, Java heap space, ConnectionLoss, NoAuthException, ZooKeeperClientTimeoutException, runAsNonRoot, Permission denied on /var/opt/kafka/data, node already exists, under-replicated partitions, or a broker, heap, retention, or ACL change.
+description: Diagnose and resolve issues in Apache Kafka clusters.
 ---
 
 # Troubleshoot Kafka
