@@ -95,7 +95,7 @@ func (r *KafkaReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 	if err = r.ensureResizeJobDeployed(instance); err != nil {
 		reqLogger.Error(err, "Deploy parameter does not match the PVC size left by the resize job")
 		r.writeFailedStatus(err.Error())
-		return reconcile.Result{}, err
+		return reconcile.Result{}, reconcile.TerminalError(err)
 	}
 
 	specHash, err := util.Hash(instance.Spec)
