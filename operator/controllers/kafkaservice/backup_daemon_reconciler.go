@@ -24,6 +24,7 @@ import (
 	kafkaservice "github.com/Netcracker/qubership-kafka/operator/api/v7"
 	"github.com/go-logr/logr"
 	"io"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/utils/pointer"
 	"net/http"
@@ -80,6 +81,9 @@ func NewReconcileBackupDaemon(r *KafkaServiceReconciler, cr *kafkaservice.KafkaS
 }
 
 func (r ReconcileBackupDaemon) Reconcile() error {
+	if err := r.removeBackupPvcResizeAnnotation(); err != nil {
+		return err
+	}
 	kafkaServicesSecret, err := r.reconciler.WatchSecret(fmt.Sprintf("%s-services-secret", r.cr.Name), r.cr, r.logger)
 	if err != nil {
 		return err
@@ -363,6 +367,23 @@ func (r *ReconcileBackupDaemon) processRequest(method string, url string, body i
 	return responseData, nil
 }
 
+func (r ReconcileBackupDaemon) removeBackupPvcResizeAnnotation() error {
+	name := fmt.Sprintf("data-%s-backup-daemon", r.cr.Name)
+	pvc, err := r.reconciler.GetPersistentVolumeClaim(name, r.cr.Namespace)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	if _, ok := pvc.Annotations["pvc-changed-by-job-from"]; !ok {
+		return nil
+	}
+	delete(pvc.Annotations, "pvc-changed-by-job-from")
+	r.logger.Info("Removing pvc-changed-by-job-from from backup daemon PVC", "pvc", name)
+	return r.reconciler.Client.Update(context.TODO(), pvc)
+}
+
 func (r *ReconcileBackupDaemon) scaleDeployment(replicas int32) error {
 	backupDaemonDeployment, err := r.reconciler.FindDeployment(fmt.Sprintf("%s-backup-daemon", r.cr.Name), r.cr.Namespace, r.logger)
 	if err == nil {
@@ -431,4 +452,3 @@ func (r *ReconcileBackupDaemon) getLastFullBackup(backups []string) (vaultId str
 	}
 	return "", nil
 }
-
