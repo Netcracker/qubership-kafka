@@ -92,6 +92,11 @@ func (r *KafkaReconciler) Reconcile(ctx context.Context, request ctrl.Request) (
 		return reconcile.Result{}, nil
 	}
 	r.StatusUpdater = NewStatusUpdater(r.Client, instance)
+	if err = r.ensureResizeJobDeployed(instance); err != nil {
+		reqLogger.Error(err, "Deploy parameter does not match the PVC size left by the resize job")
+		r.writeFailedStatus(err.Error())
+		return reconcile.Result{}, err
+	}
 
 	specHash, err := util.Hash(instance.Spec)
 	if err != nil {
@@ -239,6 +244,16 @@ func (r *KafkaReconciler) updatePvcStatus(cr *kafka.Kafka) error {
 	return r.StatusUpdater.UpdateStatusWithRetry(func(instance *kafka.Kafka) {
 		instance.Status.PVCStatus.Annotations = cr.Spec.PVC.Annotations
 	})
+}
+
+func (r *KafkaReconciler) ensureResizeJobDeployed(cr *kafka.Kafka) error {
+	for brokerID := 1; brokerID <= cr.Spec.Replicas; brokerID++ {
+		name := fmt.Sprintf(persistentVolumeClaimPattern, cr.Name, brokerID)
+		if err := r.CheckPvcResizeJob(cr.Namespace, name, cr.Spec.Storage.Size); err != nil {
+			return err
+		}
+	}
+	return r.CheckPvcResizeJob(cr.Namespace, fmt.Sprintf("pvc-%s-kraft-controller", cr.Name), cr.Spec.MigrationController.Storage.Size)
 }
 
 // buildReconcilers returns service reconcilers in accordance with custom resource.

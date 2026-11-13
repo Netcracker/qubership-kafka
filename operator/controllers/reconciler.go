@@ -32,6 +32,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -46,6 +47,8 @@ import (
 var (
 	log = logf.Log.WithName("controller_reconciler")
 )
+
+const pvcChangedByJobFromAnnotation = "pvc-changed-by-job-from"
 
 type Reconciler struct {
 	Client           client.Client
@@ -212,6 +215,7 @@ func (r *Reconciler) CreatePersistentVolumeClaim(persistentVolumeClaim *corev1.P
 
 func (r *Reconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *corev1.PersistentVolumeClaim,
 	persistentVolumeClaim *corev1.PersistentVolumeClaim, previouslyManagedAnnotations map[string]string, logger logr.Logger) error {
+	delete(foundPersistentVolumeClaim.Annotations, pvcChangedByJobFromAnnotation)
 	logger.Info("Clean 'ownerReferences' for existing persistent volume claim",
 		"PersistentVolumeClaim.Namespace", persistentVolumeClaim.Namespace, "PersistentVolumeClaim.Name", persistentVolumeClaim.Name)
 	foundPersistentVolumeClaim.ObjectMeta.OwnerReferences = nil
@@ -243,6 +247,28 @@ func (r *Reconciler) updatePersistentVolumeClaim(foundPersistentVolumeClaim *cor
 		// There is no ability to update PVC for some environments.
 		log.Error(err, "Error occurred during updating existing PVC, skipping it")
 		return nil
+	}
+	return nil
+}
+
+func (r *Reconciler) CheckPvcResizeJob(namespace, name, deploySize string) error {
+	pvc, err := r.GetPersistentVolumeClaim(name, namespace)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	if _, ok := pvc.Annotations[pvcChangedByJobFromAnnotation]; !ok {
+		return nil
+	}
+	deployed, err := resource.ParseQuantity(deploySize)
+	if err != nil {
+		return fmt.Errorf("PVC %s deploy parameter %q is invalid: %w", pvc.Name, deploySize, err)
+	}
+	current := pvc.Spec.Resources.Requests[corev1.ResourceStorage]
+	if current.Cmp(deployed) != 0 {
+		return fmt.Errorf("PVC %s size after resize job is %s but deploy parameter is %s", pvc.Name, current.String(), deployed.String())
 	}
 	return nil
 }
