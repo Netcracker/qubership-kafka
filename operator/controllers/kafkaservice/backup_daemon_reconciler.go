@@ -81,7 +81,7 @@ func NewReconcileBackupDaemon(r *KafkaServiceReconciler, cr *kafkaservice.KafkaS
 }
 
 func (r ReconcileBackupDaemon) Reconcile() error {
-	if err := r.removeBackupPvcResizeLabel(); err != nil {
+	if err := r.removeBackupPvcResizeAnnotation(); err != nil {
 		return err
 	}
 	kafkaServicesSecret, err := r.reconciler.WatchSecret(fmt.Sprintf("%s-services-secret", r.cr.Name), r.cr, r.logger)
@@ -367,18 +367,20 @@ func (r *ReconcileBackupDaemon) processRequest(method string, url string, body i
 	return responseData, nil
 }
 
-func (r ReconcileBackupDaemon) removeBackupPvcResizeLabel() error {
-	pvc, err := r.reconciler.GetPersistentVolumeClaim(fmt.Sprintf("data-%s-backup-daemon", r.cr.Name), r.cr.Namespace)
+func (r ReconcileBackupDaemon) removeBackupPvcResizeAnnotation() error {
+	name := fmt.Sprintf("data-%s-backup-daemon", r.cr.Name)
+	pvc, err := r.reconciler.GetPersistentVolumeClaim(name, r.cr.Namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
 		}
 		return err
 	}
-	if _, ok := pvc.Labels["pvc-changed-by-job-from"]; !ok {
+	if _, ok := pvc.Annotations["pvc-changed-by-job-from"]; !ok {
 		return nil
 	}
-	delete(pvc.Labels, "pvc-changed-by-job-from")
+	delete(pvc.Annotations, "pvc-changed-by-job-from")
+	r.logger.Info("Removing pvc-changed-by-job-from from backup daemon PVC", "pvc", name)
 	return r.reconciler.Client.Update(context.TODO(), pvc)
 }
 
