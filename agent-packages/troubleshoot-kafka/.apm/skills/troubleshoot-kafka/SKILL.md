@@ -35,7 +35,7 @@ The bundled reference appends those two procedures. The public guide links them 
 
 ### Charts
 
-Kafka is two Helm charts, installed separately. Install the `kafka` chart before `kafka-service`, except when `global.externalKafka.enabled` is `true`: then the `kafka` chart does not render a `Kafka` CR, and only `kafka-service` is installed.
+The Kafka solution consists of four applications: `kafka`, `kafka-crd`, `kafka-services`, and `kafka-services-crd`. The two Helm charts are installed separately. Install the `kafka` chart before the `kafka-service` chart, except when `global.externalKafka.enabled` is `true`: then the `kafka` chart does not render a `Kafka` CR, and only `kafka-services` is installed. When managed Kafka is used, `kafka` and `kafka-crd` are not deployed.
 
 | Chart | What it installs |
 | --- | --- |
@@ -57,7 +57,7 @@ Kafka is two Helm charts, installed separately. Install the `kafka` chart before
 
 Deployments the operator creates from the `KafkaService` name: `<name>-monitoring`, `<name>-mirror-maker`, `<name>-backup-daemon`, `<name>-cruise-control`, `<name>-lag-exporter` (container `kafka-lag-exporter`). The AKHQ deployment name is `akhq`.
 
-CRDs ship with the charts (`operator/charts/helm/kafka/crds`, `operator/charts/helm/kafka-service/crds`). Creating them requires `CustomResourceDefinition` rights. When the deployer does not have those rights, follow Deployment Permissions in `docs/public/installation.md` before install. That guide also covers Kubernetes below 1.19, which needs a manual CRD install and Helm CRD creation turned off. Do not invent separate `kafka-crd` or `kafka-services-crd` applications; this repository does not define them.
+Apply `kafka-crd` before the `kafka` chart and `kafka-services-crd` before the `kafka-services` chart. The definitions in this repository are listed under Critical configuration paths. Creating them requires `CustomResourceDefinition` rights. When the deployer does not have those rights, install `kafka-crd` and `kafka-services-crd` manually before the charts. Follow Deployment Permissions in `docs/public/installation.md`. That guide also covers Kubernetes below 1.19, which needs a manual CRD install and Helm CRD creation turned off.
 
 A direct edit on a running pod or Deployment is a workaround. The operator rebuilds broker env from the `Kafka` CR on the next reconcile, and the container rewrites `server.properties` from `CONF_KAFKA_*` on every start.
 
@@ -76,6 +76,13 @@ Backup files live under `/opt/kafka/backup-storage` on the backup daemon, and on
 On a cluster that forces non-root: monitoring needs `securityContext.runAsUser: 1000`. KRaft migration controller volume writes need `securityContext.fsGroup: 1000` (`INFRA_KAFKA_FS_GROUP` when cloud integration is enabled). Do not hardcode `fsGroup` where the platform assigns the group, for example OpenShift SCC.
 
 ### Critical configuration paths
+
+The Kafka solution consists of four parts:
+
+- **Kafka** (`kafka`) — Helm chart `operator/charts/helm/kafka/`. It deploys the operator in `kafka` mode and the brokers. The Helm values in the table below whose Chart column is `kafka` belong to this chart.
+- **Kafka CRD** (`kafka-crd`) — the `Kafka` custom resource definition (`netcracker.com/v1`). In this repository the definition is `operator/charts/helm/kafka/crds/crd.yaml`. Apply the CRD before the `kafka` chart.
+- **Kafka services** (`kafka-services`) — Helm chart `operator/charts/helm/kafka-service/`. It deploys the operator in `kafkaservice` mode and the services in the table above. The Helm values in the table below whose Chart column is `kafka-service` belong to this chart.
+- **Kafka services CRD** (`kafka-services-crd`) — the `KafkaService` custom resource definition (`netcracker.com/v7`). In this repository the definition is `operator/charts/helm/kafka-service/crds/crd.yaml`. Apply the CRD before the `kafka-services` chart.
 
 | Helm value | Chart | Purpose |
 | --- | --- | --- |
@@ -209,6 +216,8 @@ Match one row, then read that section. No resolution steps live in this table.
 When several rows match, read the more specific section first: start failure (`runAsNonRoot`, KRaft `Permission denied`, `ephemeral-storage`, CRD), then disk or memory, then ZooKeeper connection (`ZooKeeperClientTimeoutException`, `ConnectionLoss`, `NoAuthException`), then partition data (`NotEnoughReplicasException`, dirty offset, scale-in, topic id), then degraded or down.
 
 ## Log analysis
+
+Read logs from the ticket attachments before running `kubectl logs`. Use an attached operator, Kafka, backup-daemon, monitoring, or Mirror Maker log when it covers the failing component and the time of the symptom. Run `kubectl logs` only when the ticket has no such attachment, or the attachment does not contain the error you need.
 
 Run read-only commands. `<ns>` is the release namespace. `<name>` defaults to `kafka`.
 
