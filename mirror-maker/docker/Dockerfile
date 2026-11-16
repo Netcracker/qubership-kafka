@@ -1,4 +1,4 @@
-FROM amazoncorretto:17.0.20-alpine3.24 AS builder
+FROM amazoncorretto:17.0.21-alpine3.24@sha256:c92e905c7d997a28279c24a2eb347836db0e3ca36a61d5fbd2c9c360b2674a05 AS builder
 
 RUN apk add --no-cache maven git
 
