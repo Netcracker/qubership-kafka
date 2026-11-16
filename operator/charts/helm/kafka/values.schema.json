@@ -1595,6 +1595,13 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "config": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "boolean", "integer", "number", "null"]
+          },
+          "description": "Native MirrorMaker configuration properties. Keys are preserved exactly as specified. Accepted so shared deployment parameters validate against this chart; Mirror Maker is configured by the kafka-service chart."
+        },
         "enableSsl": { "type": "boolean" },
         "sslSecretName": { "type": "string" },
         "saslMechanism": { "type": "string" }
