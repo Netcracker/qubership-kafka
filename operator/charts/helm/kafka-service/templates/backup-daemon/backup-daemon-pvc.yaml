@@ -1,3 +1,4 @@
+{{- include "backupDaemon.resizeJobCheck" . -}}
 {{ $persistentVolume := eq (include "backupDaemon.persistentVolumeDefined" .) "true" }}
 {{ $storageClass := eq (include "backupDaemon.storageClassDefined" .) "true" }}
 {{- if and .Values.backupDaemon.install (or $persistentVolume $storageClass) }}

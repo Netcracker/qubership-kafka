@@ -1086,6 +1086,21 @@ checksum/integration-tests-atp-storage-secret: {{ include (print $.Template.Base
   {{- end -}}
 {{- end -}}
 
+{{- define "backupDaemon.resizeJobCheck" -}}
+  {{- if .Values.backupDaemon.install }}
+    {{- $size := default "1Gi" .Values.backupDaemon.storage | toString }}
+    {{- $pvcName := printf "data-%s-backup-daemon" (include "kafka.name" .) }}
+    {{- $pvc := lookup "v1" "PersistentVolumeClaim" .Release.Namespace $pvcName }}
+    {{- if $pvc }}
+      {{- $annotations := $pvc.metadata.annotations | default dict }}
+      {{- $actual := index $pvc.spec.resources.requests "storage" | toString }}
+      {{- if and (hasKey $annotations "pvc-changed-by-job-from") (ne $actual $size) }}
+        {{- fail (printf "PVC %s size after resize job is %s but backupDaemon.storage is %s" $pvcName $actual $size) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
 {{- define "lagExporter.clusterLabelsDefined" -}}
   {{- if eq (.Values.monitoring.lagExporter.cluster.labels | toString) "<nil>" -}}
     {{- "false" }}
