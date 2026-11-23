@@ -93,19 +93,6 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) NewMirrorMakerMonitoringDeplo
 
 	envVars := mmmrp.getMonitoringEnvironmentVariables()
 
-	if mmmrp.spec.MonitoringType == "influxdb" {
-		envVars = append(envVars, []corev1.EnvVar{
-			{
-				Name:  "SM_DB_HOST",
-				Value: mmmrp.spec.SmDbHost,
-			},
-			{
-				Name:  "SM_DB_NAME",
-				Value: mmmrp.spec.SmDbName,
-			},
-		}...)
-	}
-
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName,
@@ -221,13 +208,11 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) NewMonitoringClientService() 
 			Port:     8092,
 		},
 	}
-	if mmmrp.spec.MonitoringType == "prometheus" {
-		ports = append(ports, corev1.ServicePort{
-			Name:     "prometheus-cli",
-			Port:     8096,
-			Protocol: corev1.ProtocolTCP,
-		})
-	}
+	ports = append(ports, corev1.ServicePort{
+		Name:     "prometheus-cli",
+		Port:     8096,
+		Protocol: corev1.ProtocolTCP,
+	})
 	clientService := newServiceForCR(mmmrp.serviceName, mmmrp.cr.Namespace, monitoringLabels, selectorLabels, ports)
 	return clientService
 }
@@ -247,13 +232,11 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getContainerPorts() []corev1.
 			ContainerPort: 8092,
 		},
 	}
-	if mmmrp.spec.MonitoringType == "prometheus" {
-		ports = append(ports, corev1.ContainerPort{
-			Name:          "prometheus-cli",
-			ContainerPort: 8096,
-			Protocol:      corev1.ProtocolTCP,
-		})
-	}
+	ports = append(ports, corev1.ContainerPort{
+		Name:          "prometheus-cli",
+		ContainerPort: 8096,
+		Protocol:      corev1.ProtocolTCP,
+	})
 	return ports
 }
 
@@ -266,7 +249,7 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getPrometheusUrls() string {
 	}
 
 	return string(result)
-}	
+}
 
 func buildPrometheusUrlsByMirrorMakerConfig(mmmrp MirrorMakerMonitoringResourceProvider) []string {
 	var urlList []string
@@ -310,22 +293,6 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 		},
 		getTmpVolume("16Mi"), // Telegraf + sidecar scripts
 	}
-	if mmmrp.spec.SecretName != "" && mmmrp.spec.MonitoringType == "influxdb" {
-		defaultMode := int32(0644)
-		volumes = append(volumes, corev1.Volume{
-			Name: "mirror-maker-monitoring-pod-secrets",
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName:  mmmrp.spec.SecretName,
-					DefaultMode: &defaultMode,
-					Items: []corev1.KeyToPath{
-						{Key: "sm-db-username", Path: "sm_db_username"},
-						{Key: "sm-db-password", Path: "sm_db_password"},
-					},
-				},
-			},
-		})
-	}
 	return volumes
 }
 
@@ -337,13 +304,6 @@ func (mmmrp MirrorMakerMonitoringResourceProvider) getMirrorMakerMonitoringVolum
 			MountPath: "/etc/telegraf",
 		},
 		getTmpVolumeMount(),
-	}
-	if mmmrp.spec.SecretName != "" && mmmrp.spec.MonitoringType == "influxdb" {
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      "mirror-maker-monitoring-pod-secrets",
-			MountPath: "/etc/secrets/mirror-maker-monitoring-pod-secrets",
-			ReadOnly:  true,
-		})
 	}
 	return volumeMounts
 }

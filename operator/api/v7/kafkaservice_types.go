@@ -117,26 +117,29 @@ type Akhq struct {
 
 // Monitoring shows Kafka Monitoring configuration
 type Monitoring struct {
-	DockerImage                string                  `json:"dockerImage"`
-	Affinity                   v1.Affinity             `json:"affinity,omitempty"`
-	Tolerations                []v1.Toleration         `json:"tolerations,omitempty"`
-	PriorityClassName          string                  `json:"priorityClassName,omitempty"`
-	Resources                  v1.ResourceRequirements `json:"resources,omitempty"`
-	SecurityContext            v1.PodSecurityContext   `json:"securityContext,omitempty"`
-	MonitoringType             string                  `json:"monitoringType"`
-	SmDbHost                   string                  `json:"smDbHost,omitempty"`
-	SmDbName                   string                  `json:"smDbName,omitempty"`
-	KafkaMeasurementPrefixName string                  `json:"kafkaMeasurementPrefixName,omitempty"`
-	DataCollectionInterval     string                  `json:"dataCollectionInterval,omitempty"`
-	KafkaExecPluginTimeout     string                  `json:"kafkaExecPluginTimeout,omitempty"`
-	SecretName                 string                  `json:"secretName"`
-	MinVersion                 string                  `json:"minVersion,omitempty"`
-	MaxVersion                 string                  `json:"maxVersion,omitempty"`
-	BootstrapServers           string                  `json:"bootstrapServers,omitempty"`
-	KafkaEnableSsl             bool                    `json:"kafkaEnableSsl,omitempty"` // for backwards compatibility, may be removed in the future
-	KafkaTotalBrokerCount      int                     `json:"kafkaTotalBrokerCount"`
-	LagExporter                *LagExporter            `json:"lagExporter,omitempty"`
-	CustomLabels               map[string]string       `json:"customLabels,omitempty"`
+	DockerImage       string                  `json:"dockerImage"`
+	Affinity          v1.Affinity             `json:"affinity,omitempty"`
+	Tolerations       []v1.Toleration         `json:"tolerations,omitempty"`
+	PriorityClassName string                  `json:"priorityClassName,omitempty"`
+	Resources         v1.ResourceRequirements `json:"resources,omitempty"`
+	SecurityContext   v1.PodSecurityContext   `json:"securityContext,omitempty"`
+	// Deprecated: InfluxDB output is removed. Retained so existing objects decode. Ignored.
+	MonitoringType string `json:"monitoringType"`
+	// Deprecated: Retained so existing objects decode. Ignored.
+	SmDbHost string `json:"smDbHost,omitempty"`
+	// Deprecated: Retained so existing objects decode. Ignored.
+	SmDbName                   string            `json:"smDbName,omitempty"`
+	KafkaMeasurementPrefixName string            `json:"kafkaMeasurementPrefixName,omitempty"`
+	DataCollectionInterval     string            `json:"dataCollectionInterval,omitempty"`
+	KafkaExecPluginTimeout     string            `json:"kafkaExecPluginTimeout,omitempty"`
+	SecretName                 string            `json:"secretName"`
+	MinVersion                 string            `json:"minVersion,omitempty"`
+	MaxVersion                 string            `json:"maxVersion,omitempty"`
+	BootstrapServers           string            `json:"bootstrapServers,omitempty"`
+	KafkaEnableSsl             bool              `json:"kafkaEnableSsl,omitempty"` // for backwards compatibility, may be removed in the future
+	KafkaTotalBrokerCount      int               `json:"kafkaTotalBrokerCount"`
+	LagExporter                *LagExporter      `json:"lagExporter,omitempty"`
+	CustomLabels               map[string]string `json:"customLabels,omitempty"`
 }
 
 // MirrorMaker shows Kafka Mirror Maker configuration
@@ -182,19 +185,22 @@ type Cluster struct {
 
 // MirrorMakerMonitoring shows Kafka Mirror Maker Monitoring configuration
 type MirrorMakerMonitoring struct {
-	DockerImage           string                  `json:"dockerImage"`
-	Affinity              v1.Affinity             `json:"affinity,omitempty"`
-	Tolerations           []v1.Toleration         `json:"tolerations,omitempty"`
-	PriorityClassName     string                  `json:"priorityClassName,omitempty"`
-	Resources             v1.ResourceRequirements `json:"resources,omitempty"`
-	SecurityContext       v1.PodSecurityContext   `json:"securityContext,omitempty"`
-	MonitoringType        string                  `json:"monitoringType"`
-	SmDbHost              string                  `json:"smDbHost,omitempty"`
-	SmDbName              string                  `json:"smDbName,omitempty"`
-	KmmExecPluginTimeout  string                  `json:"kmmExecPluginTimeout,omitempty"`
-	KmmCollectionInterval string                  `json:"kmmCollectionInterval,omitempty"`
-	SecretName            string                  `json:"secretName"`
-	CustomLabels          map[string]string       `json:"customLabels,omitempty"`
+	DockerImage       string                  `json:"dockerImage"`
+	Affinity          v1.Affinity             `json:"affinity,omitempty"`
+	Tolerations       []v1.Toleration         `json:"tolerations,omitempty"`
+	PriorityClassName string                  `json:"priorityClassName,omitempty"`
+	Resources         v1.ResourceRequirements `json:"resources,omitempty"`
+	SecurityContext   v1.PodSecurityContext   `json:"securityContext,omitempty"`
+	// Deprecated: InfluxDB output is removed. Retained so existing objects decode. Ignored.
+	MonitoringType string `json:"monitoringType"`
+	// Deprecated: Retained so existing objects decode. Ignored.
+	SmDbHost string `json:"smDbHost,omitempty"`
+	// Deprecated: Retained so existing objects decode. Ignored.
+	SmDbName              string            `json:"smDbName,omitempty"`
+	KmmExecPluginTimeout  string            `json:"kmmExecPluginTimeout,omitempty"`
+	KmmCollectionInterval string            `json:"kmmCollectionInterval,omitempty"`
+	SecretName            string            `json:"secretName"`
+	CustomLabels          map[string]string `json:"customLabels,omitempty"`
 	// Deprecated: it is kept for backward compatibility.
 	JolokiaUrls []string `json:"jolokiaUrls,omitempty"`
 }
@@ -303,9 +309,9 @@ type KafkaServiceStatus struct {
 	MonitoringStatus             MonitoringStatus             `json:"monitoringStatus,omitempty"`
 	MirrorMakerStatus            MirrorMakerStatus            `json:"mirrorMakerStatus,omitempty"`
 	// Deprecated: no longer used. Retained for backward compatibility.
-	VaultSecretManagementStatus  VaultSecretManagementStatus  `json:"vaultSecretManagementStatus,omitempty"`
-	DisasterRecoveryStatus       DisasterRecoveryStatus       `json:"disasterRecoveryStatus,omitempty"`
-	Conditions                   []StatusCondition            `json:"conditions,omitempty"`
+	VaultSecretManagementStatus VaultSecretManagementStatus `json:"vaultSecretManagementStatus,omitempty"`
+	DisasterRecoveryStatus      DisasterRecoveryStatus      `json:"disasterRecoveryStatus,omitempty"`
+	Conditions                  []StatusCondition           `json:"conditions,omitempty"`
 }
 
 type MirrorMakerReplication struct {

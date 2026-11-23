@@ -115,19 +115,13 @@ spec:
             - name: S3_DEFAULT_ALIAS_NAME
               value: {{ default "default" $defaultS3AliasName | quote }}
             {{- end }}      
-            {{- if and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install }}
+            {{- if .Values.monitoring.install }}
             - name: PROMETHEUS_URL
               value: {{ .Values.integrationTests.prometheusUrl }}
             {{- end }}
             {{- if .Values.integrationTests.identityProviderUrl }}
             - name: IDENTITY_PROVIDER_URL
               value: {{ .Values.integrationTests.identityProviderUrl | quote }}
-            {{- end }}
-            {{- if and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install }}
-            - name: ZABBIX_URL
-              value: {{ .Values.integrationTests.zabbixUrl }}
-            - name: CLOUD_DB
-              value: {{ .Values.global.smDbName }}
             {{- end }}
             {{- if .Values.integrationTests.atpReport.enabled }}
             - name: ATP_REPORT_ENABLED
@@ -234,7 +228,7 @@ spec:
                     - key: s3-key-secret
                       path: S3_KEY_SECRET
               {{- end }}
-              {{- if or (and (eq .Values.global.monitoringType "prometheus") .Values.monitoring.install) .Values.integrationTests.identityProviderUrl (and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install) }}
+              {{- if or .Values.monitoring.install .Values.integrationTests.identityProviderUrl }}
               - secret:
                   name: {{ .Values.integrationTests.service.name }}-secret
                   items:
@@ -248,12 +242,6 @@ spec:
                       path: PROMETHEUS_USER
                     - key: prometheus-password
                       path: PROMETHEUS_PASSWORD
-                    {{- if and (eq .Values.global.monitoringType "influxdb") .Values.monitoring.install }}
-                    - key: zabbix-user
-                      path: ZABBIX_USER
-                    - key: zabbix-password
-                      path: ZABBIX_PASSWORD
-                    {{- end }}
               {{- end }}
               {{- if .Values.integrationTests.atpReport.enabled }}
               - secret:

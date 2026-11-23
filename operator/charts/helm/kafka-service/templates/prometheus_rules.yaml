@@ -1,4 +1,4 @@
-{{- if (and (eq (include "monitoring.install" .) "true") (ne (include "monitoring.type" .) "influxdb") .Values.global.installDashboard (ne (.Values.monitoring.installGrafanaDashboard | toString) "false")) }}
+{{- if (and (eq (include "monitoring.install" .) "true") .Values.global.installDashboard (ne (.Values.monitoring.installGrafanaDashboard | toString) "false")) }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:

@@ -464,7 +464,7 @@
           "type": "string",
           "enum": ["prometheus", "influxdb"],
           "default": "prometheus",
-          "description": "Monitoring output plugin type."
+          "description": "Accepted values are prometheus and influxdb. influxdb is ignored; metrics are exposed for Prometheus."
         },
         "installDashboard": {
           "type": "boolean",
@@ -483,11 +483,11 @@
         },
         "smDbHost": {
           "type": ["string", "null"],
-          "description": "Host of the System Monitoring database. Required when monitoringType is influxdb."
+          "description": "Accepted and ignored. Formerly the System Monitoring database host for InfluxDB."
         },
         "smDbName": {
           "type": ["string", "null"],
-          "description": "Name of the System Monitoring database. Required when monitoringType is influxdb."
+          "description": "Accepted and ignored. Formerly the System Monitoring database name for InfluxDB."
         },
         "cloudIntegrationEnabled": {
           "type": "boolean",
@@ -846,12 +846,12 @@
                 "smDbUsername": {
                   "type": "string",
                   "default": "",
-                  "description": "System Monitoring database username."
+                  "description": "Accepted and ignored. Formerly the System Monitoring database username."
                 },
                 "smDbPassword": {
                   "type": "string",
                   "default": "",
-                  "description": "System Monitoring database password."
+                  "description": "Accepted and ignored. Formerly the System Monitoring database password."
                 }
               }
             },
@@ -1255,7 +1255,7 @@
         "monitoringType": {
           "type": "string",
           "enum": ["prometheus", "influxdb"],
-          "description": "Monitoring type that overrides global.monitoringType."
+          "description": "Overrides global.monitoringType. influxdb is accepted and ignored; output is Prometheus."
         },
         "installGrafanaDashboard": {
           "type": "boolean",
@@ -1306,10 +1306,10 @@
           "default": true,
           "description": "Whether additional metrics are collected."
         },
-        "smDbHost": { "type": "string" },
-        "smDbName": { "type": "string" },
-        "smDbUsername": { "type": "string" },
-        "smDbPassword": { "type": "string" },
+        "smDbHost": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB host." },
+        "smDbName": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB database name." },
+        "smDbUsername": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB username." },
+        "smDbPassword": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB password." },
         "thresholds": {
           "type": "object",
           "additionalProperties": false,
@@ -1623,13 +1623,14 @@
         "customLabels": { "$ref": "#/$defs/stringMap" },
         "monitoringType": {
           "type": "string",
-          "enum": ["prometheus", "influxdb"]
+          "enum": ["prometheus", "influxdb"],
+          "description": "Accepted and ignored when influxdb. Output is Prometheus."
         },
         "installDashboard": { "type": "boolean" },
-        "smDbHost": { "type": "string" },
-        "smDbName": { "type": "string" },
-        "smDbUsername": { "type": "string" },
-        "smDbPassword": { "type": "string" }
+        "smDbHost": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB host." },
+        "smDbName": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB database name." },
+        "smDbUsername": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB username." },
+        "smDbPassword": { "type": "string", "description": "Accepted and ignored. Formerly the InfluxDB password." }
       }
     },
     "integrationTests": {
