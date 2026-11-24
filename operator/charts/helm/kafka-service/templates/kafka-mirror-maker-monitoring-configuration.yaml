@@ -85,50 +85,10 @@ data:
         ## If set to true, do no set the "host" tag in the telegraf agent.
       omit_hostname = false
 
-    {{- if (eq (include "mirrorMakerMonitoring.type" .) "influxdb") }}
-    # Credentials from mounted secret files (Telegraf secret store).
-    [[secretstores.docker]]
-      id = "mirror_maker_monitoring_secrets"
-      path = "/etc/secrets/mirror-maker-monitoring-pod-secrets"
-      dynamic = true
-    {{- end }}
 
     ###############################################################################
     #                            OUTPUT PLUGINS                                   #
     ###############################################################################
-    {{- if (eq (include "mirrorMakerMonitoring.type" .) "influxdb") }}
-    # Configuration for influxdb server to send metrics to
-    [[outputs.influxdb]]
-    ## The full HTTP or UDP endpoint URL for your InfluxDB instance.
-    ## Multiple urls can be specified as part of the same cluster,
-    ## this means that only ONE of the urls will be written to each interval.
-    # urls = ["udp://localhost:8089"] # UDP endpoint example
-      urls = ["${SM_DB_HOST}"] # required
-        ## The target database for metrics (telegraf will create it if not exists).
-      database = "${SM_DB_NAME}" # required
-
-        ## Retention policy to write to. Empty string writes to the default rp.
-      retention_policy = ""
-        ## Write consistency (clusters only), can be: "any", "one", "quorum", "all"
-      write_consistency = "any"
-
-        ## Write timeout (for the InfluxDB client), formatted as a string.
-        ## If not provided, will default to 5s. 0s means no timeout (not recommended).
-      timeout = "5s"
-      username = "@{mirror_maker_monitoring_secrets:sm_db_username}"
-      password = "@{mirror_maker_monitoring_secrets:sm_db_password}"
-    ## Set the user agent for HTTP POSTs (can be useful for log differentiation)
-    # user_agent = "telegraf"
-    ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
-    # udp_payload = 512
-
-    ## Optional SSL Config
-    # ssl_ca = "/etc/telegraf/ca.pem"
-    # ssl_cert = "/etc/telegraf/cert.pem"
-    # ssl_key = "/etc/telegraf/key.pem"
-    ## Use SSL but skip chain & host verification
-    # insecure_skip_verify = false
-    {{- else }}
     # Publish all metrics to /metrics for Prometheus to scrape
     [[outputs.prometheus_client]]
     ## Address to listen on.
@@ -174,7 +134,6 @@ data:
 
     ## Export metric collection time.
     # export_timestamp = false
-    {{- end }}
     ###############################################################################
     #                            PROCESSOR PLUGINS                                #
     ###############################################################################

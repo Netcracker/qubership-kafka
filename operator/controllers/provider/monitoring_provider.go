@@ -94,14 +94,13 @@ func (mrp MonitoringResourceProvider) NewMonitoringClientService() *corev1.Servi
 			Port:     8092,
 		},
 	}
-	if mrp.spec.MonitoringType == "prometheus" {
-		// Name is reduced because it must be no more than 15 characters
-		ports = append(ports, corev1.ServicePort{
-			Name:     "prometheus-cli",
-			Port:     8096,
-			Protocol: corev1.ProtocolTCP,
-		})
-	}
+	// Name is reduced because it must be no more than 15 characters.
+	// monitoringType is ignored; Prometheus is the only output.
+	ports = append(ports, corev1.ServicePort{
+		Name:     "prometheus-cli",
+		Port:     8096,
+		Protocol: corev1.ProtocolTCP,
+	})
 	if mrp.spec.LagExporter != nil {
 		ports = append(ports, corev1.ServicePort{
 			Name:     "http",
@@ -217,21 +216,7 @@ func (mrp MonitoringResourceProvider) getMonitoringContainerPorts() []corev1.Con
 }
 
 func (mrp MonitoringResourceProvider) getMonitoringEnvs() []corev1.EnvVar {
-	envVars := mrp.getMonitoringEnvironmentVariables()
-
-	if mrp.spec.MonitoringType == "influxdb" {
-		envVars = append(envVars, []corev1.EnvVar{
-			{
-				Name:  "SM_DB_HOST",
-				Value: mrp.spec.SmDbHost,
-			},
-			{
-				Name:  "SM_DB_NAME",
-				Value: mrp.spec.SmDbName,
-			},
-		}...)
-	}
-	return envVars
+	return mrp.getMonitoringEnvironmentVariables()
 }
 
 // getMonitoringVolumes configures the list of Kafka Monitoring volumes
@@ -267,19 +252,6 @@ func (mrp MonitoringResourceProvider) getMonitoringVolumes() []corev1.Volume {
 				},
 			},
 		},
-	}
-	if mrp.spec.SecretName != "" && mrp.spec.MonitoringType == "influxdb" {
-		projections = append(projections, corev1.VolumeProjection{
-			Secret: &corev1.SecretProjection{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: mrp.spec.SecretName,
-				},
-				Items: []corev1.KeyToPath{
-					{Key: "sm-db-username", Path: "sm_db_username"},
-					{Key: "sm-db-password", Path: "sm_db_password"},
-				},
-			},
-		})
 	}
 	volumes = append(volumes, corev1.Volume{
 		Name: "monitoring-pod-secrets",

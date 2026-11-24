@@ -1,4 +1,4 @@
-{{- if (and (eq (include "monitoring.install" .) "true") (ne .Values.global.monitoringType "influxdb") .Values.global.installDashboard) }}
+{{- if (and (eq (include "monitoring.install" .) "true") .Values.global.installDashboard) }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:

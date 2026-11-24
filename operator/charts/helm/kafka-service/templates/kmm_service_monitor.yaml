@@ -1,4 +1,4 @@
-{{- if (and (eq (include "monitoring.install" .) "true") .Values.mirrorMakerMonitoring.install (ne (include "mirrorMakerMonitoring.type" .) "influxdb")) }}
+{{- if (and (eq (include "monitoring.install" .) "true") .Values.mirrorMakerMonitoring.install) }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

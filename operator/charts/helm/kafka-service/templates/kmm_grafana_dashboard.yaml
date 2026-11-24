@@ -1,4 +1,4 @@
-{{- if (and (eq (include "monitoring.install" .) "true") .Values.mirrorMakerMonitoring.install (ne (include "mirrorMakerMonitoring.type" .) "influxdb") .Values.global.installDashboard (ne (.Values.mirrorMakerMonitoring.installDashboard | toString) "false")) }}
+{{- if (and (eq (include "monitoring.install" .) "true") .Values.mirrorMakerMonitoring.install .Values.global.installDashboard (ne (.Values.mirrorMakerMonitoring.installDashboard | toString) "false")) }}
 apiVersion: integreatly.org/v1alpha1
 kind: GrafanaDashboard
 metadata:

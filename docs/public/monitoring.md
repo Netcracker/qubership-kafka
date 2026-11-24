@@ -23,28 +23,15 @@ This section describes the Kafka Monitoring dashboard and its metrics.
 
 ## Dashboard
 
-Some widgets on the **Cluster Overview** panel are different for InfluxDB and Prometheus.
-Prometheus dashboard shows information about ready pods, but InfluxDB dashboard does not contain information about ready pods.
-
-An overview of Kafka Monitoring dashboard for Prometheus is shown below.
+An overview of the Kafka Monitoring dashboard is shown below.
 
 ![Prometheus Dashboard](/docs/public/images/kafka-monitoring_dashboard-prometheus.png)
-
-An overview of Kafka Monitoring dashboard for InfluxDB is shown below.
-
-![InfluxDB Dashboard](/docs/public/images/kafka-monitoring_dashboard-influxdb.png)
 
 ### Metrics
 
 **Cluster Overview**
 
-Prometheus panel:
-
 ![Cluster Overview Prometheus](/docs/public/images/kafka-monitoring_cluster_overview-prometheus.png)
-
-InfluxDB panel:
-
-![Cluster Overview InfluxDB](/docs/public/images/kafka-monitoring_cluster_overview-influxdb.png)
 
 * `Cluster status` - Displays the status of Kafka cluster.
 * `Current cluster size` - Displays the current size of Kafka cluster.

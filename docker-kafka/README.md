@@ -24,16 +24,7 @@ KafkaClient {
 Kafka provides metrics via jmx.
 More details see [Kafka Monitoring](https://kafka.apache.org/documentation/#monitoring)
 
-For monitoring you need:
-
-- setup link:[InfluxDB](https://github.com/influxdata/influxdb) database
-- setup customized link:[Telegraf](https://github.com/influxdata/telegraf) 
-  link:[Kafka Monitoring](https://github.com/Netcracker/qubership-kafka) agent 
-  with InfluxDB output plugin and kafka exec input plugin
-- setup link:[Grafana](https://github.com/grafana/grafana) and configure datasource (influxdb)
-- import JSON template for Grafana Dashboard
-
-Also Kafka provides JMX metrics in Prometheus format on `/metrics` REST endpoint. 
+Kafka monitoring exposes metrics for Prometheus scrape. JMX metrics are also available in Prometheus format on the `/metrics` REST endpoint. 
 When `DISABLE_SECURITY` environment variable is set to `true`, the `/metrics` endpoint is not secured. 
 When `DISABLE_SECURITY` environment variable is set to `false`, use Kafka client credentials for authentication on the `/metrics` endpoint. 
 

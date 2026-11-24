@@ -67,10 +67,6 @@ spec:
     {{- if .Values.global.externalKafka.enabled }}
     bootstrapServers: {{ template "kafka-service.bootstrapServers" . }}
     {{- end }}
-    {{- if (eq (include "monitoring.type" .) "influxdb") }}
-    smDbHost: {{ coalesce .Values.global.smDbHost .Values.monitoring.smDbHost }}
-    smDbName: {{ coalesce .Values.global.smDbName .Values.monitoring.smDbName }}
-    {{- end }}
     dataCollectionInterval: {{ .Values.monitoring.dataCollectionInterval | default "10s" }}
     kafkaExecPluginTimeout: {{ .Values.monitoring.kafkaExecPluginTimeout | default "10s" }}
     kafkaTotalBrokerCount: {{ default 3 .Values.monitoring.kafkaTotalBrokerCount }}
@@ -87,11 +83,7 @@ spec:
       limits:
         memory: {{ default "256Mi" .Values.monitoring.resources.limits.memory }}
         cpu: {{ default "200m" .Values.monitoring.resources.limits.cpu }}
-    {{- if (and (ne (include "monitoring.type" .) "prometheus") (ne (include "monitoring.type" .) "influxdb")) }}
     monitoringType: prometheus
-    {{- else }}
-    monitoringType: {{ template "monitoring.type" . }}
-    {{- end }}
     {{- if .Values.monitoring.lagExporter.enabled  }}
     lagExporter:
       metricsPort: {{ .Values.monitoring.lagExporter.service.port }}
@@ -301,15 +293,7 @@ spec:
       {{- if .Values.mirrorMakerMonitoring.priorityClassName }}
       priorityClassName: {{ .Values.mirrorMakerMonitoring.priorityClassName }}
       {{- end }}
-      {{- if (and (ne (include "mirrorMakerMonitoring.type" .) "prometheus") (ne (include "mirrorMakerMonitoring.type" .) "influxdb")) }}
       monitoringType: prometheus
-      {{- else }}
-      monitoringType: {{ template "mirrorMakerMonitoring.type" . }}
-      {{- end }}
-      {{- if (eq (include "mirrorMakerMonitoring.type" .) "influxdb") }}
-      smDbHost: {{ coalesce .Values.global.smDbHost .Values.mirrorMakerMonitoring.smDbHost }}
-      smDbName: {{ coalesce .Values.global.smDbName .Values.mirrorMakerMonitoring.smDbName }}
-      {{- end }}
       kmmExecPluginTimeout: {{ default "20s" .Values.mirrorMakerMonitoring.kmmExecPluginTimeout }}
       kmmCollectionInterval: {{ default "5s" .Values.mirrorMakerMonitoring.kmmCollectionInterval }}
       secretName: {{ template "kafka.name" . }}-mirror-maker-monitoring-secret
