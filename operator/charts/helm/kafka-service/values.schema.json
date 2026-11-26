@@ -271,57 +271,6 @@
         "allowNonencryptedAccess": { "type": "boolean" }
       }
     },
-    "storage": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "className": {
-          "oneOf": [
-            { "type": "string" },
-            { "type": "array", "items": { "type": "string" } }
-          ]
-        },
-        "size": { "type": "string", "description": "Persistent volume size." },
-        "volumes": { "type": "array", "items": { "type": "string" } },
-        "nodes": { "type": "array", "items": { "type": "string" } },
-        "labels": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "scaling": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "reassignPartitions": { "type": ["boolean", "null"] },
-        "brokerDeploymentScaleInEnabled": { "type": ["boolean", "null"] },
-        "allBrokersStartTimeoutSeconds": { "type": ["integer", "null"] },
-        "topicReassignmentTimeoutSeconds": { "type": ["integer", "null"] }
-      }
-    },
-    "oauth": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "clockSkew": { "type": ["integer", "null"] },
-        "jwkSourceType": {
-          "type": ["string", "null"],
-          "enum": ["", "jwks", "keystore", null]
-        },
-        "jwksConnectionTimeout": { "type": ["integer", "null"] },
-        "jwksReadTimeout": { "type": ["integer", "null"] },
-        "jwksSizeLimit": { "type": ["integer", "null"] }
-      }
-    },
-    "probeTimingConfig": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "initialDelaySeconds": { "type": ["integer", "null"] },
-        "timeoutSeconds": { "type": ["integer", "null"] },
-        "periodSeconds": { "type": ["integer", "null"] },
-        "successThreshold": { "type": ["integer", "null"] },
-        "failureThreshold": { "type": ["integer", "null"] }
-      }
-    },
     "transformation": {
       "type": "object",
       "additionalProperties": false,
@@ -1081,33 +1030,17 @@
     },
     "kafka": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
+      "description": "Fields read by the kafka-service chart. Other Kafka parameters are validated by the kafka chart.",
       "properties": {
-        "install": {
-          "type": "boolean",
-          "description": "Whether the Kafka component is deployed. Must be false when using external Kafka."
-        },
         "replicas": {
           "type": "integer",
           "default": 3,
           "description": "Number of Kafka servers."
         },
-        "dockerImage": {
-          "type": "string",
-          "description": "Docker image of Kafka."
-        },
-        "autoRestartOnSecretChange": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether Kafka restarts automatically when TLS secrets change."
-        },
-        "getRacksFromNodeLabels": {
-          "type": ["boolean", "null"],
-          "description": "Whether Kafka racks are taken from node labels."
-        },
         "tls": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -1118,112 +1051,13 @@
               "type": "string",
               "default": "",
               "description": "Secret that contains Kafka TLS certificates."
-            },
-            "certificates": { "$ref": "#/$defs/tlsCertificates" },
-            "cipherSuites": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "enableTwoWaySsl": { "type": "boolean" },
-            "allowNonencryptedAccess": { "type": "boolean" },
-            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+            }
           }
         },
-        "ssl": { "$ref": "#/$defs/ssl" },
-        "storage": { "$ref": "#/$defs/storage" },
-        "affinity": { "$ref": "#/$defs/affinity" },
-        "tolerations": { "$ref": "#/$defs/tolerations" },
-        "priorityClassName": { "type": "string" },
-        "disableSecurity": { "type": ["boolean", "null"] },
-        "heapSize": { "type": "integer" },
-        "oauth": { "$ref": "#/$defs/oauth" },
-        "scaling": { "$ref": "#/$defs/scaling" },
-        "resources": { "$ref": "#/$defs/resourceRequirements" },
-        "secretName": { "type": "string" },
-        "securityContext": { "$ref": "#/$defs/podSecurityContext" },
-        "nodeLabelNameForRack": { "type": "string" },
-        "racks": { "type": "array", "items": { "type": "string" } },
-        "terminationGracePeriod": { "type": ["integer", "null"] },
-        "zookeeperConnect": { "type": "string" },
-        "zookeeperEnableSsl": { "type": "boolean" },
-        "zookeeperSslSecretName": { "type": "string" },
-        "zookeeperSetACL": { "type": ["boolean", "null"] },
-        "externalHostNames": { "type": "array", "items": { "type": "string" } },
-        "externalPorts": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              { "type": "integer" },
-              { "type": "string" }
-            ]
-          }
-        },
-        "environmentVariables": { "type": "array", "items": { "type": "string" } },
-        "rollbackTimeout": { "type": ["integer", "null"] },
-        "healthCheckTimeout": { "type": ["integer", "null"] },
-        "enableAuditLogs": { "type": ["boolean", "null"] },
-        "tokenRolesPath": { "type": "string" },
-        "enableAuthorization": { "type": ["boolean", "null"] },
-        "consulDiscovery": { "type": "boolean" },
-        "registeredServiceName": { "type": "string" },
-        "kafkaDiscoveryMeta": { "$ref": "#/$defs/stringMap" },
-        "kafkaDiscoveryTags": { "type": "array", "items": { "type": "string" } },
-        "consulAclEnabled": { "type": "boolean" },
-        "consulAuthMethod": { "type": "string" },
-        "rollingUpdate": { "type": "boolean" },
-        "customLabels": { "$ref": "#/$defs/stringMap" },
-        "defaultLabels": { "$ref": "#/$defs/stringMap" },
-        "debugContainer": { "type": "boolean" },
-        "ccMetricReporterEnabled": { "type": "boolean" },
-        "kraft": { "$ref": "#/$defs/kraft" },
-        "kafka3dockerImage": {
-          "type": "string",
-          "description": "Docker image of Kafka 3.x used during KRaft migration."
-        },
-        "disruptionBudget": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "enabled": { "type": "boolean" },
-            "maxUnavailable": { "type": "integer" }
-          }
-        },
-        "livenessProbe": { "$ref": "#/$defs/probeTimingConfig" },
-        "readinessProbe": { "$ref": "#/$defs/probeTimingConfig" },
-        "livenessProbeInitialDelay": { "type": "integer" },
-        "livenessProbeTimeout": { "type": "integer" },
-        "readinessProbeInitialDelay": { "type": "integer" },
-        "readinessProbeTimeout": { "type": "integer" },
-        "createExternalServices": { "type": "boolean" },
-        "externalTrafficPolicy": { "type": "string", "enum": ["Cluster", "Local"] },
-        "idpWhitelist": { "type": "string" },
-        "migrationController": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "affinity": { "$ref": "#/$defs/affinity" },
-            "tolerations": { "$ref": "#/$defs/tolerations" },
-            "priorityClassName": { "type": "string" },
-            "heapSize": { "type": "integer" },
-            "resources": { "$ref": "#/$defs/resourceRequirements" },
-            "securityContext": { "$ref": "#/$defs/podSecurityContext" },
-            "storage": { "$ref": "#/$defs/storage" }
-          }
-        },
-        "metadata": {
-          "type": ["object", "null"],
-          "additionalProperties": true,
-          "description": "Present on the Kafka CR type; accepted for schema completeness."
-        },
-        "spec": {
-          "type": ["object", "null"],
-          "additionalProperties": true,
-          "description": "Present on the Kafka CR type; accepted for schema completeness."
-        },
-        "status": {
-          "type": ["object", "null"],
-          "additionalProperties": true,
-          "description": "Present on the Kafka CR type; accepted for schema completeness."
+        "autoRestartOnSecretChange": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether Kafka restarts automatically when TLS secrets change."
         }
       }
     },
