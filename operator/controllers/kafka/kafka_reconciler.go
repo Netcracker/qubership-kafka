@@ -364,7 +364,17 @@ func (r ReconcileKafka) rolloutBrokers(replicas int, kraft bool, kafkaSecret *co
 			return err
 		}
 		if waitForEachBroker {
-			if err := r.waitUntilBrokerIsReady(brokerId, 300); err != nil {
+
+			maxWaitingInterval := 300
+			if r.cr.Spec.ReadinessProbe != nil {
+				failures := util.DefaultIfEmptyInt32(r.cr.Spec.ReadinessProbe.FailureThreshold, 5)
+				initialDelay := util.DefaultIfEmptyInt32(r.cr.Spec.ReadinessProbe.InitialDelaySeconds, 60)
+				period := util.DefaultIfEmptyInt32(r.cr.Spec.ReadinessProbe.PeriodSeconds, 30)
+				timeout := util.DefaultIfEmptyInt32(r.cr.Spec.ReadinessProbe.TimeoutSeconds, 30)
+				maxWaitingInterval = int(initialDelay + (failures-1)*period + timeout)
+			}
+
+			if err := r.waitUntilBrokerIsReady(brokerId, maxWaitingInterval); err != nil {
 				return err
 			}
 		}
