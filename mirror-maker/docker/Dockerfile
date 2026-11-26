@@ -1,4 +1,4 @@
-FROM amazoncorretto:17.0.20-alpine3.24 AS builder
+FROM amazoncorretto:17.0.20-alpine3.24@sha256:8d6df138906b635b6e721d7f65e82b6b83e67f9219de77bfdc8b63d79ee45490 AS builder
 
 RUN apk add --no-cache maven git
 
@@ -10,7 +10,7 @@ RUN mvn dependency:go-offline
 COPY kafka-mm2-extension /build
 RUN mvn clean package
 
-FROM eclipse-temurin:21-jdk-alpine-3.24
+FROM eclipse-temurin:21-jdk-alpine-3.24@sha256:c07bb82e004a166b5d3d63b84ad70e2e822f228505e2e0c0b8dfdc2890d22f13
 
 ENV KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIRS=/var/opt/kafka/data \
